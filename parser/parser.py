@@ -25,6 +25,7 @@ with open("movies.list") as f:
 
 		#title = values[0]
 		title = unicode(values[0], encoding='latin-1')
+		title = title.replace('\\', '\\\\')
 		title = title.replace('\"', '\\\"')
 		year = values[1][:4]
 

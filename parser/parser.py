@@ -14,6 +14,8 @@ if len(sys.argv) < 2:
 
 http.socket_timeout = 9999
 graph = Graph()
+graph.cypher.execute('CREATE INDEX ON :Movie(name)')
+graph.cypher.execute('CREATE INDEX ON :Movie(released)')
 globalStart = time.time()
 
 # Encode string for cypher query
@@ -70,8 +72,9 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
 if sys.argv[1] == "all" or sys.argv[1] == "directors":
   print "parsing directors..."
   count = 0
+  movieId = 0;
   query = ""
-  steps = 5000
+  steps = 1000
   with open("directors.list") as f:
     #skipping head of file
     line = next(f)
@@ -92,17 +95,22 @@ if sys.argv[1] == "all" or sys.argv[1] == "directors":
       # getting values
       name = encodeName(values[0])
       film = values[1]
-      if '{' in film or '(????)' in film or "(TV)" in film or "(V)" in film:
+      if '{' in film or '(????)' in film or "(TV)" in film \
+        or "(V)" in film:
         film = ""
       else:
+        released = encodeName(film[:-2][-4:])
         film = encodeName(film[:-8])
       # creating the person and the relationships
       if name:
         count, tx = executeTransaction(count, tx, query, steps)
-        query = 'CREATE (person:Person {name:\"' + name + '\"})'
+        query = 'CREATE (p:Person {name:\"' + name + '\"})'
       if film:
-        query += '\nCREATE UNIQUE (person)-[:DIRECTED]->(:Movie {title:"' + film +'"})'
+        query += '\nMERGE (m' + str(movieId) + ':Movie{title:"' \
+          + film + '", released:"' + released \
+          + '"}) CREATE UNIQUE (p)-[:DIRECTED]->(m' + str(movieId) + ')'
+        movieId += 1
     count, tx = executeTransaction(count, tx, query, 0)
     tx.commit()
 
-print str((time.time() - globalStart) / 60) + " minutes total execution time"
+print "Total elapsed time: " + str((time.time() - globalStart) / 60) + " minutes"

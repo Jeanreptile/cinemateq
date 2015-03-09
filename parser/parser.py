@@ -96,8 +96,8 @@ if sys.argv[1] == "all" or sys.argv[1] == "directors":
   print "Executing query"
   graph.cypher.execute('USING PERIODIC COMMIT LOAD CSV WITH HEADERS \
     FROM "file:C:/Users/Florian/Desktop/plic/parser/directors.csv" AS row \
-    MATCH (p:Person {name: row.name}) \
     MATCH (m:Movie {title: row.title, released:row.released}) \
+    MERGE (p:Person {name: row.name}) \
     MERGE (p)-[:DIRECTED]->(m);')
 
 print "Total elapsed time: " + str((time.time() - globalStart) / 60) + " minutes"

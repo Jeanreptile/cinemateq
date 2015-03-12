@@ -1,0 +1,9 @@
+extends layout
+
+block content
+	div.panel
+		h1 {{currentNode.name}}
+		p {{currentNode.born}}
+		p(ng-repeat="rel in currentNode.relationships") {{rel.relationshipType}} {{rel.relationshipNodeOut}}
+
+	#graph(cinegraph="")

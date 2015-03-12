@@ -7,6 +7,18 @@ from py2neo import Graph
 from py2neo import Node, Relationship
 from py2neo.packages.httpstream import http
 
+if len(sys.argv) < 2:
+  print "Please specify the data to parse"
+  print "For example: python parser.py value"
+  print "Values: all, movies, directors"
+  exit()
+http.socket_timeout = 9999
+graph = Graph()
+graph.cypher.execute('CREATE INDEX ON :Person(name)')
+graph.cypher.execute('CREATE INDEX ON :Movie(title)')
+graph.cypher.execute('CREATE INDEX ON :Movie(released)')
+globalStart = time.time()
+
 # Encode string for cypher query
 def encodeName(str):
   str = unicode(str, encoding='latin-1')
@@ -156,18 +168,6 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
     FROM "file:' + os.path.abspath("movies.csv") + '" AS row \
     CREATE (:Movie {title: row.title, released: row.released});')
 
-# main
-if len(sys.argv) < 2:
-  print "Please specify the data to parse"
-  print "For example: python parser.py value"
-  print "Values: all, movies, directors"
-  exit()
-http.socket_timeout = 9999
-graph = Graph()
-graph.cypher.execute('CREATE INDEX ON :Person(name)')
-graph.cypher.execute('CREATE INDEX ON :Movie(title)')
-graph.cypher.execute('CREATE INDEX ON :Movie(released)')
-globalStart = time.time()
 
 if sys.argv[1] == "all" or sys.argv[1] == "directors":
   parseRelations("directors", "THE DIRECTORS LIST\n", 4, "----", "DIRECTED")

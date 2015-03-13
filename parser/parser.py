@@ -10,7 +10,7 @@ from py2neo.packages.httpstream import http
 if len(sys.argv) < 2:
   print "Please specify the data to parse"
   print "For example: python parser.py value"
-  print "Values: all, movies, directors"
+  print "Values: all, movies, directors, actors, actresses"
   exit()
 http.socket_timeout = 9999
 graph = Graph()
@@ -31,73 +31,43 @@ def lineIsValid(str):
     and "(V)" not in str and "(VG)" not in str)
 
 # reg exps
-titleRegex = r"""(?x)
-                  ^
-                  (?:"(.*?)"|(?P<movie>.*?))\s+
-                  \((?P<year>(?:\d{4}|\?{4}))(?P<yearextra>.*?)\)\s*
-                  ({(.*?)}){0,1}(\s*\(.*?\))*
-                  $
-                  """
-testtitleRegex = r"""(?x)                     # turn on verbose
-                  ^                           # grab from start
-                  (?:                         # get the title (nongreedy) either:
-                  "(.*?)"           #   quoted series title
-                  |                           #     OR
-                  (?P<movie>.*?)              #   movie name
-                  )                           #
-                  \s+                         # needs to be at least 1
-                  \(                          # in parens
-                  (?P<year>(?:\d{4}|\?{4}))   # grab the year
-                  (?P<yearextra>.*?)          # and maybe other crap (non-greedy)
-                  \)                          #
-                  \s*                         # could be nothing more, so *
-                  (?:{                        # optionally the curly brace part
-                  (.*?)       # non-greedy grab episode title
-#                 \s+                         # WTF(rryan) leave commented
-                  (?:\((?:                    # optionally, in parens - EITHER
-                  \#(\d+)\.         # hash, season number, dot
-                  (\d+)            # episode number
-                  |                           #   OR
-                  (\d{4}-\d{2}-\d{2}) # release date
-                  )\)){0,1}                   # the paren statement is optional
-                  }){0,1}                     # zero or one of the curly brace
-                  (\s*\(.*?\))*     # any extra crap (TV), (V), etc.
-                  $                           # end of string
-                  """
-fullTitleRegex = r"""(?x)                     # turn on verbose
-                  ^                           # grab from start
-                  (?:                         # get the title (nongreedy) either:
-                  "(?P<series>.*?)"           #   quoted series title
-                  |                           #     OR
-                  (?P<movie>.*?)              #   movie name
-                  )                           #
-                  \s+                         # needs to be at least 1
-                  \(                          # in parens
-                  (?P<year>(?:\d{4}|\?{4}))   # grab the year
-                  (?P<yearextra>.*?)          # and maybe other crap (non-greedy)
-                  \)                          #
-                  \s*                         # could be nothing more, so *
-                  (?:{                        # optionally the curly brace part
-                  (?P<episodetitle>.*?)       # non-greedy grab episode title
-#                 \s+                         # WTF(rryan) leave commented
-                  (?:\((?:                    # optionally, in parens - EITHER
-                  \#(?P<season>\d+)\.         # hash, season number, dot
-                  (?P<episode>\d+)            # episode number
-                  |                           #   OR
-                  (?P<date>\d{4}-\d{2}-\d{2}) # release date
-                  )\)){0,1}                   # the paren statement is optional
-                  }){0,1}                     # zero or one of the curly brace
-                  (?P<extras>\s*\(.*?\))*     # any extra crap (TV), (V), etc.
-                  $                           # end of string
-                  """
-relationRegex = "(?P<name>[^\t]+?)?\t+(?P<title>[^\t]+?)"\
-  + "( +\((TV|V|VG)\))?( +\[(?P<role>.+)\])?"\
-  + "( +<(?P<bill_pos>\d+)>)?\n"
+TITLE_RE = r"""(?x)                         # turn on verbose
+                ^                           # grab from start
+                (?:                         # get the title (nongreedy) either:
+                "(?P<series>.*?)"           #   quoted series title
+                |                           #     OR
+                (?P<movie>.*?)              #   movie name
+                )                           #
+                \s+                         # needs to be at least 1
+                \(                          # in parens
+                (?P<year>(?:\d{4}|\?{4}))   # grab the year
+                (?P<yearextra>.*?)          # and maybe other crap (non-greedy)
+                \)                          #
+                \s*                         # could be nothing more, so *
+                (?:{                        # optionally the curly brace part
+                (?P<episodetitle>.*?)       # non-greedy grab episode title
+#                \s+                         # WTF(rryan) leave commented
+                (?:\((?:                    # optionally, in parens - EITHER
+                \#(?P<season>\d+)\.         # hash, season number, dot
+                (?P<episode>\d+)            # episode number
+                |                           #   OR
+                (?P<date>\d{4}-\d{2}-\d{2}) # release date
+                )\)){0,1}                   # the paren statement is optional
+                }){0,1}                     # zero or one of the curly brace
+                (?P<extras>\s*\(.*?\))*     # any extra crap (TV), (V), etc.
+                $                           # end of string
+                """
+# TITLE_RE = r"^(?:"(.*?)"|(?P<movie>.*?))\s+\((?P<year>(?:\d{4}|\?{4}))(?P<yearextra>.*?)\)\s*({(.*?)}){0,1}(\s*\(.*?\))*$"
+RELATION_RE = r"(?P<name>[^\t]+?)?\t+(?P<title>[^\t]+?)( +\((TV|V|VG)\))?( +\[(?P<role>.+)\])?( +<(?P<bill_pos>\d+)>)?\n"
+MOVIE_RE = "^(?P<title>.+?)\t+(?P<startyear>(?:\d{4}|\?{4}))(?:-((?:\d{4}|\?{4}))){0,1}$"
 
-movieRegex = "^(?P<title>.+?)\t+(?P<startyear>(?:\d{4}|\?{4}))(?:-(?P<endyear>(?:\d{4}|\?{4}))){0,1}$"
+titleRegex = re.compile(TITLE_RE)
+relationRegex = re.compile(RELATION_RE)
+movieRegex = re.compile(MOVIE_RE)
 
 def parseRelations(category, beginMark, beginSkip, endMark, relationship):
   print "Parsing " + category + " and writing CSV..."
+  start = time.time()
   output = codecs.open(category + ".csv", "w", encoding='utf8')
   output.write("\"name\",\"title\",\"released\"\n")
   currentName = ""
@@ -115,11 +85,11 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
       if line.startswith(endMark):
         break
       # getting values
-      lineMatch = re.match(relationRegex, line)
+      lineMatch = relationRegex.match(line)
       name = encodeName(str(lineMatch.group('name')))
       if name != "None":
         currentName = name
-      titleMatch = re.match(titleRegex, lineMatch.group('title'))
+      titleMatch = titleRegex.match(lineMatch.group('title'))
       if titleMatch == None:
         continue
       title = encodeName(str(titleMatch.group('movie')))
@@ -129,16 +99,21 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
       # writing to csv
       output.write("\"" + currentName + "\",\"" + title + "\",\"" + released + "\"\n")
   output.close()
+  print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
   print "Executing query"
+  start = time.time()
   graph.cypher.execute('USING PERIODIC COMMIT LOAD CSV WITH HEADERS \
-    FROM "file:' + os.path.abspath(category + ".csv") + '" AS row \
+    FROM "file:' + encodeName(os.path.abspath(category + ".csv")) + '" AS row \
     MATCH (m:Movie {title: row.title, released:row.released}) \
     MERGE (p:Person {name: row.name}) \
     MERGE (p)-[:' + relationship + ']->(m);')
+  print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
+
 
 # movies
 if sys.argv[1] == "all" or sys.argv[1] == "movies":
   print "Parsing movies and writing CSV..."
+  start = time.time()
   output = codecs.open("movies.csv", "w", encoding='utf8')
   output.write("\"title\",\"released\"\n")
   with open("movies.list") as f:
@@ -152,8 +127,8 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
       if line.startswith("-----"):
         break
       # getting values
-      lineMatch = re.match(movieRegex, line)
-      titleMatch = re.match(titleRegex, lineMatch.group('title'))
+      lineMatch = movieRegex.match(line)
+      titleMatch = titleRegex.match(lineMatch.group('title'))
       if titleMatch == None:
         continue
       title = encodeName(str(titleMatch.group('movie')))
@@ -163,10 +138,13 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
       # writing .csv
       output.write("\"" + title + "\",\"" + released + "\"\n")
   output.close();
+  print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
   print "Executing query"
+  start = time.time()
   graph.cypher.execute('USING PERIODIC COMMIT LOAD CSV WITH HEADERS \
-    FROM "file:' + os.path.abspath("movies.csv") + '" AS row \
+    FROM "file:' + encodeName(os.path.abspath("movies.csv")) + '" AS row \
     CREATE (:Movie {title: row.title, released: row.released});')
+  print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
 
 if sys.argv[1] == "all" or sys.argv[1] == "directors":
@@ -178,4 +156,4 @@ if sys.argv[1] == "all" or sys.argv[1] == "actors":
 if sys.argv[1] == "all" or sys.argv[1] == "actresses":
   parseRelations("actresses", "THE ACTRESSES LIST\n", 4, "----", "ACTED_IN")
 
-print "Total elapsed time: " + str((time.time() - globalStart) / 60) + " minutes"
+print "Total elapsed time: " + str((time.time() - globalStart) / 60.0) + " minutes"

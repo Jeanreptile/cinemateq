@@ -12,6 +12,9 @@ if len(sys.argv) < 2:
   print "For example: python parser.py value"
   print "Values: all, movies, directors, actors, actresses"
   exit()
+if not os.path.exists("lists"):
+  print "Please create a \"lists\" directory containing all imdb .list files"
+  exit()
 http.socket_timeout = 9999
 graph = Graph()
 graph.cypher.execute('CREATE INDEX ON :Person(name)')
@@ -68,10 +71,12 @@ movieRegex = re.compile(MOVIE_RE)
 def parseRelations(category, beginMark, beginSkip, endMark, relationship):
   print "Parsing " + category + " and writing CSV..."
   start = time.time()
-  output = codecs.open(category + ".csv", "w", encoding='utf8')
+  if not os.path.exists("CSV"):
+    os.makedirs("CSV")
+  output = codecs.open("CSV/"+ category + ".csv", "w", encoding='utf8')
   output.write("\"name\",\"title\",\"released\"\n")
   currentName = ""
-  with open(category + ".list") as f:
+  with open("lists/" + category + ".list") as f:
     #skipping head of file
     line = next(f)
     while line != beginMark:
@@ -103,10 +108,10 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
   print "Executing query"
   start = time.time()
   graph.cypher.execute('USING PERIODIC COMMIT LOAD CSV WITH HEADERS \
-    FROM "file:' + encodeName(os.path.abspath(category + ".csv")) + '" AS row \
+    FROM "file:' + encodeName(os.path.abspath("CSV/" + category + ".csv")) + '" AS row \
     MATCH (m:Movie {title: row.title, released:row.released}) \
     MERGE (p:Person {name: row.name}) \
-    MERGE (p)-[:' + relationship + ']->(m);')
+    CREATE (p)-[:' + relationship + ']->(m);')
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
 
@@ -114,9 +119,11 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
 if sys.argv[1] == "all" or sys.argv[1] == "movies":
   print "Parsing movies and writing CSV..."
   start = time.time()
-  output = codecs.open("movies.csv", "w", encoding='utf8')
+  if not os.path.exists("CSV"):
+    os.makedirs("CSV")
+  output = codecs.open("CSV/movies.csv", "w", encoding='utf8')
   output.write("\"title\",\"released\"\n")
-  with open("movies.list") as f:
+  with open("lists/movies.list") as f:
     # skipping head of file
     for _ in xrange(15):
       next(f)
@@ -142,18 +149,22 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
   print "Executing query"
   start = time.time()
   graph.cypher.execute('USING PERIODIC COMMIT LOAD CSV WITH HEADERS \
-    FROM "file:' + encodeName(os.path.abspath("movies.csv")) + '" AS row \
+    FROM "file:' + encodeName(os.path.abspath("CSV/movies.csv")) + '" AS row \
     CREATE (:Movie {title: row.title, released: row.released});')
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
 
 if sys.argv[1] == "all" or sys.argv[1] == "directors":
   parseRelations("directors", "THE DIRECTORS LIST\n", 4, "----", "DIRECTED")
-
 if sys.argv[1] == "all" or sys.argv[1] == "actors":
   parseRelations("actors", "THE ACTORS LIST\n", 4, "----", "ACTED_IN")
-
 if sys.argv[1] == "all" or sys.argv[1] == "actresses":
   parseRelations("actresses", "THE ACTRESSES LIST\n", 4, "----", "ACTED_IN")
+if sys.argv[1] == "all" or sys.argv[1] == "cinematographers":
+  parseRelations("cinematographers", "THE CINEMATOGRAPHERS LIST\n", 4, "----", "DIRECTED_PHOTOGRAPHY")
+if sys.argv[1] == "all" or sys.argv[1] == "composers":
+  parseRelations("composers", "THE COMPOSERS LIST\n", 4, "----", "COMPOSED_MUSIC")
+if sys.argv[1] == "all" or sys.argv[1] == "producers":
+  parseRelations("producers", "THE PRODUCERS LIST\n", 4, "----", "PRODUCED")
 
 print "Total elapsed time: " + str((time.time() - globalStart) / 60.0) + " minutes"

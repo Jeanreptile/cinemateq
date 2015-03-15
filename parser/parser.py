@@ -15,11 +15,10 @@ if len(sys.argv) < 2:
 if not os.path.exists("lists"):
   print "Please create a \"lists\" directory containing all imdb .list files"
   exit()
-http.socket_timeout = 9999
-graph = Graph()
-graph.cypher.execute('CREATE INDEX ON :Person(name)')
-graph.cypher.execute('CREATE INDEX ON :Movie(title)')
-graph.cypher.execute('CREATE INDEX ON :Movie(released)')
+# http.socket_timeout = 9999
+# graph = Graph()
+# graph.cypher.execute('CREATE CONSTRAINT ON (p:Person) ASSERT p.name IS UNIQUE')
+# graph.cypher.execute('CREATE CONSTRAINT ON (m:Movie) ASSERT m.movieId IS UNIQUE')
 globalStart = time.time()
 
 # Encode string for cypher query
@@ -31,7 +30,38 @@ def encodeName(str):
 
 def lineIsValid(str):
   return (str and str != "\n" and "(TV)" not in str
-    and "(V)" not in str and "(VG)" not in str)
+    and "(V)" not in str and "(VG)" not in str
+    and "{{SUSPENDED}}" not in str)
+
+def removeDuplicates():
+  # building unique sets from all csv
+  persons = ""
+  relations = ""
+  for file in os.listdir("CSV"):
+    if file.endswith("_per.csv"):
+      f = codecs.open("CSV/" + file, "r", encoding='utf8')
+      persons += f.read()
+      f.close()
+    if file.endswith("_rel.csv"):
+      f = codecs.open("CSV/" + file, "r", encoding='utf8')
+      relations += f.read()
+      f.close()
+  uniquePersons = set(persons.split("\n"))
+  uniqueRelations = set(relations.split("\n"))
+  uniquePersons.discard("")
+  uniqueRelations.discard("")
+  # writing persons.csv
+  outputPer = codecs.open("CSV/persons.csv", "w", encoding='utf8')
+  outputPer.write("name:ID,:LABEL\n")
+  for line in uniquePersons:
+    outputPer.write(line + "\n")
+  outputPer.close()
+  # writing relations.csv
+  outputRel = codecs.open("CSV/relations.csv", "w", encoding='utf8')
+  outputRel.write(":START_ID,:END_ID,:TYPE\n")
+  for line in uniqueRelations:
+    outputRel.write(line + "\n")
+  outputRel.close()
 
 # reg exps
 TITLE_RE = r"""(?x)                         # turn on verbose
@@ -73,8 +103,8 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
   start = time.time()
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
-  output = codecs.open("CSV/"+ category + ".csv", "w", encoding='utf8')
-  output.write("\"name\",\"title\",\"released\"\n")
+  outputPer = codecs.open("CSV/"+ category + "_per.csv", "w", encoding='utf8')
+  outputRel = codecs.open("CSV/"+ category + "_rel.csv", "w", encoding='utf8')
   currentName = ""
   with open("lists/" + category + ".list") as f:
     #skipping head of file
@@ -94,24 +124,21 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
       name = encodeName(str(lineMatch.group('name')))
       if name != "None":
         currentName = name
+        outputPer.write("\"" + currentName + "\",Person\n")
       titleMatch = titleRegex.match(lineMatch.group('title'))
       if titleMatch == None:
         continue
       title = encodeName(str(titleMatch.group('movie')))
       released = encodeName(str(titleMatch.group('year')))
+      yearextra = encodeName(str(titleMatch.group('yearextra'))[1:])
       if title == "None" or released == "????":
         continue;
+      if yearextra and yearextra != "I":
+        title = title + " [" + yearextra + "]"
       # writing to csv
-      output.write("\"" + currentName + "\",\"" + title + "\",\"" + released + "\"\n")
-  output.close()
-  print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
-  print "Executing query"
-  start = time.time()
-  graph.cypher.execute('USING PERIODIC COMMIT LOAD CSV WITH HEADERS \
-    FROM "file:' + encodeName(os.path.abspath("CSV/" + category + ".csv")) + '" AS row \
-    MATCH (m:Movie {title: row.title, released:row.released}) \
-    MERGE (p:Person {name: row.name}) \
-    CREATE (p)-[:' + relationship + ']->(m);')
+      outputRel.write("\"" + currentName + "\",\"m_" + title + released + "\"," + relationship + "\n")
+  outputPer.close()
+  outputRel.close()
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
 
@@ -122,7 +149,7 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
   output = codecs.open("CSV/movies.csv", "w", encoding='utf8')
-  output.write("\"title\",\"released\"\n")
+  output.write("movieId:ID,title,released,:LABEL\n")
   with open("lists/movies.list") as f:
     # skipping head of file
     for _ in xrange(15):
@@ -140,17 +167,14 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
         continue
       title = encodeName(str(titleMatch.group('movie')))
       released = encodeName(str(lineMatch.group('startyear')))
+      yearextra = encodeName(str(titleMatch.group('yearextra'))[1:])
       if title == "None" or released == "????":
         continue;
+      if yearextra and yearextra != "I":
+        title = title + " [" + yearextra + "]"
       # writing .csv
-      output.write("\"" + title + "\",\"" + released + "\"\n")
+      output.write("\"m_" + title + released + "\",\"" + title + "\", \"" + released + "\",Movie\n")
   output.close();
-  print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
-  print "Executing query"
-  start = time.time()
-  graph.cypher.execute('USING PERIODIC COMMIT LOAD CSV WITH HEADERS \
-    FROM "file:' + encodeName(os.path.abspath("CSV/movies.csv")) + '" AS row \
-    CREATE (:Movie {title: row.title, released: row.released});')
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
 
@@ -166,5 +190,10 @@ if sys.argv[1] == "all" or sys.argv[1] == "composers":
   parseRelations("composers", "THE COMPOSERS LIST\n", 4, "----", "COMPOSED_MUSIC")
 if sys.argv[1] == "all" or sys.argv[1] == "producers":
   parseRelations("producers", "THE PRODUCERS LIST\n", 4, "----", "PRODUCED")
+
+removeDuplicatesStart = time.time()
+print "Removing duplicates..."
+removeDuplicates()
+print "Elapsed time: " + str((time.time() - removeDuplicatesStart) / 60.0) + " minutes"
 
 print "Total elapsed time: " + str((time.time() - globalStart) / 60.0) + " minutes"

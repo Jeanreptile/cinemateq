@@ -4,10 +4,10 @@ block content
 	div.panel
 		div.info(ng-show="currentNode.person")
 			h1 {{currentNode.person.name}}
-			p Born in {{currentNode.person.born}}
+			// p Born in {{currentNode.person.born}}
 			h3(ng-show="currentNode.rolesAndMovies") Played in :
 			ul
 				li(ng-repeat="r in currentNode.rolesAndMovies")
-					<b>{{r.movie.title}}</b> as {{r.role}}
+					<b>{{r.movie.title}}</b> as <em>{{r.role}}</em>
 
 	#graph(cinegraph="")

@@ -13,12 +13,10 @@ router.get('/all', function(req, res) {
 
 /* GET a movie by id. */
 router.get('/:id', function(req, res) {
-	dbLocal.nodesWithLabel('Movie', function(err, movies) {
-		for (var index = 0; index < movies.length; index++) {
-			if (movies[index].id == req.params.id) {
-				res.json(movies[index]);
-			}
-		}
+	var cypher = "MATCH (n:Movie) WHERE id(n) = {movieId} RETURN n";
+	dbLocal.query(cypher, {movieId: parseInt(req.params.id)}, function(err, result) {
+		if (err) throw err;
+		res.json(result[0]);
 	});
 	// TODO: Handle errors
 });

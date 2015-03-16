@@ -11,7 +11,6 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
     }]);
 
 var cinegraphController = cinegraphApp.controller('cinegraphController', ['ModelDataService', '$scope', '$http', function(ModelDataService, $scope, $http) {
-    $scope.currentNode = {};
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
 }]);
 
@@ -37,9 +36,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 var cube = new THREE.Mesh(geometry, material);
                 scene.add(cube);
 
-                $http.get('/api/persons/all').success(function(d) {
+                $http.get('/api/persons/query').success(function(d) {
                     var response = d;
-                    for (var i = 0; i < (response.length / 10); i++) {
+                    for (var i = 0; i < response.length; i++) {
                         var obj = response[i];
                         var material = new THREE.MeshBasicMaterial({ color: 0xaaaaff });
                         var radius = 0.55;
@@ -105,7 +104,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         	var canvas = document.createElement('canvas');
             canvas.width = 800;
             canvas.height = 800;
-            console.log(canvas.height);
         	var context = canvas.getContext('2d');
             context.fillStyle = "#FFF";
             roundRect(context, 0, 0, canvas.width, canvas.height, 30);
@@ -113,7 +111,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.fillStyle = "#000";
             context.font = "bold 160px Arial";
             var text = obj.name;
-            console.log(context.measureText(text).width);
             context.textAlign = "center";
             wrapText(context, text, canvas.width / 2, canvas.height / 2, canvas.width - 10, canvas.height / 5);
             return canvas;
@@ -162,8 +159,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         scope.currentNode.relationships = relationships;
                         $http.get('/api/persons/' + name + '/actor/movies').success(function(movies) {
                             scope.currentNode.movies = movies;
-                            for (var i = 0; i < scope.currentNode.relationships.length; i++) {
-                                var single = { role: scope.currentNode.relationships[i].properties.roles[0],
+                            for (var i = 0; i < scope.currentNode.movies.length; i++) {
+                                var single = { role: "role" /*scope.currentNode.relationships[i].properties.roles[0]*/,
                                     movie: scope.currentNode.movies[i] };
                                 scope.currentNode.rolesAndMovies.push(single);
                             }

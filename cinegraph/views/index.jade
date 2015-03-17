@@ -2,8 +2,12 @@ extends layout
 
 block content
 	div.panel
-		h1 {{currentNode.name}}
-		p {{currentNode.born}}
-		p(ng-repeat="rel in currentNode.relationships") {{rel.relationshipType}} {{rel.relationshipNodeOut}}
+		div.info(ng-show="currentNode.person")
+			h1 {{currentNode.person.name}}
+			// p Born in {{currentNode.person.born}}
+			h3(ng-show="currentNode.rolesAndMovies") Played in :
+			ul
+				li(ng-repeat="r in currentNode.rolesAndMovies")
+					<b>{{r.movie.title}}</b> as <em>{{r.role}}</em>
 
 	#graph(cinegraph="")

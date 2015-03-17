@@ -4,16 +4,14 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
     this.getData = function () {
         return {
             async: function() {
-                    return $http.get('http://5.196.0.128:7474/db/data/label/Person/nodes');  //1. this returns promise
+                    return $http.get('/api/persons/all');
                 }
             };
         }
     }]);
 
 var cinegraphController = cinegraphApp.controller('cinegraphController', ['ModelDataService', '$scope', '$http', function(ModelDataService, $scope, $http) {
-    $scope.currentNode = "No selected node";
-    ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
-    console.log($scope);
+    //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
 }]);
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
@@ -32,65 +30,89 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 document.getElementById('graph').appendChild(renderer.domElement);
                 camera.position.z = 1;
 
-            // cube
-            var geometry = new THREE.BoxGeometry(1, 1, 1);
-            var material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-            var cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
+                // cube
+                var geometry = new THREE.BoxGeometry(1, 1, 1);
+                var material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+                var cube = new THREE.Mesh(geometry, material);
+                scene.add(cube);
 
-            ModelDataService.getData().async().then(function(d) {
-                var response = d; 
-                for (var i = 0; i < response["data"].length; i++) {
-                    var obj = response["data"][i];
-                    var material = new THREE.MeshBasicMaterial({ color: 0xaaaaff });
-                    var radius = 0.55;
-                    var segments = 32;
-                    var circleGeometry = new THREE.CircleGeometry(radius, segments);
-                    var particle = new THREE.Mesh(circleGeometry, material);
+                $http.get('/api/persons/query').success(function(d) {
+                    var response = d;
+                    for (var i = 0; i < response.length; i++) {
+                        var obj = response[i];
+                        var material = new THREE.MeshBasicMaterial({ color: 0xaaaaff });
+                        var radius = 0.55;
+                        var segments = 32;
+                        var circleGeometry = new THREE.CircleGeometry(radius, segments);
+                        var particle = new THREE.Mesh(circleGeometry, material);
 
 
-                    particle.position.x = Math.random() * 60 - 30;
-                    particle.position.y = Math.random() * 60 - 30;
-                    particle.position.z = Math.random() * 60 - 30;
-                    particle.scale.x = particle.scale.y = Math.random() * 20;
+                        particle.position.x = Math.random() * 60 - 30;
+                        particle.position.y = Math.random() * 60 - 30;
+                        particle.position.z = Math.random() * 60 - 30;
+                        particle.scale.x = particle.scale.y = Math.random() * 20;
 
-                    // images
-                    var texture = new THREE.Texture(generateTexture(obj));
-                    texture.needsUpdate = true;
-                    var material = new THREE.SpriteMaterial({ map: texture });
-                    sprite = new THREE.Sprite(material);
-                    sprite.name = obj["metadata"]["id"];
-                    sprite.position.set(particle.position.x, particle.position.y, particle.position.z + 0.5);
-                    sprite.scale.set(4, 4, 4);
-                    scene.add(sprite);
+                        // images
+                        var texture = new THREE.Texture(generateTexture(obj));
+                        texture.needsUpdate = true;
+                        var material = new THREE.SpriteMaterial({ map: texture });
+                        sprite = new THREE.Sprite(material);
+                        sprite.name = obj.id;
+                        sprite.position.set(particle.position.x, particle.position.y, particle.position.z + 0.5);
+                        sprite.scale.set(4, 4, 4);
+                        scene.add(sprite);
 
-                    // line
-                    var material = new THREE.LineBasicMaterial({ color: 0x000000 });
-                    var geometry = new THREE.Geometry();
-                    geometry.vertices.push(sprite.position, cube.position);
-                    var line = new THREE.Line(geometry, material);
-                    scene.add(line);
-                }
+                        // line
+                        var material = new THREE.LineBasicMaterial({ color: 0x000000 });
+                        var geometry = new THREE.Geometry();
+                        geometry.vertices.push(sprite.position, cube.position);
+                        var line = new THREE.Line(geometry, material);
+                        scene.add(line);
+                    }
 
-        });
+                });
+
             // listeners
             //document.addEventListener('click', onMouseMove, false);
-            document.getElementById('graph').addEventListener('click', onclick, false);
+            document.getElementById('graph').addEventListener('click', onClick, false);
         }
 
         var img = new Image();
         img.src = 'images/scorsese.jpg';
 
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            var words = text.split(' ');
+            var line = '';
+
+            for(var n = 0; n < words.length; n++) {
+                var testLine = line + words[n] + ' ';
+                var metrics = context.measureText(testLine);
+                var testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    context.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                }
+                else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, x, y);
+        }
+
         function generateTexture(obj) {
         	var canvas = document.createElement('canvas');
-        	canvas.width = img.width;
-        	canvas.height = img.height;
+            canvas.width = 800;
+            canvas.height = 800;
         	var context = canvas.getContext('2d');
-        	context.drawImage(img, 0, 0, img.width, img.height);
-        	context.fillStyle = "#ffffff";
-        	context.font = "168px serif";
-            var text = obj["data"]["name"];
-            context.fillText(text, img.width / 2 - context.measureText(text).width / 2, img.height / 2);
+            context.fillStyle = "#FFF";
+            roundRect(context, 0, 0, canvas.width, canvas.height, 30);
+
+            context.fillStyle = "#000";
+            context.font = "bold 160px Arial";
+            var text = obj.name;
+            context.textAlign = "center";
+            wrapText(context, text, canvas.width / 2, canvas.height / 2, canvas.width - 10, canvas.height / 5);
             return canvas;
         }
 
@@ -118,7 +140,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         	}
         }
 
-        function onclick(event) {
+        function onClick(event) {
             console.log(event.offsetX + " / " + event.offsetY);
             mouse.x = (event.offsetX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.offsetY / window.innerHeight) * 2 + 1;
@@ -129,25 +151,20 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 /*            for (var i = 0; i < intersects.length; i++) {
 */              var intersection = intersects[0];
                 var name = intersection.object.name;
-                console.log('name : ' + name);
-                /*console.log('intersects : ' + intersects);
-                console.log(intersects[i].object);*/
-                $http.get('http://5.196.0.128:7474/db/data/node/' + name).success(function(response) {
-                    scope.currentNode = response["data"];
-                    console.log('currentNode : ' + scope.currentNode.name);
-                    console.log(scope);
-                    $http.get(response["outgoing_relationships"]).success(function(response) {
-                        scope.currentNode.relationships = [];
-                        console.log(response.length);
-                        for (var i = 0; i < response.length; i++) {
-                            var tmp = new Object();
-                            tmp["relationshipType"] = response[i]["metadata"]["type"];
-                            $http.get(response[i]["end"]).success(function(response) {
-                                tmp["relationshipNodeOut"] = response["data"]["title"];
-                                console.log(tmp);
-                                scope.currentNode.relationships.push(tmp);
-                            });
-                        }
+                $http.get('/api/persons/' + name).success(function(person) {
+                    scope.currentNode = {};
+                    scope.currentNode.person = person;
+                    scope.currentNode.rolesAndMovies = [];
+                    $http.get('/api/persons/' + name + '/actor').success(function(relationships) {
+                        scope.currentNode.relationships = relationships;
+                        $http.get('/api/persons/' + name + '/actor/movies').success(function(movies) {
+                            scope.currentNode.movies = movies;
+                            for (var i = 0; i < scope.currentNode.movies.length; i++) {
+                                var single = { role: "role" /*scope.currentNode.relationships[i].properties.roles[0]*/,
+                                    movie: scope.currentNode.movies[i] };
+                                scope.currentNode.rolesAndMovies.push(single);
+                            }
+                        });
                     });
                 });
             }
@@ -202,7 +219,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         	ctx.stroke();
         }
 
-        img.onload = function(e){
+        img.onload = function(e) {
         	init();
         	render();
         }

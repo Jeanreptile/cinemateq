@@ -19,6 +19,10 @@ a {
 }
 
 #graph {
-	width: calc(100% - 350px);
 	display: inline-block;
+}
+
+.connect {
+	padding-bottom: 10px;
+	border-bottom: 2px solid black;
 }

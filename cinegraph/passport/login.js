@@ -10,28 +10,22 @@ passport.use('login', new LocalStrategy({
     predicate = {'username': username};
     db.find(predicate, 'User', function (err, objs) {
         // In case of any error, return using the done method
-        console.log('Test 0');
-      if (err){
-        console.log('Test');
+      if (err) {
         return done(err);
       }
         // Username does not exist, log error & redirect back
       if (objs.length == 0) {
-    console.log('Test');
-        console.log('User Not Found with username '+username);
         return done(null, false,
               req.flash('message', 'User Not found.'));
       }
         // User exists but wrong password, log the error 
-      if (!isValidPassword(objs[0], password)){
-    console.log('Test');
-        console.log('Invalid Password');
+      if (!isValidPassword(objs[0], password)) {
         return done(null, false,
             req.flash('message', 'Invalid Password'));
         // User and password both match, return user from 
         // done method which will be treated like success
       }
-        return done(null, objs[0]);
+      return done(null, objs[0]);
       });
 }));
     var isValidPassword = function(user, password){

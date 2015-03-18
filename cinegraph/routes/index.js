@@ -5,13 +5,13 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Cinegraph' });
+  res.render('index', { title: 'Cinegraph', user: req.user });
 });
 
 /* GET login page. */
-router.get('/test', function(req, res) {
+router.get('/signin', function(req, res) {
   // Display the Login page with any flash message, if any
-  res.render('test',{message: req.flash('message')});
+  res.render('signin',{message: req.flash('message')});
 });
 
 router.get('/home', function(req, res) {
@@ -21,19 +21,19 @@ router.get('/home', function(req, res) {
 
 /* Handle Login POST */
 router.post('/login', passport.authenticate('login', {
-  successRedirect: '/home',
-  failureRedirect: '/test',
+  successRedirect: '/',
+  failureRedirect: '/signin',
   failureFlash : true
 }));
 
 /* GET Registration Page */
 router.get('/signup', function(req, res){
-  res.render('register',{message: req.flash('message')});
+  res.render('register', {message: req.flash('message')});
 });
 
 /* Handle Registration POST */
 router.post('/signup', passport.authenticate('signup', {
-  successRedirect: '/home',
+  successRedirect: '/',
   failureRedirect: '/signup',
   failureFlash : true
 }));
@@ -41,7 +41,7 @@ router.post('/signup', passport.authenticate('signup', {
 /* Handle Logout */
 router.get('/signout', function(req, res) {
     req.logout();
-      res.redirect('/test');
+      res.redirect('/');
 });
 
 return router;

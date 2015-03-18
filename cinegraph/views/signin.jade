@@ -1,0 +1,24 @@
+extends layout
+
+block header
+  section#content.m-t-lg.wrapper-md.animated.fadeInUp
+      .container.aside-xl
+        a.navbar-brand.block(href='/') Cinemateq
+        section.m-b-lg
+          header.wrapper.text-center
+            strong Sign in to get in touch
+          form(action='/login', method='POST')
+            .list-group
+              .list-group-item
+                input.form-control.no-border(name='username', type='text', placeholder='Username')
+              |             
+              .list-group-item
+                input.form-control.no-border(name='password', type='password', placeholder='Password')
+            button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in
+            .text-center.m-t.m-b
+              a(href='#')
+                small Forgot password?
+            .line.line-dashed
+            p.text-muted.text-center
+              small Do not have an account?
+            a.btn.btn-lg.btn-default.btn-block(href='/signup') Create an account

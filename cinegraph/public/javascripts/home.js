@@ -19,13 +19,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 		link: function link(scope, element, attrs) {
 			// global vars            
             var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera(45, document.getElementById('graph').offsetWidth / window.innerHeight, 0.1, 1000);
+            var camera = new THREE.PerspectiveCamera(45, document.getElementById('content').offsetWidth / window.innerHeight, 0.1, 1000);
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
 
             function init() {
-                renderer.setSize(document.getElementById('graph').offsetWidth, window.innerHeight);
+                renderer.setSize(document.getElementById('content').offsetWidth, window.innerHeight);
                 renderer.setClearColor(0xf0f0f0);
                 document.getElementById('graph').appendChild(renderer.domElement);
                 camera.position.z = 1;

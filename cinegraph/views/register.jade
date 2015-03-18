@@ -1,20 +1,34 @@
 extends layout
 
-block content
-  div.container
-    div.row
-      div.col-sm-6.col-md-4.col-md-offset-4
-        h1.text-center.login-title Register to our Passport app
-          div.account-wall
-            img(class='profile-img', src='https://lh5.googleusercontent.com/-b0-k99FZlyE/AAAAAAAAAAI/AAAAAAAAAAA/eu7opA4byxI/photo.jpg?sz=120')
-            form(class='form-register', action='/signup', method='POST')
-              input(type='text', name='username' class='form-control', placeholder='Username',required, autofocus)
-              input(type='password', name='password' class='form-control', placeholder='Password', required)
-              input(type='text', name='email' class='form-control', placeholder='Email',required)
-              input(type='text', name='firstName' class='form-control', placeholder='First Name', required)
-              input(type='text', name='lastName' class='form-control', placeholder='Last Name', required)
-              button(class='btn btn-lg btn-primary btn-block', type='submit') Register !
-              span.clearfix
-          #message
-          if message
-            h1.text-center.error-message #{message}
+block header
+  section#content.m-t-lg.wrapper-md.animated.fadeInDown
+        .container.aside-xl
+          a.navbar-brand.block(href='/') Cinemateq
+          section.m-b-lg
+            header.wrapper.text-center
+              strong Sign up to find interesting thing
+            #message
+              if message
+                h1.text-center.error-message #{message}
+            form(action='/signup', method='POST')
+              .list-group
+                .list-group-item
+                  input.form-control.no-border(type='text', name='username', placeholder='Username', required, autofocus)
+                .list-group-item
+                  input.form-control.no-border(type='password', name='password', placeholder='Password', required)
+                .list-group-item
+                  input.form-control.no-border(type='email', name='email', placeholder='Email', required)
+                .list-group-item
+                  input.form-control.no-border(type='text', name='firstName' class='form-control', placeholder='First Name', required)
+                .list-group-item
+                  input.form-control.no-border(type='text', name='lastName' class='form-control', placeholder='Last Name', required)
+              // .checkbox.m-b
+                label
+                  input(type='checkbox')
+                  |  Agree the 
+                  a(href='#') terms and policy
+              button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign up
+              .line.line-dashed
+              p.text-muted.text-center
+                small Already have an account?
+              a.btn.btn-lg.btn-default.btn-block(href='/signin') Sign in

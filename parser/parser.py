@@ -15,10 +15,6 @@ if len(sys.argv) < 2:
 if not os.path.exists("lists"):
   print "Please create a \"lists\" directory containing all imdb .list files"
   exit()
-# http.socket_timeout = 9999
-# graph = Graph()
-# graph.cypher.execute('CREATE CONSTRAINT ON (p:Person) ASSERT p.name IS UNIQUE')
-# graph.cypher.execute('CREATE CONSTRAINT ON (m:Movie) ASSERT m.movieId IS UNIQUE')
 globalStart = time.time()
 
 # Encode string for cypher query
@@ -29,9 +25,12 @@ def encodeName(str):
   return str
 
 def lineIsValid(str):
-  return (str and str != "\n" and "(TV)" not in str
-    and "(V)" not in str and "(VG)" not in str
-    and "{{SUSPENDED}}" not in str)
+  return (str and str != "\n")
+
+def titleIsValid(str):
+  return ("(TV)" not in str and "(V)" not in str
+      and "(VG)" not in str and "{{SUSPENDED}}" not in str)
+
 
 def removeDuplicates():
   # building unique sets from all csv
@@ -90,13 +89,50 @@ TITLE_RE = r"""(?x)                         # turn on verbose
                 (?P<extras>\s*\(.*?\))*     # any extra crap (TV), (V), etc.
                 $                           # end of string
                 """
-# TITLE_RE = r"^(?:"(.*?)"|(?P<movie>.*?))\s+\((?P<year>(?:\d{4}|\?{4}))(?P<yearextra>.*?)\)\s*({(.*?)}){0,1}(\s*\(.*?\))*$"
 RELATION_RE = r"(?P<name>[^\t]+?)?\t+(?P<title>[^\t]+?)( +\((TV|V|VG)\))?( +\[(?P<role>.+)\])?( +<(?P<bill_pos>\d+)>)?\n"
 MOVIE_RE = "^(?P<title>.+?)\t+(?P<startyear>(?:\d{4}|\?{4}))(?:-((?:\d{4}|\?{4}))){0,1}$"
+PLOT_TITLE_RE = "^MV:\s(?P<title>.+)$"
+PLOT_PLOT_RE = "^PL:\s(?P<plot>.+)$"
+PLOT_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
 
 titleRegex = re.compile(TITLE_RE)
 relationRegex = re.compile(RELATION_RE)
 movieRegex = re.compile(MOVIE_RE)
+plotTitleRegex = re.compile(PLOT_TITLE_RE)
+plotRegex = re.compile(PLOT_PLOT_RE)
+plotAuthorRegex = re.compile(PLOT_AUTHOR_RE)
+
+# def parseMoviePlots():
+#   plots = {}
+#   with open('lists/plot.list') as f:
+#     current_title = ""
+#     current_plot = []
+#     current_plots = []
+#     for line in f:
+#       title_match = plotTitleRegex.match(line)
+#       plot_match = plotRegex.match(line)
+#       author_match = plotAuthorRegex.match(line)
+#       if title_match:
+#         if current_title:
+#           if current_plot:
+#             current_plots.append(' '.join(current_plot))
+#             current_plot = []
+#           print current_title
+#           plots[current_title] = current_plots
+#           current_plots = []
+#         current_title = str(title_match.group('title').strip())
+#       elif plot_match:
+#         current_plot.append(plot_match.group('plot').strip())
+#       elif author_match:
+#         current_plots.append(' '.join(current_plot))
+#         current_plot = []
+#     # last one
+#     if current_title:
+#       if current_plot != []:
+#         current_plots.append(' '.join(current_plot))
+#       plots[current_title] = current_plots
+#   print len(plots.keys())
+#   print plots["Interstellar (2014)"]
 
 def parseRelations(category, beginMark, beginSkip, endMark, relationship):
   print "Parsing " + category + " and writing CSV..."
@@ -126,7 +162,7 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
         currentName = name
         outputPer.write("\"" + currentName + "\",Person\n")
       titleMatch = titleRegex.match(lineMatch.group('title'))
-      if titleMatch == None:
+      if titleMatch == None or not titleIsValid(line):
         continue
       title = encodeName(str(titleMatch.group('movie')))
       released = encodeName(str(titleMatch.group('year')))
@@ -156,7 +192,7 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
       next(f)
     for line in f:
       # skipping invalid lines
-      if not lineIsValid(line):
+      if not lineIsValid(line) or not titleIsValid(line):
         continue
       if line.startswith("-----"):
         break
@@ -177,7 +213,6 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
   output.close();
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
-
 if sys.argv[1] == "all" or sys.argv[1] == "directors":
   parseRelations("directors", "THE DIRECTORS LIST\n", 4, "----", "DIRECTED")
 if sys.argv[1] == "all" or sys.argv[1] == "actors":
@@ -191,6 +226,7 @@ if sys.argv[1] == "all" or sys.argv[1] == "composers":
 if sys.argv[1] == "all" or sys.argv[1] == "producers":
   parseRelations("producers", "THE PRODUCERS LIST\n", 4, "----", "PRODUCED")
 
+# removing all duplicates and writing persons.csv and relationships.csv
 removeDuplicatesStart = time.time()
 print "Removing duplicates..."
 removeDuplicates()

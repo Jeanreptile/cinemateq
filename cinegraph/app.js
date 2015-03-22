@@ -4,7 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var db = require("seraph")("http://localhost:7474");
+var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 
 var app = express();
 

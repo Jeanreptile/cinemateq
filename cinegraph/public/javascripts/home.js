@@ -12,6 +12,13 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
 
 var cinegraphController = cinegraphApp.controller('cinegraphController', ['ModelDataService', '$scope', '$http', function(ModelDataService, $scope, $http) {
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
+    $scope.currentNode = {};
+    $scope.currentNode.movie = {};
+    $scope.currentNode.movie.name = "Inception";
+    $scope.currentNode.movie.date = "2010";
+    $scope.currentNode.movie.plot = "LA thief who steals corporate secrets through use of dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO."
+    $scope.currentNode.movie.genres = [ "Action", "Adventure", "Sci-Fi", "Thriller"];
+    $scope.currentNode.movie.thumbnail = "images/inception.jpg";
 }]);
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
@@ -109,7 +116,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             roundRect(context, 0, 0, canvas.width, canvas.height, 30);
 
             context.fillStyle = "#000";
-            context.font = "bold 160px Arial";
+            context.font = "bold 160px Open Sans";
             var text = obj.name;
             context.textAlign = "center";
             wrapText(context, text, canvas.width / 2, canvas.height / 2, canvas.width - 10, canvas.height / 5);

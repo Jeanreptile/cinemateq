@@ -1,7 +1,4 @@
 body {
-  padding: 0;
-  margin: 0;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -25,4 +22,28 @@ a {
 .connect {
 	padding-bottom: 10px;
 	border-bottom: 2px solid black;
+}
+
+img {
+	width: 128px;
+}
+
+i.fa-heart, i.fa-plus, i.fa-eye {
+	-webkit-transition: color 0.2s linear;
+    -moz-transition: color 0.2s linear;
+    -ms-transition: color 0.2s linear;
+    -o-transition: color 0.2s linear;
+    transition: color 0.2s linear;
+}
+
+i.fa-heart:hover {
+	color: #cc1628;
+}
+
+i.fa-plus:hover {
+	color: white;
+}
+
+i.fa-eye:hover {
+	color: #159a78;
 }

@@ -16,14 +16,13 @@ block content
 					.input-group
 						span.input-group-btn
 							button.btn.btn-sm.bg-white.b-white.btn-icon(type='submit')
-								// i.fa.fa-search
 								span.glyphicon.glyphicon-search
-						input.form-control.input-md.no-border(type='text', placeholder='Search for a movie...')
+						input.form-control.input-sm.no-border(type='text', placeholder='Search for a movie...')
 			ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
 				li.dropdown
 					a.dropdown-toggle(href='#', data-toggle='dropdown')
-						span.thumb-sm.pull-left.glyphicon.glyphicon-user
-							// i.fa.fa-user
+						span.thumb-sm.pull-left.avatar.m-r
+							img.dker(src="images/a0.png")
 						if user
 							| #{user.firstName}
 						else
@@ -47,20 +46,19 @@ block content
 				aside#nav.aside-lg.bg-black.hidden-print.hidden-xs
 					section.vbox
 						section.w-f.scrollable
-							.slim-scroll(data-height='700px', data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
+							.slim-scroll(data-height='600px', data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
 								.clearfix.wrapper.dk.nav-user.hidden-xs
-									.dropdown
-										a.dropdown-toggle(href='#', data-toggle='dropdown')
-											span.thumb.avatar.pull-left.m-r.glyphicon.glyphicon-user  
-												// i.on.md.b-black            
-											span.hidden-nav-xs.clear
-												span.block.m-t-xs
-													if user
-														strong.font-bold.text-lt #{user.firstName}
-														span.text-muted.text-xs.block Cinephile
-													else
-														strong.font-bold.text-lt Invité
-														span.text-muted.text-xs.block Novice
+									span.thumb.pull-left.avatar.m-r
+										img.dker(src="images/a0.png")
+										i.on.md.b-black            
+									span.hidden-nav-xs.clear
+										span.block.m-t-xs
+											if user
+												strong.font-bold.text-lt #{user.firstName}
+												span.text-muted.text-xs.block Cinephile
+											else
+												strong.font-bold.text-lt Invité
+												span.text-muted.text-xs.block Novice
 								div.text-center(ng-show="currentNode.person")
 									div.m-t-sm
 										img.img-circle(src="images/leonardo_dicaprio.jpeg")
@@ -68,7 +66,6 @@ block content
 										a(href="#")
 											{{currentNode.person.name}}
 									small.text-muted.m-b
-										i.i.i-dot
 										| Actor
 										i.i.i-dot
 										| Producer
@@ -88,7 +85,7 @@ block content
 											div.h5.font-bold.text-lt.m-t.m-b-xs
 												| Biography
 											p.m-l-sm.m-r-sm
-												Leonardo Wilhelm DiCaprio (born November 11, 1974) is an American actor and film producer. His first role was on the sitcom Growing Pains, but his breakthrough film performance came in This Boy's Life.
+												| Leonardo Wilhelm DiCaprio (born November 11, 1974) is an American actor and film producer. His first role was on the sitcom Growing Pains, but his breakthrough film performance came in This Boy's Life.
 												a.m-l-xs(href="#")
 													| Read more...
 									// h4(ng-show="currentNode.rolesAndMovies") Played in :
@@ -136,6 +133,6 @@ block content
 								
 				section#content
 					section.vbox
-						section.scrollable.wrapper
+						section.scrollable
 							// p.h4 This is a blank page
 							#graph(cinegraph="")

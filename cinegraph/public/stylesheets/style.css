@@ -47,3 +47,7 @@ i.fa-plus:hover {
 i.fa-eye:hover {
 	color: #159a78;
 }
+
+#content {
+	height: 500px;
+}

@@ -1,4 +1,4 @@
-var cinegraphApp = angular.module('cinegraphApp', []);
+var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap']);
 
 cinegraphApp.service('ModelDataService', ['$http', function ($http) {
     this.getData = function () {

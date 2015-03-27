@@ -4,6 +4,8 @@ body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+
 a {
   color: #00B7FF;
 }

@@ -1,0 +1,26 @@
+extends layout
+
+block content
+    .container-fluid(ng-controller='TypeaheadCtrl')
+        h4 Search your movie
+        h2 Selected is : {{test1}}
+        pre.
+            Model: {{asyncSelected | json}}
+        .input-group
+            input.form-control(type='text', ng-model='asyncSelected', placeholder='Enter your favorite film', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations')
+            span#datebox.input-group-btn
+                button.btn.btn-primary.dropdown-toggle(type='button', data-toggle='dropdown')
+                    span#spanTest.dropdown-label
+                        | Movies
+                ul#selectType.dropdown-menu.dropdown-select.pull-right
+                    li.active
+                        a(href='#')
+                            input(type='radio', name='type', checked='')
+                            | Movies
+                    li
+                        a(href='#')
+                            input(type='radio', name='type')
+                            | Persons
+        p(ng-show='loadingLocations')
+            | Loading 
+            i.glyphicon.glyphicon-refresh(ng-show='loadingLocations')

@@ -44,5 +44,10 @@ router.get('/signout', function(req, res) {
       res.redirect('/');
 });
 
+/* Search Bar*/
+router.get('/search', function(req, res){
+  res.render('search');
+});
 return router;
+
 }

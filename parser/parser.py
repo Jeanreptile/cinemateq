@@ -10,7 +10,7 @@ from py2neo.packages.httpstream import http
 if len(sys.argv) < 2:
   print "Please specify the data to parse"
   print "For example: python parser.py value"
-  print "Values: all, movies, directors, actors, actresses"
+  print "Values: all, movies, directors, actors, actresses, ..."
   exit()
 if not os.path.exists("lists"):
   print "Please create a \"lists\" directory containing all imdb .list files"
@@ -33,33 +33,27 @@ def titleIsValid(str):
 
 
 def removeDuplicates():
-  # building unique sets from all csv
-  persons = ""
-  relations = ""
+  # writing persons.csv
+  uniquePersons = set()
   for file in os.listdir("CSV"):
     if file.endswith("_per.csv"):
-      f = codecs.open("CSV/" + file, "r", encoding='utf8')
-      persons += f.read()
-      f.close()
-    if file.endswith("_rel.csv"):
-      f = codecs.open("CSV/" + file, "r", encoding='utf8')
-      relations += f.read()
-      f.close()
-  uniquePersons = set(persons.split("\n"))
-  uniqueRelations = set(relations.split("\n"))
+      with codecs.open("CSV/" + file, "r", encoding='utf8') as f:
+        for line in f:
+          uniquePersons.add(line)
   uniquePersons.discard("")
-  uniqueRelations.discard("")
-  # writing persons.csv
   outputPer = codecs.open("CSV/persons.csv", "w", encoding='utf8')
-  outputPer.write("name:ID,:LABEL\n")
+  outputPer.write("name:ID,biography,:LABEL\n")
   for line in uniquePersons:
-    outputPer.write(line + "\n")
+    outputPer.write(line)
   outputPer.close()
   # writing relations.csv
   outputRel = codecs.open("CSV/relations.csv", "w", encoding='utf8')
   outputRel.write(":START_ID,:END_ID,:TYPE\n")
-  for line in uniqueRelations:
-    outputRel.write(line + "\n")
+  for file in os.listdir("CSV"):
+    if file.endswith("_rel.csv"):
+      with codecs.open("CSV/" + file, "r", encoding='utf8') as f:
+        for line in f:
+          outputRel.write(line)
   outputRel.close()
 
 # reg exps
@@ -78,7 +72,7 @@ TITLE_RE = r"""(?x)                         # turn on verbose
                 \s*                         # could be nothing more, so *
                 (?:{                        # optionally the curly brace part
                 (?P<episodetitle>.*?)       # non-greedy grab episode title
-#                \s+                         # WTF(rryan) leave commented
+#               \s+                         # WTF(rryan) leave commented
                 (?:\((?:                    # optionally, in parens - EITHER
                 \#(?P<season>\d+)\.         # hash, season number, dot
                 (?P<episode>\d+)            # episode number
@@ -89,54 +83,107 @@ TITLE_RE = r"""(?x)                         # turn on verbose
                 (?P<extras>\s*\(.*?\))*     # any extra crap (TV), (V), etc.
                 $                           # end of string
                 """
+
 RELATION_RE = r"(?P<name>[^\t]+?)?\t+(?P<title>[^\t]+?)( +\((TV|V|VG)\))?( +\[(?P<role>.+)\])?( +<(?P<bill_pos>\d+)>)?\n"
 MOVIE_RE = "^(?P<title>.+?)\t+(?P<startyear>(?:\d{4}|\?{4}))(?:-((?:\d{4}|\?{4}))){0,1}$"
+
 PLOT_TITLE_RE = "^MV:\s(?P<title>.+)$"
 PLOT_PLOT_RE = "^PL:\s(?P<plot>.+)$"
 PLOT_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
 
+BIO_NAME_RE = "^NM:\s(?P<name>.+)$"
+BIO_BIO_RE = "^BG:\s(?P<bio>.+)$"
+BIO_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
+
 titleRegex = re.compile(TITLE_RE)
 relationRegex = re.compile(RELATION_RE)
 movieRegex = re.compile(MOVIE_RE)
+
 plotTitleRegex = re.compile(PLOT_TITLE_RE)
 plotRegex = re.compile(PLOT_PLOT_RE)
 plotAuthorRegex = re.compile(PLOT_AUTHOR_RE)
 
-# def parseMoviePlots():
-#   plots = {}
-#   with open('lists/plot.list') as f:
-#     current_title = ""
-#     current_plot = []
-#     current_plots = []
-#     for line in f:
-#       title_match = plotTitleRegex.match(line)
-#       plot_match = plotRegex.match(line)
-#       author_match = plotAuthorRegex.match(line)
-#       if title_match:
-#         if current_title:
-#           if current_plot:
-#             current_plots.append(' '.join(current_plot))
-#             current_plot = []
-#           print current_title
-#           plots[current_title] = current_plots
-#           current_plots = []
-#         current_title = str(title_match.group('title').strip())
-#       elif plot_match:
-#         current_plot.append(plot_match.group('plot').strip())
-#       elif author_match:
-#         current_plots.append(' '.join(current_plot))
-#         current_plot = []
-#     # last one
-#     if current_title:
-#       if current_plot != []:
-#         current_plots.append(' '.join(current_plot))
-#       plots[current_title] = current_plots
-#   print len(plots.keys())
-#   print plots["Interstellar (2014)"]
+bioNameRegex = re.compile(BIO_NAME_RE)
+bioRegex = re.compile(BIO_BIO_RE)
+bioAuthorRegex = re.compile(BIO_AUTHOR_RE)
 
+
+def parseBiographies():
+  bios = {}
+  with open('lists/biographies.list', 'rb') as f:
+    currentName = ""
+    currentBio = []
+    currentBios = []
+    for line in f:
+      bioNameMatch = bioNameRegex.match(line)
+      bioMatch = bioRegex.match(line)
+      bioAuthorMatch = bioAuthorRegex.match(line)
+      if bioNameMatch:
+        if currentName:
+          if currentBio:
+            currentBios.append(' '.join(currentBio))
+            currentBio = []
+          if currentBios:
+            bios[currentName] = currentBios
+          currentBios = []
+        currentName = encodeName(bioNameMatch.group('name').strip())
+      elif bioMatch:
+        currentBio.append(bioMatch.group('bio').strip())
+      elif bioAuthorMatch:
+        currentBios.append(' '.join(currentBio))
+        currentBio = []
+    # last one
+    if currentName:
+      if currentBio:
+        currentBios.append(' '.join(currentBio))
+      if currentBios:
+        bios[currentName] = currentBios
+  return bios
+
+def parseMoviePlots():
+  plots = {}
+  with open('lists/plot.list', 'rb') as f:
+    current_title = ""
+    current_plot = []
+    current_plots = []
+    for line in f:
+      plot_title_match = plotTitleRegex.match(line)
+      plot_match = plotRegex.match(line)
+      plot_author_match = plotAuthorRegex.match(line)
+      if plot_title_match:
+        if current_title:
+          if current_plot:
+            current_plots.append(' '.join(current_plot))
+            current_plot = []
+          titleMatch = titleRegex.match(current_title)
+          movieId = encodeName("m_" + str(titleMatch.group('movie'))
+            + str(titleMatch.group('year')))
+          plots[movieId] = current_plots
+          current_plots = []
+        current_title = str(plot_title_match.group('title').strip())
+      elif plot_match:
+        current_plot.append(plot_match.group('plot').strip())
+      elif plot_author_match:
+        current_plots.append(' '.join(current_plot))
+        current_plot = []
+    # last one
+    if current_title:
+      if current_plot != []:
+        current_plots.append(' '.join(current_plot))
+      titleMatch = titleRegex.match(current_title)
+      movieId = encodeName("m_" + str(titleMatch.group('movie'))
+        + str(titleMatch.group('year')))
+      plots[movieId] = current_plots
+  return plots
+
+biographies = {}
 def parseRelations(category, beginMark, beginSkip, endMark, relationship):
-  print "Parsing " + category + " and writing CSV..."
+  global biographies
   start = time.time()
+  if not biographies:
+    print "Parsing biographies..."
+    biographies = parseBiographies()
+  print "Parsing " + category + " and writing CSV..."
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
   outputPer = codecs.open("CSV/"+ category + "_per.csv", "w", encoding='utf8')
@@ -160,7 +207,8 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
       name = encodeName(str(lineMatch.group('name')))
       if name != "None":
         currentName = name
-        outputPer.write("\"" + currentName + "\",Person\n")
+        bio = encodeName(biographies.get(currentName, [""])[0])
+        outputPer.write("\"" + currentName + "\",\"" + bio + "\",Person\n")
       titleMatch = titleRegex.match(lineMatch.group('title'))
       if titleMatch == None or not titleIsValid(line):
         continue
@@ -180,12 +228,13 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
 
 # movies
 if sys.argv[1] == "all" or sys.argv[1] == "movies":
-  print "Parsing movies and writing CSV..."
+  print "Parsing movies, plots and writing CSV..."
   start = time.time()
+  plots = parseMoviePlots()
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
   output = codecs.open("CSV/movies.csv", "w", encoding='utf8')
-  output.write("movieId:ID,title,released,:LABEL\n")
+  output.write("movieId:ID,title,released,plot,:LABEL\n")
   with open("lists/movies.list") as f:
     # skipping head of file
     for _ in xrange(15):
@@ -209,7 +258,10 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
       if yearextra and yearextra != "I":
         title = title + " [" + yearextra + "]"
       # writing .csv
-      output.write("\"m_" + title + released + "\",\"" + title + "\", \"" + released + "\",Movie\n")
+      movieId = "m_" + title + released
+      plot = encodeName(plots.get(movieId, [""])[0])
+      output.write("\"" + movieId + "\",\"" + title + "\",\""
+        + released + "\",\"" + plot + "\",Movie\n")
   output.close();
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 

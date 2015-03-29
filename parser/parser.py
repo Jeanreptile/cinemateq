@@ -7,6 +7,7 @@ from py2neo import Graph
 from py2neo import Node, Relationship
 from py2neo.packages.httpstream import http
 
+
 if len(sys.argv) < 2:
   print "Please specify the data to parse"
   print "For example: python parser.py value"
@@ -17,6 +18,7 @@ if not os.path.exists("lists"):
   exit()
 globalStart = time.time()
 
+
 # Encode string for cypher query
 def encodeName(str):
   str = unicode(str, encoding='latin-1')
@@ -24,8 +26,10 @@ def encodeName(str):
   str = str.replace('\"', '\\\"')
   return str
 
+
 def lineIsValid(str):
   return (str and str != "\n")
+
 
 def titleIsValid(str):
   return ("(TV)" not in str and "(V)" not in str
@@ -56,7 +60,8 @@ def removeDuplicates():
           outputRel.write(line)
   outputRel.close()
 
-# reg exps
+
+# regular expressions
 TITLE_RE = r"""(?x)                         # turn on verbose
                 ^                           # grab from start
                 (?:                         # get the title (nongreedy) either:
@@ -83,29 +88,28 @@ TITLE_RE = r"""(?x)                         # turn on verbose
                 (?P<extras>\s*\(.*?\))*     # any extra crap (TV), (V), etc.
                 $                           # end of string
                 """
-
 RELATION_RE = r"(?P<name>[^\t]+?)?\t+(?P<title>[^\t]+?)( +\((TV|V|VG)\))?( +\[(?P<role>.+)\])?( +<(?P<bill_pos>\d+)>)?\n"
 MOVIE_RE = "^(?P<title>.+?)\t+(?P<startyear>(?:\d{4}|\?{4}))(?:-((?:\d{4}|\?{4}))){0,1}$"
-
-PLOT_TITLE_RE = "^MV:\s(?P<title>.+)$"
-PLOT_PLOT_RE = "^PL:\s(?P<plot>.+)$"
-PLOT_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
-
-BIO_NAME_RE = "^NM:\s(?P<name>.+)$"
-BIO_BIO_RE = "^BG:\s(?P<bio>.+)$"
-BIO_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
-
 titleRegex = re.compile(TITLE_RE)
 relationRegex = re.compile(RELATION_RE)
 movieRegex = re.compile(MOVIE_RE)
 
+PLOT_TITLE_RE = "^MV:\s(?P<title>.+)$"
+PLOT_PLOT_RE = "^PL:\s(?P<plot>.+)$"
+PLOT_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
 plotTitleRegex = re.compile(PLOT_TITLE_RE)
 plotRegex = re.compile(PLOT_PLOT_RE)
 plotAuthorRegex = re.compile(PLOT_AUTHOR_RE)
 
+BIO_NAME_RE = "^NM:\s(?P<name>.+)$"
+BIO_BIO_RE = "^BG:\s(?P<bio>.+)$"
+BIO_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
 bioNameRegex = re.compile(BIO_NAME_RE)
 bioRegex = re.compile(BIO_BIO_RE)
 bioAuthorRegex = re.compile(BIO_AUTHOR_RE)
+
+GENRE_RE = "^(?P<title>.+?)\t+(?P<genre>.+)$"
+genreRegex = re.compile(GENRE_RE)
 
 
 def parseBiographies():
@@ -139,6 +143,7 @@ def parseBiographies():
       if currentBios:
         bios[currentName] = currentBios
   return bios
+
 
 def parseMoviePlots():
   plots = {}
@@ -176,6 +181,7 @@ def parseMoviePlots():
       plots[movieId] = current_plots
   return plots
 
+
 def parseMovieTaglines():
   taglines = {}
   currentMovie = ""
@@ -199,6 +205,34 @@ def parseMovieTaglines():
     if currentMovie:
       taglines[currentMovie] = currentTagline
   return taglines
+
+
+def parseMovieGenres():
+  genres = {}
+  currentMovie = ""
+  currentGenres = []
+  with open('lists/genres.list', 'rb') as f:
+    for line in f:
+      if line == "8: THE GENRES LIST\n":
+        break
+    for line in f:
+      if not titleIsValid(line):
+        continue
+      match = genreRegex.match(line)
+      if match:
+        titleMatch = titleRegex.match(match.group('title'))
+        movieId = encodeName("m_" + str(titleMatch.group('movie'))
+          + str(titleMatch.group('year')))
+        if currentMovie and movieId != currentMovie:
+          genres[currentMovie] = currentGenres
+          currentGenres = []
+        currentMovie = movieId
+        currentGenres.append(match.group('genre'))
+    # last
+    if currentMovie:
+      genres[currentMovie] = currentGenres
+  return genres
+
 
 biographies = {}
 def parseRelations(category, beginMark, beginSkip, endMark, relationship):
@@ -250,16 +284,16 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
 
-# movies
-if sys.argv[1] == "all" or sys.argv[1] == "movies":
-  print "Parsing movies, plots, taglines and writing CSV..."
+def parseMovies():
+  print "Parsing movies, plots, taglines, genres and writing CSV..."
   start = time.time()
   plots = parseMoviePlots()
   taglines = parseMovieTaglines()
+  genres = parseMovieGenres()
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
   output = codecs.open("CSV/movies.csv", "w", encoding='utf8')
-  output.write("movieId:ID,title,released,plot,tagline,:LABEL\n")
+  output.write("movieId:ID,title,released,plot,tagline,genre,:LABEL\n")
   with open("lists/movies.list") as f:
     # skipping head of file
     for _ in xrange(15):
@@ -286,11 +320,16 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
       movieId = "m_" + title + released
       plot = encodeName(plots.get(movieId, [""])[0])
       tagline = encodeName(taglines.get(movieId, ""))
+      genre = encodeName(", ".join(genres.get(movieId, [""])))
       output.write("\"" + movieId + "\",\"" + title + "\",\""
-        + released + "\",\"" + plot + "\",\"" + tagline + "\",Movie\n")
+        + released + "\",\"" + plot + "\",\"" + tagline + "\","
+        + "\"" + genre + "\",Movie\n")
   output.close();
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
+
+if sys.argv[1] == "all" or sys.argv[1] == "movies":
+  parseMovies()
 if sys.argv[1] == "all" or sys.argv[1] == "directors":
   parseRelations("directors", "THE DIRECTORS LIST\n", 4, "----", "DIRECTED")
 if sys.argv[1] == "all" or sys.argv[1] == "actors":
@@ -304,10 +343,13 @@ if sys.argv[1] == "all" or sys.argv[1] == "composers":
 if sys.argv[1] == "all" or sys.argv[1] == "producers":
   parseRelations("producers", "THE PRODUCERS LIST\n", 4, "----", "PRODUCED")
 
+
 # removing all duplicates and writing persons.csv and relationships.csv
-removeDuplicatesStart = time.time()
-print "Removing duplicates..."
-removeDuplicates()
-print "Elapsed time: " + str((time.time() - removeDuplicatesStart) / 60.0) + " minutes"
+if sys.argv[1] != "movies":
+  removeDuplicatesStart = time.time()
+  print "Removing duplicates..."
+  removeDuplicates()
+  print "Elapsed time: " + str((time.time() - removeDuplicatesStart) / 60.0) + " minutes"
+
 
 print "Total elapsed time: " + str((time.time() - globalStart) / 60.0) + " minutes"

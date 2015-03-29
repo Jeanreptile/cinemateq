@@ -1,26 +1,66 @@
 extends layout
 
+
 block content
-    .container-fluid(ng-controller='TypeaheadCtrl')
-        h4 Search your movie
-        h2 Selected is : {{test1}}
-        pre.
-            Model: {{asyncSelected | json}}
-        .input-group
-            input.form-control(type='text', ng-model='asyncSelected', placeholder='Enter your favorite film', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations')
-            span#datebox.input-group-btn
-                button.btn.btn-primary.dropdown-toggle(type='button', data-toggle='dropdown')
-                    span#spanTest.dropdown-label
-                        | Movies
-                ul#selectType.dropdown-menu.dropdown-select.pull-right
-                    li.active
-                        a(href='#')
-                            input(type='radio', name='type', checked='')
-                            | Movies
-                    li
-                        a(href='#')
-                            input(type='radio', name='type')
-                            | Persons
-        p(ng-show='loadingLocations')
-            | Loading 
-            i.glyphicon.glyphicon-refresh(ng-show='loadingLocations')
+  section.vbox
+    header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
+      .navbar-header.aside-md.dk
+        a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
+          i.fa.fa-bars
+        a.navbar-brand(href='')
+          // img.m-r-sm(src='', alt='')
+          span.hidden-nav-xs Cinemateq
+        a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
+          i.fa.fa-cog
+      ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
+        li.dropdown
+          a.dropdown-toggle(href='#', data-toggle='dropdown')
+            span.thumb-sm.pull-left.avatar.m-r
+              img.dker(src="images/a0.png")
+            if user
+              | #{user.firstName}
+            else
+              | Invité
+            b.caret 
+          ul.dropdown-menu.animated.fadeInRight
+            li
+              if user
+                a(href='') Profile
+            li
+              if user
+                a(href='') My Cinegraphs
+            li.divider
+            li
+              if user
+                a(href='/signout') Logout
+              else
+                a(href='/signin') Sign in
+    section#content
+        section.vbox
+            section.scrollable
+            .container-fluid(ng-controller='TypeaheadCtrl')
+                // h4 Search your favorite {{selectedItem}}
+                // p
+                // p
+                // pre.
+                //    Model: {{asyncSelected | json}}
+                .input-group.centerMe
+                  .icon-addon.addon-lg
+                    input.form-control.input-lg(type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
+                    label.glyphicon.glyphicon-search(for='searchBarForm', rel='tooltip', title='email')
+                  span.input-group-btn
+                      button.btn.btn-lg.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
+                          span.dropdown-label
+                              | Movie
+                      ul.dropdown-menu.dropdown-select.pull-right.dropdownSearch
+                          li.active(ng-click="OnItemClick('movie')")
+                              a(href='#')
+                                  input(type='radio', name='type', checked='')
+                                  | Movies
+                          li(ng-click="OnItemClick('person')")
+                              a(href='#')
+                                  input(type='radio', name='type')
+                                  | Persons
+                p(ng-show='loadingLocations')
+                    | Loading
+                    i.glyphicon.glyphicon-refresh(ng-show='loadingLocations')

@@ -176,6 +176,30 @@ def parseMoviePlots():
       plots[movieId] = current_plots
   return plots
 
+def parseMovieTaglines():
+  taglines = {}
+  currentMovie = ""
+  currentTagline = ""
+  with open('lists/taglines.list', 'rb') as f:
+    for line in f:
+      if line == "TAG LINES LIST\n":
+        break
+    for line in f:
+      if line[0] == "#":
+        if currentMovie:
+          taglines[currentMovie] = currentTagline
+          currentTagline = ""
+        titleMatch = titleRegex.match(line[2:])
+        currentMovie = encodeName("m_" + str(titleMatch.group('movie'))
+          + str(titleMatch.group('year')))
+      elif line[0] == "\t":
+        if not currentTagline:
+          currentTagline = line.strip()
+    # last one
+    if currentMovie:
+      taglines[currentMovie] = currentTagline
+  return taglines
+
 biographies = {}
 def parseRelations(category, beginMark, beginSkip, endMark, relationship):
   global biographies
@@ -228,13 +252,14 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
 
 # movies
 if sys.argv[1] == "all" or sys.argv[1] == "movies":
-  print "Parsing movies, plots and writing CSV..."
+  print "Parsing movies, plots, taglines and writing CSV..."
   start = time.time()
   plots = parseMoviePlots()
+  taglines = parseMovieTaglines()
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
   output = codecs.open("CSV/movies.csv", "w", encoding='utf8')
-  output.write("movieId:ID,title,released,plot,:LABEL\n")
+  output.write("movieId:ID,title,released,plot,tagline,:LABEL\n")
   with open("lists/movies.list") as f:
     # skipping head of file
     for _ in xrange(15):
@@ -260,8 +285,9 @@ if sys.argv[1] == "all" or sys.argv[1] == "movies":
       # writing .csv
       movieId = "m_" + title + released
       plot = encodeName(plots.get(movieId, [""])[0])
+      tagline = encodeName(taglines.get(movieId, ""))
       output.write("\"" + movieId + "\",\"" + title + "\",\""
-        + released + "\",\"" + plot + "\",Movie\n")
+        + released + "\",\"" + plot + "\",\"" + tagline + "\",Movie\n")
   output.close();
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 

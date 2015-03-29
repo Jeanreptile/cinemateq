@@ -2,6 +2,8 @@ extends layout
 
 
 block content
+  #bg
+  script(src='javascripts/Vague.js')
   section.vbox
     header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
       .navbar-header.aside-md.dk
@@ -44,9 +46,9 @@ block content
                 // p
                 // pre.
                 //    Model: {{asyncSelected | json}}
-                .input-group.centerMe
+                .input-group.searchBarStyle
                   .icon-addon.addon-lg
-                    input.form-control.input-lg(type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
+                    input#searchFormControl.form-control.input-lg(type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
                     label.glyphicon.glyphicon-search(for='searchBarForm', rel='tooltip', title='email')
                   span.input-group-btn
                       button.btn.btn-lg.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')

@@ -48,6 +48,13 @@ router.get('/signout', function(req, res) {
 router.get('/search', function(req, res){
   res.render('search');
 });
+
+router.post('/search', function(req, res){
+  console.log('req is :');
+  console.log(req.body.testSearch);
+  res.render('search');
+});
+
 return router;
 
 }

@@ -28,21 +28,14 @@ $("#searchFormControl").on("click",$.proxy(vague.toggleblur,vague));
     });
 
   $scope.getLocation = function(val) {
-      console.log('val is');
-      console.log(val);
-      console.log(val.length);
-      if (val.length < 4){
-          return "";
-      }
+    console.log('Go Search !');
     return $http.get('http://localhost:3000/api/search/movie', {
       params: {
         query: val
       }
     }).then(function(response){
-        console.log("---");
-        console.log(response.data);
         return response.data.map(function(item){
-            return item.title + " (" + item.released + ")";
+            return {'name': item.title + ' ('+item.released + ')', 'movieId': item.id};
         });
     });
   };;

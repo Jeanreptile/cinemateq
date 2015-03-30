@@ -383,6 +383,14 @@ if sys.argv[1] == "all" or sys.argv[1] == "composers":
   parseRelations("composers", "THE COMPOSERS LIST\n", 4, "----", "COMPOSED_MUSIC")
 if sys.argv[1] == "all" or sys.argv[1] == "producers":
   parseRelations("producers", "THE PRODUCERS LIST\n", 4, "----", "PRODUCED")
+if sys.argv[1] == "all" or sys.argv[1] == "writers":
+  parseRelations("writers", "THE WRITERS LIST\n", 4, "----", "WROTE")
+if sys.argv[1] == "all" or sys.argv[1] == "costume-designers":
+  parseRelations("costume-designers", "THE COSTUME DESIGNERS LIST\n", 4, "----", "DESIGNED_COSTUMES")
+if sys.argv[1] == "all" or sys.argv[1] == "production-designers":
+  parseRelations("production-designers", "THE PRODUCTION DESIGNERS LIST\n", 4, "----", "DESIGNED_PRODUCTION")
+if sys.argv[1] == "all" or sys.argv[1] == "editors":
+  parseRelations("editors", "THE EDITORS LIST\n", 5, "----", "EDITED")
 
 
 # removing all duplicates and writing persons.csv and relationships.csv

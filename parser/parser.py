@@ -88,18 +88,8 @@ TITLE_RE = r"""(?x)                         # turn on verbose
                 (?P<extras>\s*\(.*?\))*     # any extra crap (TV), (V), etc.
                 $                           # end of string
                 """
-RELATION_RE = r"(?P<name>[^\t]+?)?\t+(?P<title>[^\t]+?)( +\((TV|V|VG)\))?( +\[(?P<role>.+)\])?( +<(?P<bill_pos>\d+)>)?\n"
-MOVIE_RE = "^(?P<title>.+?)\t+(?P<startyear>(?:\d{4}|\?{4}))(?:-((?:\d{4}|\?{4}))){0,1}$"
 titleRegex = re.compile(TITLE_RE)
-relationRegex = re.compile(RELATION_RE)
-movieRegex = re.compile(MOVIE_RE)
 
-PLOT_TITLE_RE = "^MV:\s(?P<title>.+)$"
-PLOT_PLOT_RE = "^PL:\s(?P<plot>.+)$"
-PLOT_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
-plotTitleRegex = re.compile(PLOT_TITLE_RE)
-plotRegex = re.compile(PLOT_PLOT_RE)
-plotAuthorRegex = re.compile(PLOT_AUTHOR_RE)
 
 BIO_NAME_RE = "^NM:\s(?P<name>.+)$"
 BIO_BIO_RE = "^BG:\s(?P<bio>.+)$"
@@ -107,9 +97,6 @@ BIO_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
 bioNameRegex = re.compile(BIO_NAME_RE)
 bioRegex = re.compile(BIO_BIO_RE)
 bioAuthorRegex = re.compile(BIO_AUTHOR_RE)
-
-GENRE_RE = "^(?P<title>.+?)\t+(?P<genre>.+)$"
-genreRegex = re.compile(GENRE_RE)
 
 
 def parseBiographies():
@@ -143,6 +130,14 @@ def parseBiographies():
       if currentBios:
         bios[currentName] = currentBios
   return bios
+
+
+PLOT_TITLE_RE = "^MV:\s(?P<title>.+)$"
+PLOT_PLOT_RE = "^PL:\s(?P<plot>.+)$"
+PLOT_AUTHOR_RE = "^BY:\s(?P<author>.+)$"
+plotTitleRegex = re.compile(PLOT_TITLE_RE)
+plotRegex = re.compile(PLOT_PLOT_RE)
+plotAuthorRegex = re.compile(PLOT_AUTHOR_RE)
 
 
 def parseMoviePlots():
@@ -207,6 +202,10 @@ def parseMovieTaglines():
   return taglines
 
 
+GENRE_RE = "^(?P<title>.+?)\t+(?P<genre>.+)$"
+genreRegex = re.compile(GENRE_RE)
+
+
 def parseMovieGenres():
   genres = {}
   currentMovie = ""
@@ -232,6 +231,41 @@ def parseMovieGenres():
     if currentMovie:
       genres[currentMovie] = currentGenres
   return genres
+
+
+DURATION_RE = "^(?P<title>.+?)\t+[^\d]*(?P<time>\d+).*$"
+durationRegex = re.compile(DURATION_RE)
+
+
+def parseMovieDurations():
+  durations = {}
+  currentMovie = ""
+  currentDurations = []
+  with open('lists/running-times.list', 'rb') as f:
+    for line in f:
+      if line == "RUNNING TIMES LIST\n":
+        break
+    for line in f:
+      if not titleIsValid(line):
+        continue
+      match = durationRegex.match(line)
+      if match:
+        titleMatch = titleRegex.match(match.group('title'))
+        movieId = encodeName("m_" + str(titleMatch.group('movie'))
+          + str(titleMatch.group('year')))
+        if currentMovie and movieId != currentMovie:
+          durations[currentMovie] = currentDurations
+          currentDurations = []
+        currentMovie = movieId
+        currentDurations.append(int(match.group('time')))
+    # last
+    if currentMovie:
+      durations[currentMovie] = currentDurations
+  return durations
+
+
+RELATION_RE = r"(?P<name>[^\t]+?)?\t+(?P<title>[^\t]+?)( +\((TV|V|VG)\))?( +\[(?P<role>.+)\])?( +<(?P<bill_pos>\d+)>)?\n"
+relationRegex = re.compile(RELATION_RE)
 
 
 biographies = {}
@@ -284,16 +318,21 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 
 
+MOVIE_RE = "^(?P<title>.+?)\t+(?P<startyear>(?:\d{4}|\?{4}))(?:-((?:\d{4}|\?{4}))){0,1}$"
+movieRegex = re.compile(MOVIE_RE)
+
+
 def parseMovies():
-  print "Parsing movies, plots, taglines, genres and writing CSV..."
+  print "Parsing movies, plots, taglines, genres, durations and writing CSV..."
   start = time.time()
   plots = parseMoviePlots()
   taglines = parseMovieTaglines()
   genres = parseMovieGenres()
+  durations = parseMovieDurations()
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
   output = codecs.open("CSV/movies.csv", "w", encoding='utf8')
-  output.write("movieId:ID,title,released,plot,tagline,genre,:LABEL\n")
+  output.write("movieId:ID,title,released,plot,tagline,genre,duration,:LABEL\n")
   with open("lists/movies.list") as f:
     # skipping head of file
     for _ in xrange(15):
@@ -321,9 +360,11 @@ def parseMovies():
       plot = encodeName(plots.get(movieId, [""])[0])
       tagline = encodeName(taglines.get(movieId, ""))
       genre = encodeName(", ".join(genres.get(movieId, [""])))
+      duration = max(durations.get(movieId, [-1]))
+      duration = str(duration) if duration != -1 else ""
       output.write("\"" + movieId + "\",\"" + title + "\",\""
         + released + "\",\"" + plot + "\",\"" + tagline + "\","
-        + "\"" + genre + "\",Movie\n")
+        + "\"" + genre + "\",\"" + duration + "\",Movie\n")
   output.close();
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 

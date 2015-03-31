@@ -1,0 +1,45 @@
+extends layout
+
+
+block content
+  figure#bg
+  script(src='javascripts/Vague.js')
+  section.vbox
+    header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
+      .navbar-header.aside-md.dk
+        a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
+          i.fa.fa-bars
+        a.navbar-brand(href='')
+          // img.m-r-sm(src='', alt='')
+          span.hidden-nav-xs Cinemateq
+        a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
+          i.fa.fa-cog
+      ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
+        li.dropdown
+          a.dropdown-toggle(href='#', data-toggle='dropdown')
+            span.thumb-sm.pull-left.avatar.m-r
+              img.dker(src="images/a0.png")
+            if user
+              | #{user.firstName}
+            else
+              | Invité
+            b.caret 
+          ul.dropdown-menu.animated.fadeInRight
+            li
+              if user
+                a(href='') Profile
+            li
+              if user
+                a(href='') My Cinegraphs
+            li.divider
+            li
+              if user
+                a(href='/signout') Logout
+              else
+                a(href='/signin') Sign in
+    section.hbox.stretch
+      section#content
+          section.vbox
+              section.scrollable
+              span(ng-controller='searchResultController')
+                h2 Movie is #{movieId}

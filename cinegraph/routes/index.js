@@ -51,8 +51,8 @@ router.get('/search', function(req, res){
 
 router.post('/search', function(req, res){
   console.log('req is :');
-  console.log(req.body.testSearch);
-  res.render('search');
+  console.log(req.body.movieId);
+  res.render('searchResult', {movieId: req.body.movieId});
 });
 
 return router;

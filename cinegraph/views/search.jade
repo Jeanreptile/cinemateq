@@ -2,9 +2,10 @@ extends layout
 
 
 block content
-  figure#bg
+  .bgTest
+    figure#bg
   script(src='javascripts/Vague.js')
-  section.vbox
+  section.vbox.allWindow
     header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
       .navbar-header.aside-md.dk
         a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
@@ -37,37 +38,29 @@ block content
                 a(href='/signout') Logout
               else
                 a(href='/signin') Sign in
-    section.hbox.stretch
+    section#searchBarPosition.hbox.stretch
       section#content
           section.vbox
-              section.scrollable
-              script(type='text/ng-template', id='customTemplate.html').
-                <a>
-                  <span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
-                  </a>
-              .container-fluid(ng-controller='TypeaheadCtrl')
-                  h4 Search your favorite {{asyncSelected.movieId}}
+              section(ng-controller='TypeaheadCtrl')
+                  //h4 Search your favorite {{asyncSelected.movieId}}
                   // p
                   // p
-                  pre.
-                    Model: {{asyncSelected | json}}
+                  //pre.
+                  //  Model: {{asyncSelected | json}}
                   form(action='/search', method='POST')
-                    .input-group.searchBarStyle
-                      span.input-group-btn
-                          button.btn.btn-lg.bg-white.btn-default(type="submit")
-                            i.glyphicon.glyphicon-search
+                    .input-group.searchBarStyle.centerWidth
                       //.icon-addon.addon-lg
-                      //  input#searchFormControl.form-control.input-lg(type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
+                      //  input#searchFormControl.form-control.input-lg(autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
                       //  label.glyphicon.glyphicon-search(for='searchBarForm', rel='tooltip', title='email')
-                      input(type='hidden', id='testSearch', name='testSearch', value="{{asyncSelected.movieId}}")
+                      input(type='hidden', name='movieId', value="{{asyncSelected.movieId}}")
                       input#searchFormControl.form-control.input-lg( autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.'
                                                                     , typeahead='query as query.name for query in getLocation($viewValue)',
-                                                                    , typeahead-wait-ms=350, typeahead-loading='loadingLocations')
+                                                                    , typeahead-wait-ms=350, typeahead-loading='loadingLocations', typeahead-min-length=4)
                       span.input-group-btn
-                          button.btn.btn-lg.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
+                          button.btn.btn-lg.bg-white.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
                               span.dropdown-label
                                   | Movie
-                          ul.dropdown-menu.dropdown-select.pull-right.dropdownSearch
+                          ul.dropdown-menu.dropdown-select.dropdownSearch.pull-right
                               li.active(ng-click="OnItemClick('movie')")
                                   a(href='#')
                                       input(type='radio', name='type', checked='')
@@ -76,6 +69,7 @@ block content
                                   a(href='#')
                                       input(type='radio', name='type')
                                       | Persons
-                  p.vertical-align(ng-show='loadingLocations')
-                      | Searching 
-                      i.glyphicon.glyphicon-refresh(ng-show='loadingLocations')
+                          button.btn.btn-lg.bg-white.btn-default(type="submit")
+                            i.glyphicon.glyphicon-search
+
+                  .loader(ng-show='loadingLocations')

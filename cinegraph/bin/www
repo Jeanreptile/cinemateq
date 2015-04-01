@@ -38,11 +38,12 @@ app.set('port', port);
 
 
 
-var httpsServer = https.createServer(options, app);
-httpsServer.listen(port);
-httpsServer.on('error', onError);
-httpsServer.on('listening', onListening);
+var server = https.createServer(options, app);
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
 
+/*
 insecureServer = http.createServer();
 insecureServer.on('request', function (req, res) {
   // TODO also redirect websocket upgrades
@@ -56,6 +57,7 @@ insecureServer.on('request', function (req, res) {
 insecureServer.listen(3003, function(){
   console.log("\nRedirecting all http traffic to https\n");
 });
+*/
 /**
  * Normalize a port into a number, string, or false.
  */

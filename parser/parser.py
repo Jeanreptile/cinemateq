@@ -39,22 +39,28 @@ def titleIsValid(str):
 def removeDuplicates():
   # writing persons.csv
   uniquePersons = set()
-  for file in os.listdir("CSV"):
+  for file in os.listdir("CSV/parts"):
     if file.endswith("_per.csv"):
-      with codecs.open("CSV/" + file, "r", encoding='utf8') as f:
+      with codecs.open("CSV/parts/" + file, "r", encoding='utf8') as f:
         for line in f:
           uniquePersons.add(line)
   uniquePersons.discard("")
   outputPer = codecs.open("CSV/persons.csv", "w", encoding='utf8')
-  outputPer.write("name:ID,biography,:LABEL\n")
+  outputPer.write("name:ID,firstname,lastname,fullname,biography,:LABEL\n")
   for line in uniquePersons:
     outputPer.write(line)
   outputPer.close()
+  # writing special header for actors/actresses relationships
+  outputActedHeader = codecs.open("CSV/relations_act_header.csv", "w", encoding='utf8')
+  outputActedHeader.write(":START_ID,role,position:int,:END_ID,:TYPE\n")
+  outputActedHeader.close()
   # writing relations.csv
   outputRel = codecs.open("CSV/relations.csv", "w", encoding='utf8')
   outputRel.write(":START_ID,:END_ID,:TYPE\n")
   for file in os.listdir("CSV"):
-    if file.endswith("_rel.csv"):
+    if file == "actors_rel.csv" or file == "actresses_rel.csv":
+      pass
+    elif file.endswith("_rel.csv"):
       with codecs.open("CSV/" + file, "r", encoding='utf8') as f:
         for line in f:
           outputRel.write(line)
@@ -267,6 +273,8 @@ def parseMovieDurations():
 RELATION_RE = r"(?P<name>[^\t]+?)?\t+(?P<title>[^\t]+?)( +\((TV|V|VG)\))?( +\[(?P<role>.+)\])?( +<(?P<bill_pos>\d+)>)?\n"
 relationRegex = re.compile(RELATION_RE)
 
+PERSON_RE = r"(?P<lastname>.+?)(?:(?:, )(?P<firstname>.+?)|$)?(?P<num> \(.+\))?$"
+personRegex = re.compile(PERSON_RE)
 
 biographies = {}
 def parseRelations(category, beginMark, beginSkip, endMark, relationship):
@@ -276,12 +284,13 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
     print "Parsing biographies..."
     biographies = parseBiographies()
   print "Parsing " + category + " and writing CSV..."
-  if not os.path.exists("CSV"):
-    os.makedirs("CSV")
-  outputPer = codecs.open("CSV/"+ category + "_per.csv", "w", encoding='utf8')
-  outputRel = codecs.open("CSV/"+ category + "_rel.csv", "w", encoding='utf8')
+  # initializing directories
+  if not os.path.exists("CSV/parts"):
+    os.makedirs("CSV/parts")
+  outputPer = codecs.open("CSV/parts/"+ category + "_per.csv", "w", encoding='utf8')
+  outputRel = codecs.open("CSV/parts/"+ category + "_rel.csv", "w", encoding='utf8')
   currentName = ""
-  with open("lists/" + category + ".list") as f:
+  with open("lists/" + category + ".list", 'rb') as f:
     #skipping head of file
     line = next(f)
     while line != beginMark:
@@ -300,7 +309,23 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
       if name != "None":
         currentName = name
         bio = encodeName(biographies.get(currentName, [""])[0])
-        outputPer.write("\"" + currentName + "\",\"" + bio + "\",Person\n")
+        nameMatch = personRegex.match(currentName)
+        # matching a person
+        if nameMatch:
+          lastname = nameMatch.group('lastname')
+          firstname = nameMatch.group('firstname')
+          if firstname == None:
+            firstname = ""
+          num = nameMatch.group('num')
+          if num == None or num == " (I)":
+            num = ""
+          fullname = (firstname + " " + lastname + num).lower()
+          # writing a person
+          outputPer.write("\"" + currentName + "\",\"" + firstname + "\",\""
+            + lastname + "\",\"" + fullname + "\",\"" + bio + "\",Person\n")
+        else:
+          print "Match error on: " + currentName
+      # matching a movie
       titleMatch = titleRegex.match(lineMatch.group('title'))
       if titleMatch == None or not titleIsValid(line):
         continue
@@ -311,8 +336,18 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
         continue;
       if yearextra and yearextra != "I":
         title = title + " [" + yearextra + "]"
-      # writing to csv
-      outputRel.write("\"" + currentName + "\",\"m_" + title + released + "\"," + relationship + "\n")
+      # writing relation
+      if category == "actors" or category == "actresses":
+        bill_pos = ""
+        role = ""
+        if lineMatch.group('bill_pos') != None:
+          bill_pos = encodeName(str(lineMatch.group('bill_pos')))
+        if lineMatch.group('role') != None:
+          role = encodeName(str(lineMatch.group('role')))
+        outputRel.write("\"" + currentName + "\",\"" + role + "\",\""+ bill_pos + "\",\"m_"
+          + title + released + "\"," + relationship + "\n")
+      else:
+        outputRel.write("\"" + currentName + "\",\"m_" + title + released + "\"," + relationship + "\n")
   outputPer.close()
   outputRel.close()
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
@@ -332,7 +367,7 @@ def parseMovies():
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
   output = codecs.open("CSV/movies.csv", "w", encoding='utf8')
-  output.write("movieId:ID,title,released,plot,tagline,genre,duration,:LABEL\n")
+  output.write("movieId:ID,title,released:int,plot,tagline,genre,duration:int,:LABEL\n")
   with open("lists/movies.list") as f:
     # skipping head of file
     for _ in xrange(15):
@@ -393,7 +428,7 @@ if sys.argv[1] == "all" or sys.argv[1] == "editors":
   parseRelations("editors", "THE EDITORS LIST\n", 5, "----", "EDITED")
 
 
-# removing all duplicates and writing persons.csv and relationships.csv
+# removing all duplicates and writing persons.csv and relations.csv
 if sys.argv[1] != "movies":
   removeDuplicatesStart = time.time()
   print "Removing duplicates..."

@@ -11,53 +11,42 @@ var https = require('https');
 var fs = require('fs');
 
 var options = {
-  key: fs.readFileSync('server-key.pem'),
-  cert: fs.readFileSync('server-cert.pem'),
-  requestCert: true
+  //ca: fs.readFileSync('sub.class1.server.ca.pem'),
+  key: fs.readFileSync('server.key'),
+  cert: fs.readFileSync('server.crt'),
 };
+
+
 /**
- * Get port from environment and store in Express.
+ * Get port and SSL port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || '80');
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
-
-//var server = http.createServer(app);
+var SSLport = normalizePort(process.env.SSLPORT || '443');
+app.set('SSLport', SSLport);
 
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-//server.listen(port);
-//server.on('error', onError);
-//server.on('listening', onListening);
-
-
+/* Create HTTPS server*/
 
 var server = https.createServer(options, app);
-server.listen(port);
+server.listen(SSLport);
 server.on('error', onError);
 server.on('listening', onListening);
 
-/*
-insecureServer = http.createServer();
-insecureServer.on('request', function (req, res) {
-  // TODO also redirect websocket upgrades
-  res.setHeader(
-    'Location'
-  , 'https://' + req.headers.host.replace(/:\d+/, ':' + port) + req.url
-  );
-  res.statusCode = 302;
-  res.end();
-});
-insecureServer.listen(3003, function(){
-  console.log("\nRedirecting all http traffic to https\n");
-});
-*/
+
+/* Redirect HTTP to HTTPS */
+
+var insecureServer = http.createServer(function (req, res) {
+        res.writeHead(301, {"Location": "https://" + req.headers["host"] + req.url});
+        res.end();
+}).listen(port);
+
+
 /**
  * Normalize a port into a number, string, or false.
  */

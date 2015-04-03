@@ -10,7 +10,7 @@ router.get('/movie', function(req, res) {
     {
         limit = parseInt(req.query.limit);
     }
-    var cypher = "MATCH (n:Movie) WHERE n.title =~ \"(?i)" + req.query.query + ".*\" RETURN n ORDER BY n.released DESC LIMIT 10";
+    var cypher = "START movie=node:node_auto_index('title:(" + req.query.query + "*)') RETURN movie LIMIT 10";
     dbLocal.query(cypher,
         function(err, result)
         {

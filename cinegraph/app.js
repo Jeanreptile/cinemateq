@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 var db = require("seraph")("http://localhost:7474");
 
 
-
+var jwt = require('jsonwebtoken');
 
 var app = express();
 

@@ -6,16 +6,17 @@ block content
     figure#bg
   script(src='javascripts/Vague.js')
   section.vbox.allWindow
-    header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
-      .navbar-header.aside-md.dk
+    header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
+      .navbar-header.aside-md.dk(style="display: inline-block;float: none")
         a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
           i.fa.fa-bars
         a.navbar-brand(href='')
           // img.m-r-sm(src='', alt='')
-          span.hidden-nav-xs Cinemateq
+          span.hidden-nav-xs
+            | C I N E M A T E Q
         a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
           i.fa.fa-cog
-      ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
+      ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user(style="right: 0;display: inline-block;position: absolute;")
         li.dropdown
           a.dropdown-toggle(href='#', data-toggle='dropdown')
             span.thumb-sm.pull-left.avatar.m-r
@@ -48,7 +49,7 @@ block content
                   //pre.
                   //  Model: {{asyncSelected | json}}
                   form(action='/search', method='POST')
-                    .input-group.searchBarStyle.centerWidth
+                    .input-group.searchBarStyle.centerWidth.animated.fadeInUp
                       //.icon-addon.addon-lg
                       //  input#searchFormControl.form-control.input-lg(autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
                       //  label.glyphicon.glyphicon-search(for='searchBarForm', rel='tooltip', title='email')

@@ -9,9 +9,9 @@ angular.module('cinegraphApp').controller('searchResultController', function($sc
 
   console.log("scope is : ");
   console.log($scope);
-  $scope.getLocation = function(val) {
+  $scope.getRelations = function(movieId) {
     console.log('Go Search !');
-    return $http.get('http://localhost:3000/api/search/movie', {
+    return $http.get('https://localhost/api/search/movie', {
       params: {
         query: val
       }

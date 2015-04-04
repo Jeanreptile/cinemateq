@@ -36,7 +36,14 @@ router.get('/:id/actor', function(req, res) {
 	dbLocal.query(cypher, {personId: parseInt(req.params.id)}, function(err, result) {
 		if (err) throw err;
 		dbLocal.relationships(result[0].id, 'out', 'ACTED_IN', function(err, relationships) {
-			res.json(relationships[0]);
+			if (err) {
+				res.json(null);
+			}
+				//throw err;
+			else if (relationships.length > 0)
+				res.json(relationships[0]);
+			else
+				res.json(null);
 		});
 	});
 	// TODO: Handle errors
@@ -49,16 +56,26 @@ router.get('/:id/actor/movies', function(req, res) {
 		if (err) throw err;
 		var movies = [];
 		dbLocal.relationships(result[0].id, 'out', 'ACTED_IN', function(err, relationships) {
-			for (var i = 0; i < relationships.length; i++) {
-				var role = "role"; //relationships[i].properties.roles[0];
-				dbLocal.read(relationships[i].end, function(err, endNode) {
-					var movie = endNode;
-					movies.push(movie);
-					if (movies.length == relationships.length) {
-						res.json(movies);
-					}
-				});
+			if (err) {
+				res.json(null);
 			}
+			//throw err;
+			else if (relationships.length == 0) {
+				res.json(null);
+			}
+			else {
+				for (var i = 0; i < relationships.length; i++) {
+					var role = "role"; //relationships[i].properties.roles[0];
+					dbLocal.read(relationships[i].end, function(err, endNode) {
+						var movie = endNode;
+						movies.push(movie);
+						if (movies.length == relationships.length) {
+							res.json(movies);
+						}
+					});
+				}
+			}
+				
 		});
 	});
 	// TODO: Handle errors

@@ -1,0 +1,32 @@
+Required files in "lists" directory:
+
+	actors.list
+	actresses.list
+	biographies.list
+	cinematographers.list
+	composers.list
+	costume-designers.list
+	directors.list
+	editors.list
+	genres.list
+	movies.list
+	plot.list
+	producers.list
+	production-designers.list
+	running-times.list
+	taglines
+	writers.list
+
+CSV Creation:
+
+	python parser.py all
+
+
+Neo4j import (from CSV/ folder):
+
+	neo4j-import --into destination
+		--nodes movies.csv
+		--nodes persons.csv
+		--relationships relations_act_header.csv,parts/actors_rel.csv,parts/actresses_rel.csv
+		--relationships relations.csv
+		--bad-tolerance 20000

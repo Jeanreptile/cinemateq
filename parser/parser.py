@@ -57,11 +57,21 @@ def removeDuplicates():
   # writing relations.csv
   outputRel = codecs.open("CSV/relations.csv", "w", encoding='utf8')
   outputRel.write(":START_ID,:END_ID,:TYPE\n")
-  for file in os.listdir("CSV"):
+  for file in os.listdir("CSV/parts"):
     if file == "actors_rel.csv" or file == "actresses_rel.csv":
-      pass
-    elif file.endswith("_rel.csv"):
-      with codecs.open("CSV/" + file, "r", encoding='utf8') as f:
+      continue
+    # removing duplicates from writers file
+    if file == "writers_rel.csv":
+      uniqueWriterSet = set()
+      with codecs.open("CSV/parts/" + file, "r", encoding='utf8') as f:
+        for line in f:
+          uniqueWriterSet.add(line)
+      with codecs.open("CSV/parts/" + file, "w", encoding='utf8') as f:
+        for line in uniqueWriterSet:
+          f.write(line)
+    # concatenation of *_rel.csv files
+    if file.endswith("_rel.csv"):
+      with codecs.open("CSV/parts/" + file, "r", encoding='utf8') as f:
         for line in f:
           outputRel.write(line)
   outputRel.close()
@@ -92,6 +102,7 @@ TITLE_RE = r"""(?x)                         # turn on verbose
                 )\)){0,1}                   # the paren statement is optional
                 }){0,1}                     # zero or one of the curly brace
                 (?P<extras>\s*\(.*?\))*     # any extra crap (TV), (V), etc.
+                (?:\s*\<.*?\>)?             # screenwriting credits
                 $                           # end of string
                 """
 titleRegex = re.compile(TITLE_RE)
@@ -344,7 +355,7 @@ def parseRelations(category, beginMark, beginSkip, endMark, relationship):
           bill_pos = encodeName(str(lineMatch.group('bill_pos')))
         if lineMatch.group('role') != None:
           role = encodeName(str(lineMatch.group('role')))
-        outputRel.write("\"" + currentName + "\",\"" + role + "\",\""+ bill_pos + "\",\"m_"
+        outputRel.write("\"" + currentName + "\",\"" + role + "\","+ bill_pos + ",\"m_"
           + title + released + "\"," + relationship + "\n")
       else:
         outputRel.write("\"" + currentName + "\",\"m_" + title + released + "\"," + relationship + "\n")
@@ -367,7 +378,7 @@ def parseMovies():
   if not os.path.exists("CSV"):
     os.makedirs("CSV")
   output = codecs.open("CSV/movies.csv", "w", encoding='utf8')
-  output.write("movieId:ID,title,released:int,plot,tagline,genre,duration:int,:LABEL\n")
+  output.write("movieId:ID,title,released:int,plot,tagline,genre:string[],duration:int,:LABEL\n")
   with open("lists/movies.list") as f:
     # skipping head of file
     for _ in xrange(15):
@@ -394,12 +405,11 @@ def parseMovies():
       movieId = "m_" + title + released
       plot = encodeName(plots.get(movieId, [""])[0])
       tagline = encodeName(taglines.get(movieId, ""))
-      genre = encodeName(", ".join(genres.get(movieId, [""])))
+      genre = encodeName(";".join(genres.get(movieId, [""])))
       duration = max(durations.get(movieId, [-1]))
       duration = str(duration) if duration != -1 else ""
-      output.write("\"" + movieId + "\",\"" + title + "\",\""
-        + released + "\",\"" + plot + "\",\"" + tagline + "\","
-        + "\"" + genre + "\",\"" + duration + "\",Movie\n")
+      output.write("\"" + movieId + "\",\"" + title + "\"," + released + ",\""
+        + plot + "\",\"" + tagline + "\"," + "\"" + genre + "\"," + duration + ",Movie\n")
   output.close();
   print "Elapsed time: " + str((time.time() - start) / 60.0) + " minutes"
 

@@ -43,10 +43,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var nodeScale = new THREE.Vector3(2, 2, 1);
             var randomVector = new THREE.Vector3(Math.random() * 60 - 20, Math.random() * 60 - 20, Math.random() * 60 - 20);
             var typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
-            { type: 'PRODUCED', limit: 2},
-            { type: 'DIRECTED', limit: 2},
-            { type: 'COMPOSED_MUSIC', limit: 1},
-            { type: 'DIRECTED_PHOTOGRAPHY', limit: 1} ];
+                                    { type: 'PRODUCED', limit: 2},
+                                    { type: 'DIRECTED', limit: 2},
+                                    { type: 'COMPOSED_MUSIC', limit: 1},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1} ];
 
             function init() {
                 renderer.setSize(document.getElementById('content').offsetWidth, document.getElementById('content').offsetHeight);
@@ -91,16 +91,20 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
-            var direction = 'in';
+            var index = 0;
             for (var i = 0; i < typesAndLimits.length; i++) {
-                var limit = typesAndLimits[i].limit;
-                $http.get('/api/common/' + startNode.id + '/relationships/' + direction + '/' + typesAndLimits[i].type).success(function(relationships) {
+                getRelatedNodesForType(startNode.id, typesAndLimits[i].type, typesAndLimits[i].limit, index, startNodeSprite, callback);
+                index += typesAndLimits[i].limit;
+            }
+        }
+
+        function getRelatedNodesForType(id, type, limit, index, startNodeSprite, callback) {
+            var direction = 'in';
+            $http.get('/api/common/' + id + '/relationships/' + direction + '/' + type).success(function(relationships) {
                     if (relationships != null) {
-                        console.log();
-                        callback(startNodeSprite, relationships, limit);
+                        callback(startNodeSprite, relationships, index, limit);
                     }
                 });
-            };
         }
 
         /* draws a node
@@ -133,15 +137,19 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             return sprite;
         }
 
-        function drawRelatedNodes(startNodeSprite, relatedNodes, limit) {
-            console.log("limit : " + limit);
-            var slice = 2 * Math.PI / relatedNodes.length;
+        function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
+            console.log("limit : " + limit + ", index : " + index);
+            var slice = 2 * Math.PI / 11;
             var relatedNodePosition = new THREE.Vector3();
-            for (var i = 0; i < limit; i++) {
+            if (limit > relatedNodes.length) {
+                limit = relatedNodes.length;
+            }
+
+            for (i = index, j = 0; i < limit + index, j < limit; i++, j++) {
                 var angle = slice * i;
-                relatedNodePosition.x = nodePosition.x + 30 * Math.cos(angle);
-                relatedNodePosition.y = nodePosition.x + 30 * Math.sin(angle);
-                var relatedNodeSprite = drawNode(relatedNodes[i], nodeRadius, nodeSegments, relatedNodePosition);
+                relatedNodePosition.x = nodePosition.x + 20 * Math.cos(angle);
+                relatedNodePosition.y = nodePosition.x + 20 * Math.sin(angle);
+                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition);
                 var material = new THREE.LineBasicMaterial({ color: 0x000000 });
                 var geometry = new THREE.Geometry();
                 geometry.vertices.push(relatedNodeSprite.position, startNodeSprite.position);

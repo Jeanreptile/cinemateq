@@ -88,9 +88,9 @@ block content
 												| Leonardo Wilhelm DiCaprio (born November 11, 1974) is an American actor and film producer. His first role was on the sitcom Growing Pains, but his breakthrough film performance came in This Boy's Life.
 												a.m-l-xs(href="#")
 													| Read more...
-									// h4(ng-show="currentNode.rolesAndMovies") Played in :
-									// p(ng-repeat="r in currentNode.rolesAndMovies")
-											<b>{{r.movie.title}}</b> as <em>{{r.role}}</em>
+									//h4(ng-show="currentNode.movies") Played in :
+									//p(ng-repeat="movie in currentNode.movies")
+											<b>{{movie.title}}</b>
 								div.text-center(ng-show="currentNode.movie")
 									div.m-t-sm
 										img(src="{{currentNode.movie.thumbnail}}")

@@ -252,20 +252,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var intersection = intersects[0];
             var id = intersection.object._id;
             if (id != null) {
-                $http.get('/api/persons/' + id).success(function(person) {
+                $http.get('/api/common/' + id).success(function(person) {
                     scope.currentNode = {};
                     scope.currentNode.person = person;
                     scope.currentNode.rolesAndMovies = [];
-                    $http.get('/api/persons/' + id + '/actor').success(function(relationships) {
-                        scope.currentNode.relationships = relationships;
-                        $http.get('/api/persons/' + id + '/actor/movies').success(function(movies) {
-                            scope.currentNode.movies = movies;
-                            for (var i = 0; i < scope.currentNode.movies.length; i++) {
-                                var single = { role: "role" /*scope.currentNode.relationships[i].properties.roles[0]*/,
-                                    movie: scope.currentNode.movies[i] };
-                                scope.currentNode.rolesAndMovies.push(single);
-                            }
-                        });
+                    $http.get('/api/common/' + id + '/relationships/out').success(function(relationships) {
+                        scope.currentNode.movies = relationships;
                     });
                 });
             }

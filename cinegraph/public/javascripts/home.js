@@ -13,12 +13,12 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
 var cinegraphController = cinegraphApp.controller('cinegraphController', ['ModelDataService', '$scope', '$http', function(ModelDataService, $scope, $http) {
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
     $scope.currentNode = {};
-    $scope.currentNode.movie = {};
-    $scope.currentNode.movie.name = "Inception";
-    $scope.currentNode.movie.date = "2010";
-    $scope.currentNode.movie.plot = "LA thief who steals corporate secrets through use of dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO."
-    $scope.currentNode.movie.genres = [ "Action", "Adventure", "Sci-Fi", "Thriller"];
-    $scope.currentNode.movie.thumbnail = "images/inception.jpg";
+    $scope.currentNode.type = "Movie";
+    $scope.currentNode.title = "Inception";
+    $scope.currentNode.released = "2010";
+    $scope.currentNode.plot = "LA thief who steals corporate secrets through use of dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO."
+    $scope.currentNode.genres = [ "Action", "Adventure", "Sci-Fi", "Thriller"];
+    $scope.currentNode.thumbnail = "images/inception.jpg";
 }]);
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
@@ -138,7 +138,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
-            console.log("limit : " + limit + ", index : " + index);
             var slice = 2 * Math.PI / 11;
             var relatedNodePosition = new THREE.Vector3();
             if (limit > relatedNodes.length) {
@@ -252,10 +251,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var intersection = intersects[0];
             var id = intersection.object._id;
             if (id != null) {
-                $http.get('/api/common/' + id).success(function(person) {
+                $http.get('/api/common/' + id).success(function(node) {
                     scope.currentNode = {};
-                    scope.currentNode.person = person;
-                    scope.currentNode.rolesAndMovies = [];
+                    scope.currentNode = node;
                     $http.get('/api/common/' + id + '/relationships/out').success(function(relationships) {
                         scope.currentNode.movies = relationships;
                     });
@@ -344,8 +342,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         else {
                             current = intersects[0].object;
                         }
-                        console.log("old : " + JSON.stringify(old));
-                        console.log("current : " + JSON.stringify(current));
+                        //console.log("old : " + JSON.stringify(old));
+                        //console.log("current : " + JSON.stringify(current));
                         var context = current.context;
                         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
                         context.fillStyle = "#FFF";

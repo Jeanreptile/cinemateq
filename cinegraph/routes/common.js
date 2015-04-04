@@ -9,7 +9,10 @@ router.get('/:id', function(req, res) {
 	dbLocal.query(cypher, {nodeId: parseInt(req.params.id)}, function(err, result) {
 		if (err)
 			throw err;
-		res.json(result[0]);
+		dbLocal.readLabels(result[0], function(err, labels) {
+			result[0].type = labels[0];
+			res.json(result[0]);
+		});
 	});
 	// TODO: Handle errors
 });

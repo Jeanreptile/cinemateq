@@ -26,7 +26,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 		link: function link(scope, element, attrs) {
 			// global vars
             var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera(45, document.getElementById('content').offsetWidth / document.getElementById('content').offsetHeight, 0.1, 1000);
+            var camera = new THREE.PerspectiveCamera(45, document.getElementById('content').offsetWidth / document.getElementById('content').offsetHeight, 1, 1000);
             var cameraControls;
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             var raycaster = new THREE.Raycaster();
@@ -39,7 +39,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             img.src = 'images/leonardo_dicaprio.jpeg';
             var radius = 50;
             var theta = 0;
-            var nodeRadius = 0.70, nodeSegments = 64;
+            var nodeRadius = 100, nodeSegments = 64;
             var nodePosition = new THREE.Vector3(0, 0, 0);
             var nodeScale = new THREE.Vector3(2, 2, 1);
             var randomVector = new THREE.Vector3(Math.random() * 60 - 20, Math.random() * 60 - 20, Math.random() * 60 - 20);
@@ -80,16 +80,16 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 scene.add(cube)
 
                 // hover text init
-                spriteHoverCanvas = generateHoverText("test");
+                spriteHoverCanvas = generateHoverText("testtesttesttest");
                 spriteHoverContext = spriteHoverCanvas.getContext('2d');
                 spriteHoverTexture = new THREE.Texture(spriteHoverCanvas);
-                var material = new THREE.SpriteMaterial({ map: spriteHoverTexture, useScreenCoordinates: true });
+                var material = new THREE.SpriteMaterial({ map: spriteHoverTexture, useScreenCoordinates: false });
                 spriteHover = new THREE.Sprite(material);
                 spriteHover.position.set(0, 0, 0);
-                spriteHover.scale.set(6, 2, 1);
+                spriteHover.scale.set(8, 4, 1);
                 scene.add(spriteHover);
 
-                getNode(311902, draw);
+                getNode(311902, nodePosition, draw);
 
             // listeners
             document.getElementById('graph').addEventListener('change', render, false);
@@ -98,28 +98,31 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         /* callback called when getting a node from the API */
-        function draw(node) {
+        function draw(node, nodePosition) {
             var nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition);
             getRelatedNodes(node, nodeSprite, typesAndLimits, drawRelatedNodes);
         }
 
-        function getNode(id, callback) {
+        function getNode(id, nodePostion, callback) {
             $http.get('/api/common/' + id).success(function(node) {
-                callback(node);
+                callback(node, nodePosition);
             });
         }
 
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
             for (var i = 0; i < typesAndLimits.length; i++) {
-                getRelatedNodesForType(startNode.id, typesAndLimits[i].type, typesAndLimits[i].limit, index, startNodeSprite, callback);
+                getRelatedNodesForType(startNode, typesAndLimits[i].type, typesAndLimits[i].limit, index, startNodeSprite, callback);
                 index += typesAndLimits[i].limit;
             }
         }
 
-        function getRelatedNodesForType(id, type, limit, index, startNodeSprite, callback) {
+        function getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback) {
             var direction = 'in';
-            $http.get('/api/common/' + id + '/relationships/' + direction + '/' + type).success(function(relationships) {
+            if (startNode.type == 'Person') {
+                direction = 'out';
+            }
+            $http.get('/api/common/' + startNode.id + '/relationships/' + direction + '/' + type).success(function(relationships) {
                     if (relationships != null) {
                         callback(startNodeSprite, relationships, index, limit);
                     }
@@ -152,7 +155,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.context = canvas.getContext('2d');
             sprite.texture = texture;
             sprite.position.set(nodeMesh.position.x, nodeMesh.position.y, nodeMesh.position.z + 0.5);
-            sprite.scale.set(6, 6, 6);
+            sprite.scale.set(8, 8, 8);
             scene.add(sprite);
             return sprite;
         }
@@ -203,34 +206,31 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         function generateTexture(text) {
         	var canvas = document.createElement('canvas');
-            canvas.width = 800;
-            canvas.height = 800;
+            canvas.width = 900;
+            canvas.height = 900;
         	var context = canvas.getContext('2d');
             context.fillStyle = "#FFF";
-            drawCircle(context, canvas.width / 2, canvas.height / 2, canvas.width / 2);
+            drawCircle(context, canvas.width / 2, canvas.height / 2, canvas.width / 2.1);
             context.globalAlpha = 0.6;
             context.drawImage(img, 0, 0, canvas.width, canvas.height);
             context.globalAlpha = 1;
             context.fillStyle = "#000";
-            context.font = "bold 160px Open Sans";
+            context.font = "130px Moon Bold";
             context.textAlign = "center";
-            wrapText(context, text, canvas.width / 2, canvas.height / 2, canvas.width - 10, canvas.height / 3);
+            wrapText(context, text, canvas.width / 2, canvas.height / 2.4, canvas.width - 10, canvas.height / 4.5);
             return canvas;
         }
 
         function generateHoverText(text) {
             var canvas = document.createElement('canvas');
-            canvas.width = 800;
-            canvas.height = 300;
             spriteHoverContext = canvas.getContext('2d');
             spriteHoverContext.fillStyle = "#FFF";
-            spriteHoverContext.fillRect(0, 0, canvas.width, canvas.height);
+            spriteHoverContext.fillRect(0, 0, 1000, 250);
             spriteHoverContext.fillStyle = "#000";
-            spriteHoverContext.font = "bold 90px Open Sans";
+            spriteHoverContext.font = "45px Moon Light";
             spriteHoverContext.textAlign = "center";
-            spriteHoverContext.lineWidth = 10;
             spriteHoverContext.stroke();
-            wrapText(spriteHoverContext, text, canvas.width / 2, canvas.height / 2, canvas.width - 10, canvas.height / 5);
+            wrapText(spriteHoverContext, text, 500 / 2, 500 / 4, 500 - 5, 500 / 2);
             return canvas;
         }
 
@@ -279,18 +279,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     z: targetZ}, duration)
                   .easing(TWEEN.Easing.Linear.None).start();
 
-/*                nodePosition = intersection.object.position;
-                scene = new THREE.scene;
-                render();
-                getNode(id, draw);*/
-
-                $http.get('/api/common/' + id).success(function(node) {
-                    scope.currentNode = {};
-                    scope.currentNode = node;
-                    $http.get('/api/common/' + id + '/relationships/out').success(function(relationships) {
-                        scope.currentNode.movies = relationships;
-                    });
-                });
+                nodePosition = intersection.object.position;
+                getNode(id, nodePosition, draw);
             }
         }
 
@@ -347,7 +337,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function drawCircle(ctx, x, y, radius) {
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, 2 * Math.PI);
-            ctx.lineWidth=25;
+            ctx.lineWidth = 25;
             ctx.stroke();
             ctx.clip();
         }
@@ -388,19 +378,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         spriteHoverContext.fillStyle = "#FFF";
                         spriteHoverContext.fillRect(0, 0, spriteHoverCanvas.width, spriteHoverCanvas.height);
                         spriteHoverContext.strokeStyle = "#000";
-                        spriteHoverContext.lineWidth = 100;
                         spriteHoverContext.stroke();
                         spriteHoverContext.fillStyle = "#000";
-                        spriteHoverContext.font = "90px Open Sans";
+                        spriteHoverContext.font = "45px Moon Light";
                         spriteHoverContext.textAlign = "center";
                         var text = intersects[0].object.name;
-                        wrapText(spriteHoverContext, text, spriteHoverCanvas.width / 2, spriteHoverCanvas.height / 2, spriteHoverCanvas.width - 10, spriteHoverCanvas.height / 5);
-                        spriteHover.position.set(intersects[0].object.position.x, intersects[0].object.position.y + 3, intersects[0].object.position.z + 0.5 );
+                        wrapText(spriteHoverContext, text, spriteHoverCanvas.width / 2, spriteHoverCanvas.height / 2, spriteHoverCanvas.width - 10, spriteHoverCanvas.height / 4);
+                        spriteHover.position.set(intersects[0].object.position.x, intersects[0].object.position.y + 5, intersects[0].object.position.z + 0.5 );
                         spriteHoverTexture.needsUpdate = true;
                     }
                     else {
-                        console.log("OUT");
-                        spriteHoverContext.clearRect(0, 0, 800, 300);
+                        //console.log("OUT");
+                        spriteHoverContext.clearRect(0, 0, 500, 300);
                         spriteHoverTexture.needsUpdate = true;
                     }
                 }

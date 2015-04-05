@@ -40,7 +40,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var radius = 50;
             var theta = 0;
             var nodeRadius = 0.70, nodeSegments = 64;
-            var nodePosition = new THREE.Vector3(0, 1, 0);
+            var nodePosition = new THREE.Vector3(0, 0, 0);
             var nodeScale = new THREE.Vector3(2, 2, 1);
             var randomVector = new THREE.Vector3(Math.random() * 60 - 20, Math.random() * 60 - 20, Math.random() * 60 - 20);
             var typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
@@ -167,7 +167,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             for (i = index, j = 0; i < limit + index, j < limit; i++, j++) {
                 var angle = slice * i;
                 relatedNodePosition.x = nodePosition.x + 20 * Math.cos(angle);
-                relatedNodePosition.y = nodePosition.x + 20 * Math.sin(angle);
+                relatedNodePosition.y = nodePosition.y + 20 * Math.sin(angle);
                 var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition);
                 var material = new THREE.LineBasicMaterial({ color: 0x000000 });
                 var geometry = new THREE.Geometry();
@@ -234,19 +234,23 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             return canvas;
         }
 
-        function render() {
-        	requestAnimationFrame(render);
-
-            // camera update
+        // animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            update();
+            TWEEN.update();
             cameraControls.update();
+            render();
+        }
 
+        // render the scene
+        function render() {
             renderer.render(scene, camera);
         }
 
         function onMouseHover(event) {
             mouse.x = (event.offsetX / viewWidth) * 2 - 1;
             mouse.y = -(event.offsetY / viewHeight) * 2 + 1;
-            update();
         }
 
         function onClick(event) {
@@ -255,10 +259,30 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var intersection = intersects[0];
             var id = intersection.object._id;
             if (id != null) {
-                // updating camera
-                cameraControls.target = intersection.object.position;
-                camera.lookAt(intersection.object.position);
-                camera.updateMatrixWorld();
+                // animating camera
+                var moveX = intersection.object.position.x;
+                var moveY = intersection.object.position.y;
+                var moveZ = intersection.object.position.z + 50;
+                var targetX = intersection.object.position.x;
+                var targetY = intersection.object.position.y;
+                var targetZ = intersection.object.position.z;
+                var duration = 500;
+
+                new TWEEN.Tween(camera.position).to({
+                    x: moveX,
+                    y: moveY,
+                    z: moveZ}, duration)
+                  .easing(TWEEN.Easing.Linear.None).start();
+                new TWEEN.Tween(cameraControls.target).to({
+                    x: targetX,
+                    y: targetY,
+                    z: targetZ}, duration)
+                  .easing(TWEEN.Easing.Linear.None).start();
+
+/*                nodePosition = intersection.object.position;
+                scene = new THREE.scene;
+                render();
+                getNode(id, draw);*/
 
                 $http.get('/api/common/' + id).success(function(node) {
                     scope.currentNode = {};
@@ -332,7 +356,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
             if (intersects.length > 0) {
-                if (intersects[ 0 ].object != INTERSECTED) {
+                if (intersects[0].object != INTERSECTED) {
                     if (intersects[0].object._id !== undefined) {
                         if (current && (current._id != intersects[0].object._id)) {
                             current.context.fillStyle = "#FFF";
@@ -413,11 +437,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
         }
 
-/*        img.onload = function(e) { */        
-            init();
-        	render();
-            update();
-        /*}*/
+        init();
+        animate();
     }
 }
 }]);

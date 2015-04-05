@@ -24,7 +24,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController', ['Model
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
 	return {
 		link: function link(scope, element, attrs) {
-			// global vars            
+			// global vars
             var scene = new THREE.Scene();
             var camera = new THREE.PerspectiveCamera(45, document.getElementById('content').offsetWidth / document.getElementById('content').offsetHeight, 0.1, 1000);
             var cameraControls;
@@ -48,11 +48,14 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                                     { type: 'DIRECTED', limit: 2},
                                     { type: 'COMPOSED_MUSIC', limit: 1},
                                     { type: 'DIRECTED_PHOTOGRAPHY', limit: 1} ];
+            var viewWidth, viewHeight;
 
             function init() {
                 renderer.setSize(document.getElementById('content').offsetWidth, document.getElementById('content').offsetHeight);
                 renderer.setClearColor(0xf0f0f0);
                 document.getElementById('graph').appendChild(renderer.domElement);
+                viewWidth = $('#graph').width();
+                viewHeight = $('#graph').height();
 
                 // camera
                 camera.position.x = 0;
@@ -140,6 +143,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var text = node.name ? node.name : node.title;
             var canvas = generateTexture(text);
             var texture = new THREE.Texture(canvas);
+            THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
             texture.needsUpdate = true;
             var spriteMaterial = new THREE.SpriteMaterial({ map: texture });
             var sprite = new THREE.Sprite(spriteMaterial);
@@ -240,26 +244,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         function onMouseHover(event) {
-            mouse.x = (event.offsetX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.offsetY / window.innerHeight) * 2 + 1;
+            mouse.x = (event.offsetX / viewWidth) * 2 - 1;
+            mouse.y = -(event.offsetY / viewHeight) * 2 + 1;
             update();
         }
 
-        function onMouseMove(event) {
-        	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        	raycaster.setFromCamera(mouse, camera);
-        	var intersects = raycaster.intersectObjects(scene.children);
-        	for (var intersect in intersects) {
-        		intersects[0].object.material.color.setHex(Math.random() * 0xffffff);
-        	}
-        }
-
         function onClick(event) {
-            mouse.x = (event.offsetX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.offsetY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
-
             var intersects = raycaster.intersectObjects(scene.children);
             var intersection = intersects[0];
             var id = intersection.object._id;

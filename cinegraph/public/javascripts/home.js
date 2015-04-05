@@ -27,6 +27,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 			// global vars            
             var scene = new THREE.Scene();
             var camera = new THREE.PerspectiveCamera(45, document.getElementById('content').offsetWidth / document.getElementById('content').offsetHeight, 0.1, 1000);
+            var cameraControls;
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
@@ -52,7 +53,21 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 renderer.setSize(document.getElementById('content').offsetWidth, document.getElementById('content').offsetHeight);
                 renderer.setClearColor(0xf0f0f0);
                 document.getElementById('graph').appendChild(renderer.domElement);
-                camera.position.z = 1;
+
+                // camera
+                camera.position.x = 0;
+                camera.position.y = 0;
+                camera.position.z = 50;
+
+                cameraControls = new THREE.TrackballControls(camera);
+                cameraControls.rotateSpeed = 2.0;
+                cameraControls.zoomSpeed = 1.2;
+                cameraControls.panSpeed = 0.8;
+                cameraControls.noZoom = false;
+                cameraControls.noPan = false;
+                cameraControls.staticMoving = true;
+                cameraControls.dynamicDampingFactor = 0.3;
+                cameraControls.keys = [ 65, 83, 68 ];
 
                 // cube
                 var geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -74,6 +89,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 getNode(311902, draw);
 
             // listeners
+            document.getElementById('graph').addEventListener('change', render, false);
             document.getElementById('graph').addEventListener('click', onClick, false);
             document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
         }
@@ -217,13 +233,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function render() {
         	requestAnimationFrame(render);
 
-        	theta += 0.0;
-        	camera.position.x = radius * Math.sin(THREE.Math.degToRad(theta));
-        	camera.position.y = radius * Math.sin(THREE.Math.degToRad(theta));
-        	camera.position.z = radius * Math.cos(THREE.Math.degToRad(theta));
-        	camera.lookAt(scene.position);
+            // camera update
+            cameraControls.update();
 
-        	renderer.render(scene, camera);
+            renderer.render(scene, camera);
         }
 
         function onMouseHover(event) {
@@ -245,12 +258,17 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function onClick(event) {
             mouse.x = (event.offsetX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.offsetY / window.innerHeight) * 2 + 1;
-            
             raycaster.setFromCamera(mouse, camera);
+
             var intersects = raycaster.intersectObjects(scene.children);
             var intersection = intersects[0];
             var id = intersection.object._id;
             if (id != null) {
+                // updating camera
+                cameraControls.target = intersection.object.position;
+                camera.lookAt(intersection.object.position);
+                camera.updateMatrixWorld();
+
                 $http.get('/api/common/' + id).success(function(node) {
                     scope.currentNode = {};
                     scope.currentNode = node;

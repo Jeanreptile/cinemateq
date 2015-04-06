@@ -37,6 +37,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var current = null;
             var img = new Image();
             img.src = 'images/leonardo_dicaprio.jpeg';
+            //img.src = 'images/inception2.jpg';
             var radius = 50;
             var theta = 0;
             var nodeRadius = 100, nodeSegments = 64;
@@ -49,6 +50,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                                     { type: 'COMPOSED_MUSIC', limit: 1},
                                     { type: 'DIRECTED_PHOTOGRAPHY', limit: 1} ];
             var viewWidth, viewHeight;
+            var movieImageWidth = 990;
+            var movieHeightWidth = 1485;
+            var movieImageOffsetX = 20;
+            var movieImageOffsetY = -450;
 
             function init() {
                 renderer.setSize(document.getElementById('content').offsetWidth, document.getElementById('content').offsetHeight);
@@ -206,8 +211,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         function generateTexture(text) {
         	var canvas = document.createElement('canvas');
-            canvas.width = 900;
-            canvas.height = 900;
+            canvas.width = 1000;
+            canvas.height = 1000;
         	var context = canvas.getContext('2d');
             context.fillStyle = "#FFF";
             drawCircle(context, canvas.width / 2, canvas.height / 2, canvas.width / 2.1);

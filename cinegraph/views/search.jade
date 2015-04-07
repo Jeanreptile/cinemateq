@@ -1,6 +1,5 @@
 extends layout
 
-
 block content
   .bgTest
     figure#bg
@@ -46,8 +45,8 @@ block content
                   //h4 Search your favorite {{asyncSelected.movieId}}
                   // p
                   // p
-                  //pre.
-                  //  Model: {{asyncSelected | json}}
+                  pre.
+                    Model: {{asyncSelected | json}}
                   form(action='/search', method='POST')
                     .input-group.searchBarStyle.centerWidth.animated.fadeInUp
                       //.icon-addon.addon-lg
@@ -56,7 +55,7 @@ block content
                       input(type='hidden', name='movieId', value="{{asyncSelected.movieId}}")
                       input#searchFormControl.form-control.input-lg( autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.'
                                                                     , typeahead='query as query.name for query in getLocation($viewValue)',
-                                                                    , typeahead-wait-ms=350, typeahead-loading='loadingLocations', typeahead-min-length=4)
+                                                                    , typeahead-wait-ms=350, typeahead-loading='loadingLocations', typeahead-min-length=2)
                       span.input-group-btn
                           button.btn.btn-lg.bg-white.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
                               span.dropdown-label

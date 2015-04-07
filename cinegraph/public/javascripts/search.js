@@ -1,17 +1,19 @@
 angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $http) {
 
   var vague = $('#bg').Vague({
-    intensity:      20,      // Blur Intensity
+    intensity:      0,      // Blur Intensity
     forceSVGUrl:    true,   // Force absolute path to the SVG filter,
     // default animation options
+    animationOptions: {
+      duration: 50,
+      easing: 'linear' // here you can use also custom jQuery easing functions
+    }
   });
-//vague.blur();
+//vague.animate();
 
-//$('#bg').addClass("blur-filter");
-$("#searchFormControl").on("click",$.proxy(vague.toggleblur,vague));
+var blurDone = false;
 
-//$('#searchFormControl').prop('disabled', $.proxy(vague.toggleblur,vague));
-
+$("#searchFormControl").on("click", function () {if (!blurDone) {vague.animate(20);}; blurDone = true});
 
     $scope.selectedItem = "movie";
 
@@ -27,7 +29,7 @@ $("#searchFormControl").on("click",$.proxy(vague.toggleblur,vague));
 
   $scope.getLocation = function(val) {
     console.log('Go Search !');
-    return $http.get('https://localhost:3000/api/search/movie', {
+    return $http.get('https://localhost/api/search/movie', {
       params: {
         query: val
       }

@@ -7,14 +7,15 @@ block content
         section.m-b-lg
           header.wrapper.text-center
             strong Sign in to get in touch
-          form(action='/login', method='POST')
-            .list-group
-              .list-group-item
-                input.form-control.no-border(name='username', type='text', placeholder='Username')
-              |             
-              .list-group-item
-                input.form-control.no-border(name='password', type='password', placeholder='Password')
-            button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in
+          div(ng-controller="UserCtrl")
+            form(ng-submit="submit()")
+              .list-group
+                .list-group-item
+                  input.form-control.no-border(ng-model='user.username' name='username', type='text', placeholder='Username')
+                |             
+                .list-group-item
+                  input.form-control.no-border(ng-model='user.password' name='password', type='password', placeholder='Password')
+              button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in
             .text-center.m-t.m-b
               a(href='#')
                 small Forgot password?

@@ -7,6 +7,7 @@ passport.use('login', new LocalStrategy({
   },
   function(req, username, password, done) {
     // check in neo4j if a user with username exists or not
+
     predicate = {'username': username};
     db.find(predicate, 'User', function (err, objs) {
         // In case of any error, return using the done method
@@ -18,11 +19,11 @@ passport.use('login', new LocalStrategy({
         return done(null, false,
               req.flash('message', 'User Not found.'));
       }
-        // User exists but wrong password, log the error 
+        // User exists but wrong password, log the error
       if (!isValidPassword(objs[0], password)) {
         return done(null, false,
             req.flash('message', 'Invalid Password'));
-        // User and password both match, return user from 
+        // User and password both match, return user from
         // done method which will be treated like success
       }
       return done(null, objs[0]);

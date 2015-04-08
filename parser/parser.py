@@ -3,9 +3,6 @@ import time
 import sys
 import codecs
 import os
-from py2neo import Graph
-from py2neo import Node, Relationship
-from py2neo.packages.httpstream import http
 
 
 if len(sys.argv) < 2:
@@ -395,9 +392,9 @@ def parseMovies():
       if titleMatch == None:
         continue
       title = encodeName(str(titleMatch.group('movie')))
-      released = encodeName(str(lineMatch.group('startyear')))
+      released = encodeName(str(titleMatch.group('year')))
       yearextra = encodeName(str(titleMatch.group('yearextra'))[1:])
-      if title == "None" or released == "????":
+      if title == "None" or released == "????" or released != str(lineMatch.group('startyear')):
         continue;
       if yearextra and yearextra != "I":
         title = title + " [" + yearextra + "]"

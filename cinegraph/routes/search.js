@@ -15,10 +15,24 @@ router.get('/movie', function(req, res) {
         function(err, result)
         {
             if (err) throw err;
-            console.log("OK");
-            console.log(result);
             res.json(result);
         });
 });
+
+router.get('/person', function(req, res) {
+    var limit = 10;
+    if (req.query.limit)
+    {
+        limit = parseInt(req.query.limit);
+    }
+    var cypher = "MATCH (person:Person) WHERE person.fullname =~ \"" + req.query.query + ".*\" RETURN person LIMIT 10";
+    dbLocal.query(cypher,
+        function(err, result)
+        {
+            if (err) throw err;
+            res.json(result);
+        });
+});
+
 
 module.exports = router;

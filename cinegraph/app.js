@@ -5,7 +5,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var db = require("seraph")("http://localhost:7474");
-var expressJwt = require('express-jwt');
 
 var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
@@ -48,7 +47,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/restricted', expressJwt({secret: 'SecretStory'}));
+//app.use('/restricted', expressJwt({secret: 'SecretStory'}));
+
 
 app.use('/', routes);
 app.use('/users', users);

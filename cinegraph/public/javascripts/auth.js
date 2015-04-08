@@ -1,22 +1,38 @@
 angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $window) {
+  $scope.message = '';
+  $scope.message2 = '';
 
-  console.log("test");
   $scope.submit = function () {
     $http
       .post('/login', $scope.user)
       .success(function (data, status, headers, config) {
-        console.log("data is : ");
+        console.log("token is : ");
         console.log(data.token);
         $window.sessionStorage.token = data.token;
+        $scope.message2 = "Signed and Token created";
       })
       .error(function (data, status, headers, config) {
         // Erase the token if the user fails to log in
-        console.log("non?");
         delete $window.sessionStorage.token;
-
         // Handle login errors here
         $scope.message = 'Error: Invalid user or password';
       });
+  };
+
+  $scope.removeJWT = function () {
+    delete $window.sessionStorage.token;
+    $scope.message2 = "Token was removed";
+  };
+
+  $scope.callRestricted = function () {
+    $http({url: '/restricted', method: 'GET'})
+    .success(function (data, status, headers, config) {
+      console.log(data);
+      $scope.message = ' ' +data.name; // Should log 'foo'
+    })
+    .error(function (data, status, headers, config) {
+      $scope.message = "/!\\ You are not allowed here !";
+    });
   };
 });
 

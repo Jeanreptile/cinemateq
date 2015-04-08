@@ -17,7 +17,9 @@ router.get('/signin', function(req, res) {
 });
 
 router.get('/restricted', expressJwt({secret: 'SecretStory'}), function(req, res) {
-  res.render('restricted');
+  res.json({
+      name: 'You are allowed here !!'
+    });
 })
 
 router.get('/home', function(req, res) {
@@ -34,9 +36,9 @@ router.post('/login', function(req,res, next) {
      return res.json(401, { error: 'message' });
    }
    //user has authenticated correctly thus we create a JWT token
-   console.log("cestok");
+   console.log("JWT done");
    var token = jwt.sign({ username: 'somedata'}, 'SecretStory');
-   res.json({ token : token });
+   res.json({ token : token, user:user });
  })(req, res, next);
  });
 
@@ -55,7 +57,7 @@ router.post('/signup', passport.authenticate('signup', {
 /* Handle Logout */
 router.get('/signout', function(req, res) {
     req.logout();
-      res.redirect('/');
+    res.redirect('/');
 });
 
 /* Search Bar*/

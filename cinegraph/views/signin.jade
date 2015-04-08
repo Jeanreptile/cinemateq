@@ -8,6 +8,7 @@ block content
           header.wrapper.text-center
             strong Sign in to get in touch
           div(ng-controller="UserCtrl")
+            div {{message2}}
             form(ng-submit="submit()")
               .list-group
                 .list-group-item
@@ -23,3 +24,8 @@ block content
             p.text-muted.text-center
               small Do not have an account?
             a.btn.btn-lg.btn-default.btn-block(href='/signup') Create an account
+            p
+            a(ng-click='callRestricted()', href='') Link to /restricted
+            p
+            a(ng-click='removeJWT()', href='') Remove JWT
+            div {{message}}

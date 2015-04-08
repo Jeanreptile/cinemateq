@@ -60,6 +60,7 @@ i.fa-eye:hover {
 
 #content {
 	height: 500px;
+}
 
 .blur-filter {
     -webkit-filter: blur(2px);

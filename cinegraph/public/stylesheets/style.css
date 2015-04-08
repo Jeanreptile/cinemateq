@@ -1,5 +1,15 @@
-body {
+html{
+  height: 100%;
 }
+
+body {
+  padding: 0;
+  margin: 0;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  height: 100%;
+}
+
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
 a {
   color: #00B7FF;
@@ -50,4 +60,134 @@ i.fa-eye:hover {
 
 #content {
 	height: 500px;
+
+.blur-filter {
+    -webkit-filter: blur(2px);
+    -moz-filter: blur(2px);
+    -o-filter: blur(2px);
+    -ms-filter: blur(2px);
+    filter: blur(2px);
+}
+
+.bgTest {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: black;
+}
+
+#bg {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    background-position: center;
+    /* background-image: url('http://image.tmdb.org/t/p/w1000/xu9zaAevzQ5nnrsXN6JcahLnG4i.jpg'); */
+  /*  background-image: url('http://image.tmdb.org/t/p/w1000/tv8J6uCTKsTlASa8luJqrFiJlBX.jpg');*/
+    background-size: cover !important;
+    position: absolute;
+}
+
+.searchBarStyle {
+  width: 50%;
+}
+
+.centerWidth {
+  margin: auto;
+  text-align: center;
+}
+
+#searchBarPosition {
+  position: absolute;
+  top: 40%;
+}
+
+.allWindow {
+  min-height: 100%;
+}
+
+
+.dropdownSearch {
+  min-width: 100px;
+}
+/* Icon in an input */
+.input-group .icon-addon .form-control {
+    border-radius: 0;
+}
+
+.icon-addon {
+    position: relative;
+    color: #555;
+    display: block;
+}
+
+.icon-addon:after,
+.icon-addon:before {
+    display: table;
+    content: " ";
+}
+
+.icon-addon:after {
+    clear: both;
+}
+
+.icon-addon.addon-md .glyphicon,
+.icon-addon .glyphicon,
+.icon-addon.addon-md .fa,
+.icon-addon .fa {
+    position: absolute;
+    z-index: 2;
+    left: 10px;
+    font-size: 14px;
+    width: 20px;
+    margin-left: -2.5px;
+    text-align: center;
+    padding: 10px 0;
+    top: 1px
+}
+
+.icon-addon.addon-lg .form-control {
+    line-height: 1.33;
+    font-size: 18px;
+    padding: 10px 16px 10px 40px;
+}
+
+.icon-addon.addon-sm .form-control {
+    height: 30px;
+    padding: 5px 10px 5px 28px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.icon-addon.addon-lg .fa,
+.icon-addon.addon-lg .glyphicon {
+    font-size: 18px;
+    margin-left: 0;
+    left: 11px;
+    top: 4px;
+}
+
+.icon-addon.addon-md .form-control,
+.icon-addon .form-control {
+    padding-left: 30px;
+    float: left;
+    font-weight: normal;
+}
+
+.icon-addon.addon-sm .fa,
+.icon-addon.addon-sm .glyphicon {
+    margin-left: 0;
+    font-size: 12px;
+    left: 5px;
+    top: -1px
+}
+
+.icon-addon .form-control:focus + .glyphicon,
+.icon-addon:hover .glyphicon,
+.icon-addon .form-control:focus + .fa,
+.icon-addon:hover .fa {
+    color: #2580db;
 }

@@ -6,6 +6,9 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 
+var expressJwt = require('express-jwt');
+var jwt = require('jsonwebtoken');
+
 var app = express();
 
 // Session & init. of passport for user management
@@ -27,6 +30,7 @@ var routes = require('./routes/index')(passport);
 var users = require('./routes/users');
 var persons = require('./routes/persons');
 var movies = require('./routes/movies');
+var searchRoutes = require('./routes/search');
 var commons = require('./routes/common');
 
 // view engine setup
@@ -35,16 +39,23 @@ app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(__dirname + '/public/favicon.ico'));
+
+
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//app.use('/restricted', expressJwt({secret: 'SecretStory'}));
+
+
 app.use('/', routes);
 app.use('/users', users);
 app.use('/api/persons', persons);
 app.use('/api/movies', movies);
+app.use('/api/search', searchRoutes);
 app.use('/api/common', commons);
 
 // catch 404 and forward to error handler
@@ -77,6 +88,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
 
 module.exports = app;

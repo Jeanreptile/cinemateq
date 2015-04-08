@@ -284,6 +284,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     z: targetZ}, duration)
                   .easing(TWEEN.Easing.Linear.None).start();
 
+                $http.get('/api/common/' + id).success(function(node) {
+                    scope.currentNode = {};
+                    scope.currentNode = node;
+                });
                 nodePosition = intersection.object.position;
                 getNode(id, nodePosition, draw);
             }
@@ -360,7 +364,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             current.context.drawImage(img, 0, 0, current.context.canvas.width, current.context.canvas.height);
                             current.context.globalAlpha = 1;
                             current.context.fillStyle = "#000";
-                            current.context.font = "bcurrent 160px Open Sans";
+                            current.context.font = "130px Moon Bold";
                             var text = current.name;
                             current.context.textAlign = "center";
                             wrapText(current.context, text, current.context.canvas.width / 2, current.context.canvas.height / 2, current.context.canvas.width - 10, current.context.canvas.height / 3);

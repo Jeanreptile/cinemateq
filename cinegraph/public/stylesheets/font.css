@@ -16,3 +16,23 @@
   font-weight: 700;
   src: local('Open Sans Bold'), local('OpenSans-Bold'), url('../fonts/opensans/opensans-bold.woff') format('woff');
 }
+@font-face {
+  font-family: 'Moon Light';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Moon Light'), local('Moon-Light'), url('../fonts/MoonTypeface/Moon-Light.otf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Moon Bold';
+  font-style: bold;
+  font-weight: 700;
+  src: local('Moon Bold'), local('Moon-Bold'), url('../fonts/MoonTypeface/Moon-Bold.otf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Moderne Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Moderne Sans'), local('Moderne-Sans'), url('../fonts/MODERNE SANS/MODERNE SANS.ttf') format('truetype');
+}

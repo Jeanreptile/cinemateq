@@ -1,6 +1,6 @@
 extends layout
 
-block header
+block content
 	section.vbox
 		header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 			.navbar-header.aside-md.dk
@@ -16,64 +16,105 @@ block header
 					.input-group
 						span.input-group-btn
 							button.btn.btn-sm.bg-white.b-white.btn-icon(type='submit')
-								// i.fa.fa-search
 								span.glyphicon.glyphicon-search
-						input.form-control.input-md.no-border(type='text', placeholder='Search for a movie...')
+						input.form-control.input-sm.no-border(type='text', placeholder='Search for a movie...')
 			ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
 				li.dropdown
 					a.dropdown-toggle(href='#', data-toggle='dropdown')
-						span.thumb-sm.pull-left.glyphicon.glyphicon-user
-							// i.fa.fa-user
+						span.thumb-sm.pull-left.avatar.m-r
+							img.dker(src="images/a0.png")
 						if user
 							| #{user.firstName}
 						else
 							| Invité
 						b.caret 
-					ul.dropdown-menu.animated.fadeInRight          
+					ul.dropdown-menu.animated.fadeInRight
 						li
-							a(href='') Profile        
+							if user
+								a(href='') Profile
 						li
-							a(href='') My Cinegraphs
+							if user
+								a(href='') My Cinegraphs
 						li.divider
 						li
-							a(href='/signout') Logout
+							if user
+								a(href='/signout') Logout
+							else
+								a(href='/signin') Sign in
 		section
 			section.hbox.stretch
-				aside#nav.aside-md.bg-black.hidden-print.hidden-xs
+				aside#nav.aside-lg.bg-black.hidden-print.hidden-xs
 					section.vbox
 						section.w-f.scrollable
-							.slim-scroll(data-height='500px', data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
+							.slim-scroll(data-height='600px', data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
 								.clearfix.wrapper.dk.nav-user.hidden-xs
-									.dropdown
-										a.dropdown-toggle(href='#', data-toggle='dropdown')
-											span.thumb.avatar.pull-left.m-r.glyphicon.glyphicon-user  
-												// i.on.md.b-black            
-											span.hidden-nav-xs.clear
-												span.block.m-t-xs
-													if user
-														strong.font-bold.text-lt #{user.firstName}
-														b.caret 
-														span.text-muted.text-xs.block Cinephile
-													else
-														strong.font-bold.text-lt Invité
-														b.caret 
-														span.text-muted.text-xs.block Novice
-										ul.dropdown-menu.animated.fadeInRight.m-t-xs
-											li
-												span.arrow.top.hidden-nav-xs
-												if user
-													a(href='/signout') Logout
-												else
-													a(href='/signin') Sign in
-								div(ng-show="currentNode.person")
-									h3 {{currentNode.person.name}}
-									// p Born in {{currentNode.person.born}}
-									h4(ng-show="currentNode.rolesAndMovies") Played in :
-									ul
-										li(ng-repeat="r in currentNode.rolesAndMovies")
-											<b>{{r.movie.title}}</b> as <em>{{r.role}}</em>
+									span.thumb.pull-left.avatar.m-r
+										img.dker(src="images/a0.png")
+										i.on.md.b-black            
+									span.hidden-nav-xs.clear
+										span.block.m-t-xs
+											if user
+												strong.font-bold.text-lt #{user.firstName}
+												span.text-muted.text-xs.block Cinephile
+											else
+												strong.font-bold.text-lt Invité
+												span.text-muted.text-xs.block Novice
+								div.text-center(ng-show="currentNode")
+									div.m-t-sm(ng-show="currentNode.type == 'Person'")
+										img.img-circle(src="images/leonardo_dicaprio.jpeg")
+									div.m-t-sm(ng-show="currentNode.type == 'Movie'")
+										img(src="{{currentNode.thumbnail}}")
+									div.h4.m-t.m-b-xs.font-bold.text-lt
+										a(href="#", ng-show="currentNode.type == 'Person'")
+											{{currentNode.name}}
+										a(href="#", ng-show="currentNode.type == 'Movie'")
+											{{currentNode.title}}
+											| ({{currentNode.released}})
+									small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
+										| Actor
+										i.i.i-dot
+										| Producer
+									small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genres")
+										| {{genre}}
+										i.i.i-dot(ng-hide="$last")
+									div.row
+										div.col-xs-6.m-t-sm
+											i.fa.fa-star.m-l-xs.fa-lg
+											i.fa.fa-star.m-l-xs.fa-lg
+											i.fa.fa-star.m-l-xs.fa-lg
+											i.fa.fa-star.m-l-xs.fa-lg
+											i.fa.fa-star-o.m-l-xs.fa-lg
+										div.col-xs-6.m-t-sm
+											i.fa.fa-heart.fa-lg
+											i.fa.fa-plus.m-l-sm.fa-lg
+											i.fa.fa-eye.m-l-sm.fa-lg(ng-show="currentNode.type == 'Movie'")
+									div.row
+										div.col-xs-12
+											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person'")
+												| Biography
+											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie'")
+												| Plot
+											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person'")
+												| Leonardo Wilhelm DiCaprio (born November 11, 1974) is an American actor and film producer. His first role was on the sitcom Growing Pains, but his breakthrough film performance came in This Boy's Life.
+											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie'")
+												{{currentNode.plot}}
+												a.m-l-xs(href="#")
+													| Read more...
+									//h4(ng-show="currentNode.movies") Played in :
+									//p(ng-repeat="movie in currentNode.movies")
+											<b>{{movie.title}}</b>
+								nav.nav-primary.hidden-xs
+									ul.nav.nav-main(data-ride='collapse')
+										li
+											a.auto(href='#')
+												span.pull-right.text-muted
+													i.i.i-circle-sm-o.text
+													i.i.i-circle-sm.text-active
+												i.i.i-plus2.icon
+												span.font-bold Suggestions
+								
 				section#content
 					section.vbox
-						section.scrollable.wrapper
+						section.scrollable
 							// p.h4 This is a blank page
 							#graph(cinegraph="")

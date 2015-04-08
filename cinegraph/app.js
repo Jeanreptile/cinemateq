@@ -4,7 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var db = require("seraph")("http://localhost:7474");
+var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 
 var app = express();
 
@@ -27,6 +27,7 @@ var routes = require('./routes/index')(passport);
 var users = require('./routes/users');
 var persons = require('./routes/persons');
 var movies = require('./routes/movies');
+var commons = require('./routes/common');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -44,6 +45,7 @@ app.use('/', routes);
 app.use('/users', users);
 app.use('/api/persons', persons);
 app.use('/api/movies', movies);
+app.use('/api/common', commons);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

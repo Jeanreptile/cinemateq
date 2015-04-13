@@ -67,8 +67,8 @@ router.get('/search', function(req, res){
 
 router.post('/search', function(req, res){
   console.log('req is :');
-  console.log(req.body.movieId);
-  res.render('searchResult', {movieId: req.body.movieId});
+  console.log(req.body.thisId);
+  res.render('searchResult', {thisId: req.body.thisId});
 });
 
 return router;

@@ -42,7 +42,7 @@ $("#searchFormControl").on("click", function () {if (!blurDone) {vague.animate(2
         return response.data.map(function(item){
           if ($scope.selectedItem == "movie" )
           {
-            return {'name': item.title + ' ('+item.released + ')', 'movieId': item.id};
+            return {'name': item.title + ' ('+item.released + ')', 'thisId': item.id};
           }
           else
           {

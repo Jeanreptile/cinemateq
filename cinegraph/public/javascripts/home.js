@@ -94,7 +94,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 spriteHover.scale.set(8, 4, 1);
                 scene.add(spriteHover);
 
-                getNode(311902, nodePosition, draw);
+                getNode(313765, nodePosition, draw);
 
             // listeners
             document.getElementById('graph').addEventListener('change', render, false);
@@ -147,7 +147,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             nodeMesh.position.x = position.x;
             nodeMesh.position.y = position.y;
             nodeMesh.position.z = position.z;
-            
+
             var text = node.name ? node.name : node.title;
             var canvas = generateTexture(text);
             var texture = new THREE.Texture(canvas);

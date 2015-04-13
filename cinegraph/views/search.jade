@@ -57,7 +57,7 @@ block content
                       //.icon-addon.addon-lg
                       //  input#searchFormControl.form-control.input-lg(autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
                       //  label.glyphicon.glyphicon-search(for='searchBarForm', rel='tooltip', title='email')
-                      input(type='hidden', name='movieId', value="{{asyncSelected.movieId}}")
+                      input(type='hidden', name='thisId', value="{{asyncSelected.thisId}}")
                       input#searchFormControl.form-control.input-lg( autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.'
                                                                     , typeahead='query as query.name for query in getLocation($viewValue)',
                                                                     , typeahead-wait-ms=350, typeahead-loading='loadingLocations', typeahead-min-length=2

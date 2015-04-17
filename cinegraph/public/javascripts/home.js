@@ -154,7 +154,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             nodeMesh.position.x = position.x;
             nodeMesh.position.y = position.y;
             nodeMesh.position.z = position.z;
-            
+
             var text = node.name ? node.name : node.title;
             var canvas = generateTexture(text);
             var texture = new THREE.Texture(canvas);

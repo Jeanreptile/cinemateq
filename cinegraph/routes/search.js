@@ -10,7 +10,10 @@ router.get('/movie', function(req, res) {
     {
         limit = parseInt(req.query.limit);
     }
-    var cypher = "START movie=node:node_auto_index('title:(" + req.query.query + "*)') RETURN movie LIMIT 10";
+    var reqBefore = req.query.query;
+
+    var requestMovie = reqBefore.replace(" ", " AND ");
+    var cypher = "START movie=node:node_auto_index('title:(" + requestMovie + "*)') RETURN movie LIMIT 10";
     dbLocal.query(cypher,
         function(err, result)
         {

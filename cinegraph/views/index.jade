@@ -46,7 +46,7 @@ block content
 				aside#nav.aside-lg.bg-black.hidden-print.hidden-xs
 					section.vbox
 						section.w-f.scrollable
-							.slim-scroll(data-height='auto', data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
+							.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
 								.clearfix.wrapper.dk.nav-user.hidden-xs
 									span.thumb.pull-left.avatar.m-r
 										img.dker(src="images/a0.png")
@@ -112,5 +112,5 @@ block content
 								
 				section#content
 					section.vbox
-						section.scrollable
+						section
 							#graph(cinegraph="")

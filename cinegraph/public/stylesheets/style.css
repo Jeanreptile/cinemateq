@@ -90,8 +90,9 @@ i.fa-eye:hover {
 }
 
 #searchBarPosition {
-  position: absolute;
-  top: 40%;
+  /*position: absolute;
+  top: 40%;*/
+  margin-top: 250px;
 }
 
 .allWindow {

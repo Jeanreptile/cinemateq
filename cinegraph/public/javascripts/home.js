@@ -18,7 +18,11 @@ var cinegraphController = cinegraphApp.controller('cinegraphController', ['$scop
     function($scope, $http, $location) {
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
     $scope.currentNode = {};
-    $scope.currentNode.id = $location.search()['movieId'];
+    var selectedNodeId = $location.search()['id'];
+    if (selectedNodeId == undefined) {
+        selectedNodeId = 466302;
+    }
+    $scope.currentNode.id = selectedNodeId;
     $scope.currentNode.type = "Movie";
     $scope.currentNode.title = "Inception";
     $scope.currentNode.released = "2010";

@@ -159,7 +159,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             nodeMesh.position.y = position.y;
             nodeMesh.position.z = position.z;
 
-            var text = node.name ? node.name : node.title;
+            var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var canvas = generateTexture(text);
             var texture = new THREE.Texture(canvas);
             THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
@@ -167,7 +167,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var spriteMaterial = new THREE.SpriteMaterial({ map: texture });
             var sprite = new THREE.Sprite(spriteMaterial);
             sprite._id = node.id;
-            sprite.name = node.name ? node.name : node.title;
+            sprite.name = node.name ? (node.firstname + " " + node.lastname) : node.title;
             sprite.context = canvas.getContext('2d');
             sprite.texture = texture;
             sprite.position.set(nodeMesh.position.x, nodeMesh.position.y, nodeMesh.position.z + 0.5);
@@ -296,7 +296,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                   .easing(TWEEN.Easing.Linear.None).start();
 
                 $http.get('/api/common/' + id).success(function(node) {
-                    scope.currentNode = {};
                     scope.currentNode = node;
                 });
                 nodePosition = intersection.object.position;

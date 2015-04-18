@@ -90,13 +90,13 @@ block content
 											i.fa.fa-eye.m-l-sm.fa-lg(ng-show="currentNode.type == 'Movie'")
 									div.row
 										div.col-xs-12
-											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person'")
+											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
 												| Biography
-											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie'")
-												| Plot
-											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person'")
+											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person' && currentNode.biography")
 												{{currentNode.biography | limitTo: 300}}...
-											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie'")
+											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.plot")
+												| Plot
+											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
 												{{currentNode.plot | limitTo: 300}}...
 												a.m-l-xs(href="#")
 													| Read more...

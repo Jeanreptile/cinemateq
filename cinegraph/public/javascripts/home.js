@@ -22,13 +22,10 @@ var cinegraphController = cinegraphApp.controller('cinegraphController', ['$scop
     if (selectedNodeId == undefined) {
         selectedNodeId = 466302;
     }
+    $http.get('/api/common/' + selectedNodeId).success(function(node) {
+        $scope.currentNode = node;
+    });
     $scope.currentNode.id = selectedNodeId;
-    $scope.currentNode.type = "Movie";
-    $scope.currentNode.title = "Inception";
-    $scope.currentNode.released = "2010";
-    $scope.currentNode.plot = "LA thief who steals corporate secrets through use of dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO."
-    $scope.currentNode.genres = [ "Action", "Adventure", "Sci-Fi", "Thriller"];
-    $scope.currentNode.thumbnail = "images/inception.jpg";
 }]);
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
@@ -113,17 +110,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
         }
 
-        /* callback called when getting a node from the API */
-        function draw(node, nodePosition) {
-            var nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition);
-            getRelatedNodes(node, nodeSprite, typesAndLimits, drawRelatedNodes);
-        }
-
         function getNode(id, nodePostion, callback) {
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
             });
         }
+
+        /* callback called when getting a node from the API */
+        function draw(node, nodePosition) {
+            var nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition);
+            getRelatedNodes(node, nodeSprite.sprite, typesAndLimits, drawRelatedNodes);
+        }
+
 
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
@@ -139,10 +137,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 direction = 'out';
             }
             $http.get('/api/common/' + startNode.id + '/relationships/' + direction + '/' + type).success(function(relationships) {
-                    if (relationships != null) {
-                        callback(startNodeSprite, relationships, index, limit);
-                    }
-                });
+                if (relationships != null) {
+                    callback(startNodeSprite, relationships, index, limit);
+                }
+            });
         }
 
         /* draws a node
@@ -172,8 +170,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.texture = texture;
             sprite.position.set(nodeMesh.position.x, nodeMesh.position.y, nodeMesh.position.z + 0.5);
             sprite.scale.set(8, 8, 8);
-            scene.add(sprite);
-            return sprite;
+            var added = false;
+            if ($.inArray(node.id, currentDisplayedNodes) == -1) {
+                scene.add(sprite);
+                added = true;
+            }
+            currentDisplayedNodes.push(node.id);
+            return {sprite: sprite, added: added};
         }
 
         function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
@@ -182,15 +185,23 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             if (limit > relatedNodes.length) {
                 limit = relatedNodes.length;
             }
-
             for (i = index, j = 0; i < limit + index, j < limit; i++, j++) {
                 var angle = slice * i;
                 relatedNodePosition.x = nodePosition.x + 20 * Math.cos(angle);
                 relatedNodePosition.y = nodePosition.y + 20 * Math.sin(angle);
                 var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition);
+                var endNodePosition;
+                if (relatedNodeSprite.added == false) {
+                    var obj = scene.getObjectByName(relatedNodes[j].name ?
+                        (relatedNodes[j].firstname + " " + relatedNodes[j].lastname) : relatedNodes[j].title);
+                    endNodePosition = obj.position;
+                }
+                else {
+                    endNodePosition = relatedNodeSprite.sprite.position;
+                }
                 var material = new THREE.LineBasicMaterial({ color: 0x000000 });
                 var geometry = new THREE.Geometry();
-                geometry.vertices.push(relatedNodeSprite.position, startNodeSprite.position);
+                geometry.vertices.push(endNodePosition, startNodeSprite.position);
                 var line = new THREE.Line(geometry, material);
                 scene.add(line);
             }
@@ -273,6 +284,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
             var intersection = intersects[0];
+            if (intersection == undefined) {
+                return;
+            }
             var id = intersection.object._id;
             if (id != null) {
                 // animating camera
@@ -428,6 +442,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     wrapText(old.context, text, old.context.canvas.width / 2, old.context.canvas.height / 2, old.context.canvas.width - 10, old.context.canvas.height / 3);
                 }
                 else {
+                    if (current) {
                     current.context.fillStyle = "#FFF";
                     drawCircle(current.context, current.context.canvas.width / 2, current.context.canvas.height / 2, current.context.canvas.width / 2);
                     current.context.globalAlpha = 0.6;
@@ -438,6 +453,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     var text = current.name;
                     current.context.textAlign = "center";
                     wrapText(current.context, text, current.context.canvas.width / 2, current.context.canvas.height / 2, current.context.canvas.width - 10, current.context.canvas.height / 3);
+                    }
                 }
                 old = null;
                 spriteHoverContext.clearRect(0, 0, 800, 300);

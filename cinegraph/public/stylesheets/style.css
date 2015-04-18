@@ -21,6 +21,11 @@ a {
 	padding-left: 10px;
 }
 
+.header .right-menu {
+  float: right;
+  margin: 12px;
+}
+
 .connect {
 	padding-bottom: 10px;
 	border-bottom: 2px solid black;

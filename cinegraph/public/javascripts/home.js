@@ -36,7 +36,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 		link: function link(scope, element, attrs) {
 			// global vars
             var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera(45, $('#content').width() / (window.innerHeight - $('header').height()), 1, 1000);
+            var camera = new THREE.PerspectiveCamera(45, ($('#graph').width() - 20) / (window.innerHeight - $('header').height()), 1, 1000);
             var cameraControls;
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             var raycaster = new THREE.Raycaster();
@@ -67,10 +67,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var currentDisplayedNodes = [];
 
             function init() {
-                renderer.setSize($('#content').width(), window.innerHeight - $('header').height());
+                renderer.setSize($('#graph').width() - 20, window.innerHeight - $('header').height());
                 renderer.setClearColor(0xf0f0f0);
                 document.getElementById('graph').appendChild(renderer.domElement);
-                viewWidth = $('#graph').width();
+                viewWidth = $('#graph').width() - 20;
                 viewHeight = $('#graph').height();
 
                 // camera

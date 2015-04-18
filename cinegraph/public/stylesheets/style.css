@@ -1,7 +1,3 @@
-html{
-  height: 100%;
-}
-
 body {
   padding: 0;
   margin: 0;
@@ -23,10 +19,6 @@ a {
 
 .info {
 	padding-left: 10px;
-}
-
-#graph {
-	display: inline-block;
 }
 
 .connect {
@@ -56,10 +48,6 @@ i.fa-plus:hover {
 
 i.fa-eye:hover {
 	color: #159a78;
-}
-
-#content {
-	height: 700px;
 }
 
 .blur-filter {
@@ -102,8 +90,9 @@ i.fa-eye:hover {
 }
 
 #searchBarPosition {
-  position: absolute;
-  top: 40%;
+  /*position: absolute;
+  top: 40%;*/
+  margin-top: 250px;
 }
 
 .allWindow {

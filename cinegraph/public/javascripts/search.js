@@ -1,5 +1,4 @@
-angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $http, $window) {
-
+angular.module('cinegraphApp').controller('TypeaheadCtrl', ['$scope', '$http', function($scope, $http) {
   var vague = $('#bg').Vague({
     intensity:      0,      // Blur Intensity
     forceSVGUrl:    true,   // Force absolute path to the SVG filter,
@@ -9,28 +8,21 @@ angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $htt
       easing: 'linear' // here you can use also custom jQuery easing functions
     }
   });
-//vague.animate();
 
 var blurDone = false;
 
-$("#searchFormControl").on("click", function () {if (!blurDone) {vague.animate(20);}; blurDone = true});
+$("#searchFormControl").on("click", function () {
+  if (!blurDone) {
+    vague.animate(20);
+  }
+    blurDone = true;
+  });
 
-    $scope.selectedItem = "movie";
+$scope.selectedItem = "movie";
 
-    $scope.OnItemClick = function(event) {
-        $scope.selectedItem = event;
-    }
-
-/*
-    console.log($('#spanTest').val($(this).text()));
-    $('#selectType li').on('click', function(){
-        console.log("test");
-        console.log($('#spanTest').val($(this).text()));
-    });
-*/
-
-
-
+$scope.OnItemClick = function(event) {
+  $scope.selectedItem = event;
+}
 
   $scope.getLocation = function(val) {
     console.log('Go Search !');
@@ -51,4 +43,4 @@ $("#searchFormControl").on("click", function () {if (!blurDone) {vague.animate(2
         });
     });
   };
-});
+}]);

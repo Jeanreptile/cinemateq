@@ -65,12 +65,6 @@ router.get('/search', function(req, res){
   res.render('search');
 });
 
-router.post('/search', function(req, res){
-  console.log('req is :');
-  console.log(req.body.thisId);
-  res.render('searchResult', {thisId: req.body.thisId});
-});
-
 return router;
 
 }

@@ -1,5 +1,9 @@
 var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap']);
 
+cinegraphApp.config(['$locationProvider', function($locationProvider) {
+        $locationProvider.html5Mode(true);
+}]);
+
 cinegraphApp.service('ModelDataService', ['$http', function ($http) {
     this.getData = function () {
         return {
@@ -10,9 +14,15 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
         }
     }]);
 
-var cinegraphController = cinegraphApp.controller('cinegraphController', ['ModelDataService', '$scope', '$http', function(ModelDataService, $scope, $http) {
+var cinegraphController = cinegraphApp.controller('cinegraphController', ['$scope', '$http', '$location',
+    function($scope, $http, $location) {
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
     $scope.currentNode = {};
+    var selectedNodeId = $location.search()['id'];
+    if (selectedNodeId == undefined) {
+        selectedNodeId = 466302;
+    }
+    $scope.currentNode.id = selectedNodeId;
     $scope.currentNode.type = "Movie";
     $scope.currentNode.title = "Inception";
     $scope.currentNode.released = "2010";
@@ -26,7 +36,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 		link: function link(scope, element, attrs) {
 			// global vars
             var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera(45, document.getElementById('content').offsetWidth / document.getElementById('content').offsetHeight, 1, 1000);
+            var camera = new THREE.PerspectiveCamera(45, document.getElementById('content').offsetWidth / window.innerHeight, 1, 1000);
             var cameraControls;
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             var raycaster = new THREE.Raycaster();
@@ -54,9 +64,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var movieHeightWidth = 1485;
             var movieImageOffsetX = 20;
             var movieImageOffsetY = -450;
+            var currentDisplayedNodes = [];
 
             function init() {
-                renderer.setSize(document.getElementById('content').offsetWidth, document.getElementById('content').offsetHeight);
+                renderer.setSize(document.getElementById('content').offsetWidth, window.innerHeight);
                 renderer.setClearColor(0xf0f0f0);
                 document.getElementById('graph').appendChild(renderer.domElement);
                 viewWidth = $('#graph').width();
@@ -94,7 +105,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 spriteHover.scale.set(8, 4, 1);
                 scene.add(spriteHover);
 
-                getNode(313765, nodePosition, draw);
+                getNode(scope.currentNode.id, nodePosition, draw);
 
             // listeners
             document.getElementById('graph').addEventListener('change', render, false);

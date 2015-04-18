@@ -63,10 +63,10 @@ block content
 									div.m-t-sm(ng-show="currentNode.type == 'Person'")
 										img.img-circle(src="images/leonardo_dicaprio.jpeg")
 									div.m-t-sm(ng-show="currentNode.type == 'Movie'")
-										img(src="{{currentNode.thumbnail}}")
+										img(src="images/inception.jpg")
 									div.h4.m-t.m-b-xs.font-bold.text-lt
 										a(href="#", ng-show="currentNode.type == 'Person'")
-											{{currentNode.name}}
+											{{currentNode.firstname}} {{currentNode.lastname}}
 										a(href="#", ng-show="currentNode.type == 'Movie'")
 											{{currentNode.title}}
 											| ({{currentNode.released}})
@@ -74,7 +74,7 @@ block content
 										| Actor
 										i.i.i-dot
 										| Producer
-									small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genres")
+									small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
 										| {{genre}}
 										i.i.i-dot(ng-hide="$last")
 									div.row
@@ -95,14 +95,11 @@ block content
 											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie'")
 												| Plot
 											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person'")
-												| Leonardo Wilhelm DiCaprio (born November 11, 1974) is an American actor and film producer. His first role was on the sitcom Growing Pains, but his breakthrough film performance came in This Boy's Life.
+												{{currentNode.biography | limitTo: 300}}...
 											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie'")
-												{{currentNode.plot}}
+												{{currentNode.plot | limitTo: 300}}...
 												a.m-l-xs(href="#")
 													| Read more...
-									//h4(ng-show="currentNode.movies") Played in :
-									//p(ng-repeat="movie in currentNode.movies")
-											<b>{{movie.title}}</b>
 								nav.nav-primary.hidden-xs
 									ul.nav.nav-main(data-ride='collapse')
 										li

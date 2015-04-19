@@ -66,8 +66,8 @@ block content
 									.row.m-t-sm.hidden-nav-xs
 										.col-sm-12.text-center
 											a.btn.btn-s-md.btn-info.btn-sm(href='#')
-												|See my cinegraphs
-												i.i.i-arrow-right
+												|Go to Discovery mode
+												i.i.i-arrow-right.m-l-xs
 								div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 									div.m-t-sm(ng-show="currentNode.type == 'Person'")
 										img.img-circle(src="images/leonardo_dicaprio.jpeg")
@@ -122,14 +122,16 @@ block content
 								i.i.i-circleleft.text
 									i.i.i-circleright.text-active
 				section#content.mycinegraph
-					section.hbox.strech
+					section.hbox.stretch
 						section
 							section.vbox
 								section.scrollable.padder
-									section.row.m-b-md
-										section.col-sm-6
-											h2
+									header.row.m-b-md
+										div.col-sm-12
+											h2.text-black
 												| Your cinegraphs
+												a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(data-toggle="tooltip", data-placement="right", title="", data-original-title="Create a new cinegraph")
+													i.fa.fa-plus
 									section.row.m-md
 										section.col-sm-6
 											a.btn.btn-default.btn-block

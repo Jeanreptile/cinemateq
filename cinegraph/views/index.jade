@@ -18,6 +18,8 @@ block content
 							button.btn.btn-sm.bg-white.b-white.btn-icon(type='submit')
 								span.glyphicon.glyphicon-search
 						input.form-control.input-sm.no-border(type='text', placeholder='Search for a movie...')
+			a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(href='#nav, #sidebar', data-toggle='class:nav-xs, show')
+				i.fa.fa-bars
 			ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
 				li.dropdown
 					a.dropdown-toggle(href='#', data-toggle='dropdown')
@@ -48,18 +50,23 @@ block content
 						section.w-f.scrollable
 							.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
 								.clearfix.wrapper.dk.nav-user.hidden-xs
-									span.thumb.pull-left.avatar.m-r
-										img.dker(src="images/a0.png")
-										i.on.md.b-black            
-									span.hidden-nav-xs.clear
-										span.block.m-t-xs
-											if user
-												strong.font-bold.text-lt #{user.firstName}
-												span.text-muted.text-xs.block Cinephile
-											else
-												strong.font-bold.text-lt Invité
-												span.text-muted.text-xs.block Novice
-								div.node-details.text-center(ng-show="currentNode")
+									.col-sm-6
+										span.thumb.pull-left.avatar.m-r
+											img.dker(src="images/a0.png")
+											i.on.md.b-black            
+										span.hidden-nav-xs.clear
+											span.block.m-t-xs
+												if user
+													strong.font-bold.text-lt #{user.firstName}
+													span.text-muted.text-xs.block Cinephile
+												else
+													strong.font-bold.text-lt Invité
+													span.text-muted.text-xs.block Novice
+									.col-sm-6.hidden-nav-xs
+										a.btn.btn-s-md.btn-info.btn-sm(href='#')
+											i.fa.fa-heart
+											|  myCinegraphs
+								div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 									div.m-t-sm(ng-show="currentNode.type == 'Person'")
 										img.img-circle(src="images/leonardo_dicaprio.jpeg")
 									div.m-t-sm(ng-show="currentNode.type == 'Movie'")
@@ -109,8 +116,123 @@ block content
 													i.i.i-circle-sm.text-active
 												i.i.i-plus2.icon
 												span.font-bold Suggestions
-								
+						footer.footer.hidden-xs.no-padder.text-center-nav-xs
+							a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(href='#nav', data-toggle='class:nav-xs')
+								i.i.i-circleleft.text
+									i.i.i-circleright.text-active
 				section#content
-					section.vbox
+					section.hbox.stretch
 						section
 							#graph(cinegraph="")
+				aside#sidebar.aside-md.bg-black.hide
+					section.vbox.animated.fadeInRight
+						section.scrollable
+							.panel.bg-black
+								.panel-heading.b-b.b-dark
+									strong
+										| Filter by job
+								.panel-body
+									.checkbox.i-checks
+										label
+											input(type='checkbox', checked='', value='PRODUCED')
+											i
+											| Producer
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='DIRECTED')
+											i
+											| Director
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='WROTE')
+											i
+											| Writer
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='DIRECTED_PHOTOGRAPHY')
+											i
+											| Director of photography
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='EDITED')
+											i
+											| Editor
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='COMPOSED_MUSIC')
+											i
+											| Music Composer
+									.checkbox.i-checks
+										label
+											input(type='checkbox', checked='', value='DESIGNED_COSTUMES')
+											i
+											| Costume designer
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='DESIGNED_PRODUCTION')
+											i
+											| Production designer
+								.panel-heading.b-b.b-dark
+									strong
+										| Filter by genre
+								.panel-body
+									.checkbox.i-checks
+										label
+											input(type='checkbox', checked='', value='Drama')
+											i
+											| Drama
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Comedy')
+											i
+											| Comedy
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Romance')
+											i
+											| Romance
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Fantasy')
+											i
+											| Fantasy
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Thriller')
+											i
+											| Thriller
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Sci-Fi')
+											i
+											| Sci-Fi
+									.checkbox.i-checks
+										label
+											input(type='checkbox', checked='', value='Horror')
+											i
+											| Horror
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Documentary')
+											i
+											| Documentary
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Biography')
+											i
+											| Biography
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Adventure')
+											i
+											| Adventure
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='Musical')
+											i
+											| Musical
+									.checkbox.i-checks
+										label
+											input(type='checkbox', value='History')
+											i
+											| History

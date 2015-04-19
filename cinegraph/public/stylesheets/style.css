@@ -1,25 +1,13 @@
 body {
-  padding: 0;
-  margin: 0;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 13px "Open Sans", Helvetica, Arial, sans-serif;
   height: 100%;
 }
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
-a {
+/*a {
   color: #00B7FF;
-}
-
-.panel {
-	width: 350px;
-	display: inline-block;
-	vertical-align: top;
-}
-
-.info {
-	padding-left: 10px;
-}
+}*/
 
 .header .right-menu {
   float: right;
@@ -185,4 +173,8 @@ i.fa-eye:hover {
 .icon-addon .form-control:focus + .fa,
 .icon-addon:hover .fa {
     color: #2580db;
+}
+
+.filter-menu .panel-body {
+  font-size: 12px;
 }

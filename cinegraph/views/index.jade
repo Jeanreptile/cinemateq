@@ -50,22 +50,24 @@ block content
 						section.w-f.scrollable
 							.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
 								.clearfix.wrapper.dk.nav-user.hidden-xs
-									.col-sm-6
-										span.thumb.pull-left.avatar.m-r
-											img.dker(src="images/a0.png")
-											i.on.md.b-black            
-										span.hidden-nav-xs.clear
-											span.block.m-t-xs
-												if user
-													strong.font-bold.text-lt #{user.firstName}
-													span.text-muted.text-xs.block Cinephile
-												else
-													strong.font-bold.text-lt Invité
-													span.text-muted.text-xs.block Novice
-									.col-sm-6.hidden-nav-xs
-										a.btn.btn-s-md.btn-info.btn-sm(href='#')
-											i.fa.fa-heart
-											|  myCinegraphs
+									.row
+										.col-sm-12.avatar-center-xs
+											span.thumb.pull-left.avatar.m-r
+												img.dker(src="images/a0.png")
+												i.on.md.b-black
+											span.hidden-nav-xs.clear
+												span.block.m-t-xs
+													if user
+														strong.font-bold.text-lt #{user.firstName}
+														span.text-muted.text-xs.block Cinephile
+													else
+														strong.font-bold.text-lt Invité
+														span.text-muted.text-xs.block Novice
+									.row.m-t-sm.hidden-nav-xs
+										.col-sm-12.text-center
+											a.btn.btn-s-md.btn-info.btn-sm(href='#')
+												|See my cinegraphs
+												i.i.i-arrow-right
 								div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 									div.m-t-sm(ng-show="currentNode.type == 'Person'")
 										img.img-circle(src="images/leonardo_dicaprio.jpeg")
@@ -127,10 +129,11 @@ block content
 				aside#sidebar.aside-md.bg-black.hide
 					section.vbox.animated.fadeInRight
 						section.scrollable
-							.panel.bg-black
+							.panel.bg-black.filter-menu
 								.panel-heading.b-b.b-dark
+									i.fa.fa-filter.m-r-xs
 									strong
-										| Filter by job
+										|Filter by job
 								.panel-body
 									.checkbox.i-checks
 										label
@@ -173,8 +176,9 @@ block content
 											i
 											| Production designer
 								.panel-heading.b-b.b-dark
+									i.fa.fa-filter.m-r-xs
 									strong
-										| Filter by genre
+										|Filter by genre
 								.panel-body
 									.checkbox.i-checks
 										label

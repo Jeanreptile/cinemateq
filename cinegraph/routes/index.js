@@ -65,6 +65,12 @@ router.get('/search', function(req, res){
   res.render('search');
 });
 
+
+/* myCinegraph home page */
+router.get('/mycinegraph', function(req, res) {
+  res.render('mycinegraph');
+})
+
 return router;
 
 }

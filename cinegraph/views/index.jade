@@ -75,10 +75,9 @@ block content
 										img(src="images/inception.jpg")
 									div.h4.m-t.m-b-xs.font-bold.text-lt
 										a(href="#", ng-show="currentNode.type == 'Person'")
-											{{currentNode.firstname}} {{currentNode.lastname}}
+											| {{currentNode.firstname}} {{currentNode.lastname}}
 										a(href="#", ng-show="currentNode.type == 'Movie'")
-											{{currentNode.title}}
-											| ({{currentNode.released}})
+											| {{currentNode.title}} ({{currentNode.released}})
 									small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
 										| Actor
 										i.i.i-dot
@@ -102,11 +101,11 @@ block content
 											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
 												| Biography
 											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person' && currentNode.biography")
-												{{currentNode.biography | limitTo: 300}}...
+												| {{currentNode.biography | limitTo: 300}}...
 											div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.plot")
 												| Plot
 											p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
-												{{currentNode.plot | limitTo: 300}}...
+												| {{currentNode.plot | limitTo: 300}}...
 												a.m-l-xs(href="#")
 													| Read more...
 								nav.nav-primary.hidden-xs

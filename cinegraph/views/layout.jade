@@ -1,5 +1,5 @@
 doctype html
-html
+html.app
   head
     meta(charset='utf-8')
     title= title
@@ -29,3 +29,4 @@ html
     script(src='javascripts/StackBlur.js')
     body(ng-app='cinegraphApp', ng-controller='cinegraphController')
     block content
+    base(href='/')

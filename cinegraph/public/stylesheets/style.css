@@ -1,32 +1,17 @@
-html{
-  height: 100%;
-}
-
 body {
-  padding: 0;
-  margin: 0;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 13px "Open Sans", Helvetica, Arial, sans-serif;
   height: 100%;
 }
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
-a {
+/*a {
   color: #00B7FF;
-}
+}*/
 
-.panel {
-	width: 350px;
-	display: inline-block;
-	vertical-align: top;
-}
-
-.info {
-	padding-left: 10px;
-}
-
-#graph {
-	display: inline-block;
+.header .right-menu {
+  float: right;
+  margin: 12px;
 }
 
 .connect {
@@ -56,10 +41,6 @@ i.fa-plus:hover {
 
 i.fa-eye:hover {
 	color: #159a78;
-}
-
-#content {
-	height: 500px;
 }
 
 .blur-filter {
@@ -102,8 +83,9 @@ i.fa-eye:hover {
 }
 
 #searchBarPosition {
-  position: absolute;
-  top: 40%;
+  /*position: absolute;
+  top: 40%;*/
+  margin-top: 250px;
 }
 
 .allWindow {
@@ -191,4 +173,8 @@ i.fa-eye:hover {
 .icon-addon .form-control:focus + .fa,
 .icon-addon:hover .fa {
     color: #2580db;
+}
+
+.filter-menu .panel-body {
+  font-size: 12px;
 }

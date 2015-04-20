@@ -28,6 +28,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var scene = new THREE.Scene();
             var camera = new THREE.PerspectiveCamera(45, document.getElementById('content').offsetWidth / document.getElementById('content').offsetHeight, 1, 1000);
             var cameraControls;
+            var bgScene, bgCam;
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
@@ -37,7 +38,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var current = null;
             var img = new Image();
             img.src = 'images/leonardo_dicaprio.jpeg';
-            //img.src = 'images/inception2.jpg';
+            var img2 = new Image();
+            img2.src = 'images/inception.jpg';
             var radius = 50;
             var theta = 0;
             var nodeRadius = 100, nodeSegments = 64;
@@ -54,6 +56,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var movieHeightWidth = 1485;
             var movieImageOffsetX = 20;
             var movieImageOffsetY = -450;
+            var background;
 
             function init() {
                 renderer.setSize(document.getElementById('content').offsetWidth, document.getElementById('content').offsetHeight);
@@ -61,6 +64,24 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 document.getElementById('graph').appendChild(renderer.domElement);
                 viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
+
+                // background scene
+                var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
+                var bgTexture = new THREE.Texture(bgCanvas);
+                background = new THREE.Mesh(
+                    new THREE.PlaneBufferGeometry(2, 2, 0),
+                    new THREE.MeshBasicMaterial({map: bgTexture})
+                );
+                background.bgCanvas = bgCanvas;
+                background.bgTexture = bgTexture;
+                background.bgTexture.needsUpdate = true;
+                background.material.depthTest = false;
+                background.material.depthWrite = false;
+                bgScene = new THREE.Scene();
+                bgCam = new THREE.Camera();
+                bgScene.add(bgCam);
+                bgScene.add(background);
+
 
                 // camera
                 camera.position.x = 0;
@@ -84,7 +105,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 spriteHover = new THREE.Sprite(material);
                 spriteHover.position.set(0, 0, 0);
                 spriteHover.scale.set(8, 4, 1);
-                scene.add(spriteHover);
+                //scene.add(spriteHover);
 
                 getNode(311902, nodePosition, draw);
 
@@ -224,6 +245,26 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             wrapText(context, text, canvas.width / 2, canvas.height / 2.4, canvas.width - 10, canvas.height / 4.5);
         }
 
+        function generateBackgroundCanvas(width, height, image, blur) {
+            var bgCanvas = document.createElement('canvas');
+            bgCanvas.width = width;
+            bgCanvas.height = height;
+            var bgContext = bgCanvas.getContext('2d');
+            drawImageProp(bgContext, image, 0, 0, bgCanvas.width, bgCanvas.height);
+            stackBlurCanvasRGB(bgCanvas, 0, 0, bgCanvas.width, bgCanvas.height, blur);
+            return bgCanvas;
+        }
+
+        function crossFadeBackgroundCanvas(canvas, startCanvas, endCanvas, percentage) {
+            var bgContext = canvas.getContext('2d');
+            bgContext.fillStyle = "#000";
+            bgContext.fillRect(0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = 1 - (percentage / 100);
+            bgContext.drawImage(startCanvas, 0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = percentage / 100;
+            bgContext.drawImage(endCanvas, 0, 0, canvas.width, canvas.height);
+        }
+
         function generateHoverText(text) {
             var canvas = document.createElement('canvas');
             spriteHoverContext = canvas.getContext('2d');
@@ -248,6 +289,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         // render the scene
         function render() {
+            renderer.autoClear = false;
+            renderer.clear();
+            renderer.render(bgScene, bgCam);
             renderer.render(scene, camera);
         }
 
@@ -287,48 +331,32 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     z: targetZ}, duration)
                   .easing(TWEEN.Easing.Linear.None)
                   .onComplete(function(){
+                        // getting nodes
                         $http.get('/api/common/' + id).success(function(node) {
                             scope.currentNode = {};
                             scope.currentNode = node;
+
+                            // updating background
+                            var crossFade = new Object();
+                            crossFade.startCanvas = background.bgCanvas;
+                            if (Math.random() < 0.5)
+                                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
+                            else
+                                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img2, 60);
+                            crossFade.percentage = 0;
+                            var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 1000)
+                                .easing(TWEEN.Easing.Linear.None)
+                                .onUpdate(function (){
+                                    crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
+                                        crossFade.endCanvas, crossFade.percentage);
+                                    background.bgTexture.needsUpdate = true;
+                                }).start();
                         });
                         nodePosition = intersection.object.position;
                         getNode(id, nodePosition, draw);
                   })
                   .start();
             }
-        }
-
-        function makeTextSprite(message, parameters) {
-        	if (parameters === undefined) parameters = {};
-        	var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
-        	var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
-        	var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
-        	var borderColor = parameters.hasOwnProperty("borderColor") ? parameters["borderColor"] : { r: 0, g: 0, b: 0, a: 1.0 };
-        	var backgroundColor = parameters.hasOwnProperty("backgroundColor") ? parameters["backgroundColor"] : { r: 255, g: 255, b: 255, a: 1.0 };
-        	var textColor = parameters.hasOwnProperty("textColor") ? parameters["textColor"] : { r: 0, g: 0, b: 0, a: 1.0 };
-
-        	var canvas = document.createElement('canvas');
-        	var context = canvas.getContext('2d');
-        	context.font = "Bold " + fontsize + "px " + fontface;
-        	var metrics = context.measureText(message);
-        	var textWidth = metrics.width;
-
-            //context.fillStyle = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
-            //context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
-
-            //context.lineWidth = borderThickness;
-            //roundRect(context, borderThickness / 2, borderThickness / 2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
-
-            context.fillStyle = "rgba(" + textColor.r + ", " + textColor.g + ", " + textColor.b + ", 1.0)";
-            context.fillText(message, borderThickness, fontsize + borderThickness);
-
-            var texture = new THREE.Texture(canvas)
-            texture.needsUpdate = true;
-
-            var spriteMaterial = new THREE.SpriteMaterial({ map: texture, useScreenCoordinates: false });
-            var sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
-            return sprite;
         }
 
         // function for drawing rounded rectangles
@@ -357,29 +385,69 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             ctx.clip();
         }
 
+        // draw an image proportionally to fit inside a container
+        function drawImageProp(ctx, img, x, y, w, h, offsetX, offsetY) {
+            if (arguments.length === 2) {
+                x = y = 0;
+                w = ctx.canvas.width;
+                h = ctx.canvas.height;
+            }
+            // default offset is center
+            offsetX = typeof offsetX === "number" ? offsetX : 0.5;
+            offsetY = typeof offsetY === "number" ? offsetY : 0.5;
+            // keep bounds [0.0, 1.0]
+            if (offsetX < 0) offsetX = 0;
+            if (offsetY < 0) offsetY = 0;
+            if (offsetX > 1) offsetX = 1;
+            if (offsetY > 1) offsetY = 1;
+            var iw = img.width,
+                ih = img.height,
+                r = Math.min(w / iw, h / ih),
+                nw = iw * r,   // new prop. width
+                nh = ih * r,   // new prop. height
+                cx, cy, cw, ch, ar = 1;
+            // decide which gap to fill
+            if (nw < w) ar = w / nw;
+            if (nh < h) ar = h / nh;
+            nw *= ar;
+            nh *= ar;
+            // calc source rectangle
+            cw = iw / (nw / w);
+            ch = ih / (nh / h);
+            cx = (iw - cw) * offsetX;
+            cy = (ih - ch) * offsetY;
+            // make sure source rectangle is valid
+            if (cx < 0) cx = 0;
+            if (cy < 0) cy = 0;
+            if (cw > iw) cw = iw;
+            if (ch > ih) ch = ih;
+            // fill image in dest. rectangle
+            ctx.drawImage(img, cx, cy, cw, ch,  x, y, w, h);
+        }
+
         function update() {
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
 
             // getting intersected object
             if (intersects.length > 0 && intersects[0].object != INTERSECTED){
-                if (INTERSECTED)
+                /*if (INTERSECTED)
                     console.log(INTERSECTED.name + " " + INTERSECTED.type + " " + INTERSECTED._id + ' | '
                         + intersects[0].object.name + " " + intersects[0].object.type + " " + intersects[0].object._id
-                        + " > " + (current != null ? current.name : "null"));
+                        + " > " + (current != null ? current.name : "null"));*/
                 INTERSECTED = intersects[0].object;
 
                 if (INTERSECTED._id !== undefined) {
                     // restoring node state when leaving it
                     if (current && (current._id != INTERSECTED._id)) {
-                        console.log('Restoring ' + current.name);
+                        //console.log('Restoring ' + current.name);
                         updateTexture(current.canvas, current.name, 0.6);
                         current.texture.needsUpdate = true;
                         old = current;
                     }
                     // updating intersected node and animating opacity
                     current = INTERSECTED;
-                    console.log('updating ' + current.name, current);
+                    //console.log('updating ' + current.name, current);
                     current.animationOpacity = 0.6;
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)

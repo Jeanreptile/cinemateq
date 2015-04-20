@@ -154,12 +154,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
         function drawNode(node, radius, segments, position) {
-            var material = new THREE.MeshBasicMaterial();
+            /*var material = new THREE.MeshBasicMaterial();
             var circleGeometry = new THREE.CircleGeometry(radius, segments);
             var nodeMesh = new THREE.Mesh(circleGeometry, material);
             nodeMesh.position.x = position.x;
             nodeMesh.position.y = position.y;
-            nodeMesh.position.z = position.z;
+            nodeMesh.position.z = position.z;*/
             
             var text = node.name ? node.name : node.title;
             var canvas = generateTexture(text);
@@ -173,7 +173,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.canvas = canvas;
             sprite.context = canvas.getContext('2d');
             sprite.texture = texture;
-            sprite.position.set(nodeMesh.position.x, nodeMesh.position.y, nodeMesh.position.z + 0.5);
+            sprite.position.set(position.x, position.y, position.z);
             sprite.scale.set(8, 8, 8);
             scene.add(sprite);
             return sprite;
@@ -263,6 +263,16 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             bgContext.drawImage(startCanvas, 0, 0, canvas.width, canvas.height);
             bgContext.globalAlpha = percentage / 100;
             bgContext.drawImage(endCanvas, 0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = 1;
+        }
+
+        function cloneCanvas(canvas) {
+            var newCanvas = document.createElement('canvas');
+            newCanvas.width = canvas.width;
+            newCanvas.height = canvas.height;
+            newCanvasContext = newCanvas.getContext('2d');
+            newCanvasContext.drawImage(canvas, 0, 0, newCanvas.width, newCanvas.height);
+            return newCanvas;
         }
 
         function generateHoverText(text) {
@@ -338,7 +348,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
                             // updating background
                             var crossFade = new Object();
-                            crossFade.startCanvas = background.bgCanvas;
+                            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
                             if (Math.random() < 0.5)
                                 crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
                             else

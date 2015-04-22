@@ -2,6 +2,27 @@ var express = require('express');
 var http = require('http');
 var router = express.Router();
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
+var relTypes = [{ "name": "PRODUCED", "number": 0 }, { "name": "ACTED_IN", "number": 0 }, { "name": "DIRECTED", "number": 0 },
+				{ "name": "COMPOSED_MUSIC", "number": 0 }, { "name": "WROTE", "number": 0 }, { "name": "DIRECTED_PHOTOGRAPHY", "number": 0 },
+				{ "name": "DESIGNED_COSTUMES", "number": 0 }, { "name": "EDITED", "number": 0 }, { "name": "DESIGNED_PRODUCTION", "number": 0}];
+
+function pushNumberOfRelations(index, id, callback) {
+	dbLocal.relationships(id, "out", relTypes[index]["name"], function(err, relationships) {
+		if (err)
+			throw err;
+		if (relationships.length > 0) {
+			var length = relationships.length;
+			relTypes[index]["number"] = length;
+		}
+		if (index == relTypes.length - 1) {
+			relTypes.sort(function(a,b) {
+				var x = a["number"], y = b["number"];
+				return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+			}).reverse();
+			callback(relTypes);
+		}
+	});
+}
 
 /* GET a node by id. */
 router.get('/:id', function(req, res) {
@@ -11,7 +32,17 @@ router.get('/:id', function(req, res) {
 			throw err;
 		dbLocal.readLabels(result[0], function(err, labels) {
 			result[0].type = labels[0];
-			res.json(result[0]);
+			if (result[0].type == "Person") {
+				for (var i = 0; i < relTypes.length; i++) {
+					pushNumberOfRelations(i, req.params.id, function(relTypesResult) {
+						result[0].jobs = relTypesResult;
+						res.json(result[0]);
+					});
+				}
+			}
+			else {
+				res.json(result[0]);
+			}
 		});
 	});
 	// TODO: Handle errors

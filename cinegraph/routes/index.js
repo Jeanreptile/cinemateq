@@ -69,7 +69,7 @@ router.get('/search', function(req, res){
 /* myCinegraph home page */
 router.get('/mycinegraph', function(req, res) {
   res.render('mycinegraph');
-})
+});
 
 return router;
 

@@ -1,8 +1,15 @@
 var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap']);
 
-cinegraphApp.config(['$locationProvider', function($locationProvider) {
+/*cinegraphApp.config(['$locationProvider', function($locationProvider) {
         $locationProvider.html5Mode(true);
-}]);
+}]);*/
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
 
 cinegraphApp.service('ModelDataService', ['$http', function ($http) {
     this.getData = function () {
@@ -18,7 +25,8 @@ var cinegraphController = cinegraphApp.controller('cinegraphController', ['$scop
     function($scope, $http, $location) {
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
     $scope.currentNode = {};
-    var selectedNodeId = $location.search()['id'];
+    var selectedNodeId = getParameterByName('id');
+    console.log(selectedNodeId);
     if (selectedNodeId == undefined) {
         selectedNodeId = 466302;
     }

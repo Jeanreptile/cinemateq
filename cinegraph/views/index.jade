@@ -68,7 +68,7 @@ block content
 											a.btn.btn-s-md.btn-info.btn-sm(href='/mycinegraph')
 												|See my cinegraphs
 												i.i.i-arrow-right.m-l-xs
-								div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
+								div.node-details.text-center(ng-show="currentNode.id").hidden-nav-xs
 									div.m-t-sm(ng-show="currentNode.type == 'Person'")
 										img.img-circle(src="images/leonardo_dicaprio.jpeg")
 									div.m-t-sm(ng-show="currentNode.type == 'Movie'")

@@ -1,4 +1,14 @@
-angular.module('cinegraphApp').controller('TypeaheadCtrl', ['$scope', '$http', function($scope, $http) {
+angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $http, $window, $location, AuthService) {
+  console.log('salut yo');
+  $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
+    $scope.isLoggedIn = isLoggedIn;
+    $scope.currentUser = AuthService.currentUser();
+  });
+
+  $scope.logout = function(){
+    AuthService.logout();
+  }
+
   var vague = $('#bg').Vague({
     intensity:      0,      // Blur Intensity
     forceSVGUrl:    true,   // Force absolute path to the SVG filter,
@@ -43,4 +53,4 @@ $scope.OnItemClick = function(event) {
         });
     });
   };
-}]);
+});

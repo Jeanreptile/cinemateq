@@ -1,7 +1,35 @@
-var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap']);
+var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
-cinegraphApp.config(['$locationProvider', function($locationProvider) {
-        $locationProvider.html5Mode(true);
+
+cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
+      console.log('oui ??');
+      $locationProvider.html5Mode(true);
+      $routeProvider
+            .when('/', {
+              templateUrl: 'partials/index', controller: 'cinegraphController'
+            })
+            .when('/signin', {
+                templateUrl: 'partials/signin', controller: "UserCtrl"
+            })
+            .when('/register', {
+                templateUrl: 'partials/register', controller: "UserCtrl"
+            })
+            .when('/home', {
+                templateUrl: 'partials/home', controller: 'UserCtrl'
+            })
+            .when('/restricted', {
+              templateUrl: '/partials/restricted', controller: 'UserCtrl'
+            })
+            .when('/error', {
+              templateUrl: '/partials/error'
+            })
+            .when('/search', {
+              templateUrl: '/partials/search', controller: 'TypeaheadCtrl'
+            })
+            .otherwise({
+                redirectTo: '/'
+            }
+        );
 }]);
 
 cinegraphApp.service('ModelDataService', ['$http', function ($http) {
@@ -14,8 +42,17 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
         }
     }]);
 
-var cinegraphController = cinegraphApp.controller('cinegraphController', ['$scope', '$http', '$location',
-    function($scope, $http, $location) {
+
+var cinegraphController = cinegraphApp.controller('cinegraphController',
+    function($scope, $http, $window, $location, AuthService) {
+    $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
+      $scope.isLoggedIn = isLoggedIn;
+      $scope.currentUser = AuthService.currentUser();
+    });
+
+    $scope.logout = function(){
+      AuthService.logout();
+    }
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
     $scope.currentNode = {};
     var selectedNodeId = $location.search()['id'];
@@ -26,7 +63,8 @@ var cinegraphController = cinegraphApp.controller('cinegraphController', ['$scop
         $scope.currentNode = node;
     });
     $scope.currentNode.id = selectedNodeId;
-}]);
+
+});
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
 	return {
@@ -84,8 +122,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 cameraControls.staticMoving = true;
                 cameraControls.dynamicDampingFactor = 0.3;
                 cameraControls.keys = [ 65, 83, 68 ];
-
+                
                 // cube
+
                 var geometry = new THREE.BoxGeometry(1, 1, 1);
                 var material = new THREE.MeshBasicMaterial({ color: 0xf0f0f0, wireframe: true });
                 var cube = new THREE.Mesh(geometry, material);
@@ -466,26 +505,3 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
     }
 }
 }]);
-
-cinegraphApp.factory('authInterceptor', function ($rootScope, $q, $window) {
-  return {
-    request: function (config) {
-      console.log("alo");
-      config.headers = config.headers || {};
-      if ($window.sessionStorage.token) {
-        config.headers.Authorization = 'Bearer ' + $window.sessionStorage.token;
-      }
-      return config;
-    },
-    responseError: function (rejection) {
-      if (rejection.status === 401) {
-        // handle the case where the user is not authenticated
-      }
-      return $q.reject(rejection);
-    }
-  };
-});
-
-cinegraphApp.config(function ($httpProvider) {
-  $httpProvider.interceptors.push('authInterceptor');
-});

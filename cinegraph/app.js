@@ -12,21 +12,24 @@ var jwt = require('jsonwebtoken');
 var app = express();
 
 // Session & init. of passport for user management
-var passport = require('passport');
-var expressSession = require('express-session');
-app.use(expressSession({secret: 'secretsecret', saveUninitialized: true, resave: true}));
-app.use(passport.initialize());
-app.use(passport.session());
+//var expressSession = require('express-session');
+//app.use(expressSession({secret: 'secretsecret', saveUninitialized: true, resave: true}));
+
+app.all('*', function(req, res, next) {
+  res.set('Access-Control-Allow-Credentials', true);
+  res.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT');
+  res.set('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization');
+  if ('OPTIONS' == req.method) return res.send(200);
+  next();
+});
 
 // We use flash
-var flash = require('connect-flash');
-app.use(flash());
-
-var passportConfig = require('./passport/init')
-passportConfig(passport);
+//var flash = require('connect-flash');
+//app.use(flash());
 
 
-var routes = require('./routes/index')(passport);
+
+var routes = require('./routes');
 var users = require('./routes/users');
 var persons = require('./routes/persons');
 var movies = require('./routes/movies');
@@ -50,13 +53,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //app.use('/restricted', expressJwt({secret: 'SecretStory'}));
 
+app.get('/', routes.index);
 
-app.use('/', routes);
 app.use('/users', users);
 app.use('/api/persons', persons);
 app.use('/api/movies', movies);
 app.use('/api/search', searchRoutes);
 app.use('/api/common', commons);
+
+app.get('/partials/:name', routes.partials);
+app.get('*', routes.index);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

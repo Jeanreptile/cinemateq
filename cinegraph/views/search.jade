@@ -1,78 +1,72 @@
-extends layout
+.bgTest
+  figure#bg
+script(src='javascripts/Vague.js')
+script(src='javascripts/randomBG.js')    
+script(type='text/ng-template', id='templateAuto').
+  <a>
+    <img ng-src="http://images.cinefacts.de/Inception-Cover-200120.jpg" width="64">
+    <span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
+  </a>
+section.vbox.allWindow
+  header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
+    .navbar-header.aside-md.dk(style="display: inline-block;float: none")
+      a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
+        i.fa.fa-bars
+      a.navbar-brand(href='')
+        // img.m-r-sm(src='', alt='')
+        span.hidden-nav-xs
+          | C I N E M A T E Q
+      a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
+        i.fa.fa-cog
+    ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user(style="right: 0;display: inline-block;position: absolute;")
+      li.dropdown
+        a.dropdown-toggle(href='#', data-toggle='dropdown')
+          span.thumb-sm.pull-left.avatar.m-r
+            img.dker(src="images/a0.png")
+          span(ng-if='currentUser')
+            | {{currentUser.firstName}}
+          span(ng-if='currentUser == undefined')
+            | Invité
+          b.caret 
+        ul.dropdown-menu.animated.fadeInRight
+          li(ng-if='currentUser')
+            a(href='') Profile
+          li(ng-if='currentUser')
+            a(href='') My Cinegraphs
+          li.divider
+          li
+            a(ng-click='logout()' ng-if='currentUser') Logout
+            a(href='/signin' ng-if="currentUser == undefined") Sign in
+  section#searchBarPosition.hbox.stretch
+    section#content
+        section.vbox
+            section
+                // pre.
+                  Model: {{asyncSelected | json}}
+                form(action="/", method='GET')
+                  .input-group.searchBarStyle.centerWidth.animated.fadeInUp
+                    //.icon-addon.addon-lg
+                    //  input#searchFormControl.form-control.input-lg(autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
+                    //  label.glyphicon.glyphicon-search(for='searchBarForm', rel='tooltip', title='email')
+                    input(type='hidden', name='id', value="{{asyncSelected.thisId}}")
+                    input#searchFormControl.form-control.input-lg( autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.'
+                                                                  , typeahead='query as query.name for query in getLocation($viewValue)',
+                                                                  , typeahead-wait-ms=350, typeahead-loading='loadingLocations', typeahead-min-length=2
+                                                                  )
+                    span.input-group-btn
+                        button.btn.btn-lg.bg-white.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
+                            span.dropdown-label
+                                | Movie
+                        ul.dropdown-menu.dropdown-select.dropdownSearch.pull-right
+                            li.active(ng-click="OnItemClick('movie')")
+                                a(href='#')
+                                    input(type='radio', name='type', checked='')
+                                    | Movies
+                            li(ng-click="OnItemClick('person')")
+                                a(href='#')
+                                    input(type='radio', name='type')
+                                    | Persons
+                        button.btn.btn-lg.bg-white.btn-default.btn-submit-search(type="submit")
+                          i.glyphicon.glyphicon-search
 
-block content
-  .bgTest
-    figure#bg
-  script(src='javascripts/Vague.js')
-  script(type='text/ng-template', id='templateAuto').
-    <a>
-      <img ng-src="http://images.cinefacts.de/Inception-Cover-200120.jpg" width="64">
-      <span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
-    </a>
-  section.vbox.allWindow
-    header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
-      .navbar-header.aside-md.dk(style="display: inline-block;float: none")
-        a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
-          i.fa.fa-bars
-        a.navbar-brand(href='')
-          // img.m-r-sm(src='', alt='')
-          span.hidden-nav-xs
-            | C I N E M A T E Q
-        a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
-          i.fa.fa-cog
-      ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user(style="right: 0;display: inline-block;position: absolute;")
-        li.dropdown
-          a.dropdown-toggle(href='#', data-toggle='dropdown')
-            span.thumb-sm.pull-left.avatar.m-r
-              img.dker(src="images/a0.png")
-            if user
-              | #{user.firstName}
-            else
-              | Invité
-            b.caret 
-          ul.dropdown-menu.animated.fadeInRight
-            li
-              if user
-                a(href='') Profile
-            li
-              if user
-                a(href='') My Cinegraphs
-            li.divider
-            li
-              if user
-                a(ng-click="logout()") Logout
-              else
-                a(href='/signin') Sign in
-    section#searchBarPosition.hbox.stretch
-      section#content
-          section.vbox
-              section(ng-controller='TypeaheadCtrl')
-                  // pre.
-                    Model: {{asyncSelected | json}}
-                  form(action="/", method='GET')
-                    .input-group.searchBarStyle.centerWidth.animated.fadeInUp
-                      //.icon-addon.addon-lg
-                      //  input#searchFormControl.form-control.input-lg(autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
-                      //  label.glyphicon.glyphicon-search(for='searchBarForm', rel='tooltip', title='email')
-                      input(type='hidden', name='id', value="{{asyncSelected.thisId}}")
-                      input#searchFormControl.form-control.input-lg( autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.'
-                                                                    , typeahead='query as query.name for query in getLocation($viewValue)',
-                                                                    , typeahead-wait-ms=350, typeahead-loading='loadingLocations', typeahead-min-length=2
-                                                                    )
-                      span.input-group-btn
-                          button.btn.btn-lg.bg-white.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
-                              span.dropdown-label
-                                  | Movie
-                          ul.dropdown-menu.dropdown-select.dropdownSearch.pull-right
-                              li.active(ng-click="OnItemClick('movie')")
-                                  a(href='#')
-                                      input(type='radio', name='type', checked='')
-                                      | Movies
-                              li(ng-click="OnItemClick('person')")
-                                  a(href='#')
-                                      input(type='radio', name='type')
-                                      | Persons
-                          button.btn.btn-lg.bg-white.btn-default.btn-submit-search(type="submit")
-                            i.glyphicon.glyphicon-search
-
-                  .loader(ng-show='loadingLocations')
+                .loader(ng-show='loadingLocations')

@@ -19,7 +19,14 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
         $scope.user = {};
         delete $window.localStorage.token;
         // Handle login errors here
-        $scope.message = 'Error: Invalid user or password';
+        if (data.message)
+        {
+          $scope.message = data.message;
+        }
+        else
+        {
+          $scope.message = 'Error: Invalid user or password';
+        }
       });
 
   };
@@ -37,11 +44,19 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
       })
       .error(function (data, status, headers, config) {
         // Erase the token if the user fails to register
+        console.log("osadasd : " + data.message);
         $scope.message = 'Error';
         $scope.user = {};
         delete $window.localStorage.token;
         // Handle login errors here
-        $scope.message = 'Error: Invalid user or password';
+        if (data.message)
+        {
+          $scope.message = data.message;
+        }
+        else
+        {
+          $scope.message = 'Error: Invalid user or password';
+        }
       });
 
   };

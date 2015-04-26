@@ -75,7 +75,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
     $scope.currentNode = {};
     var selectedNodeId = getParameterByName('id');
-    console.log(selectedNodeId);
     if (selectedNodeId == undefined) {
         selectedNodeId = 466302;
     }
@@ -84,6 +83,105 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
     $scope.currentNode.id = selectedNodeId;
 
+    $scope.currentDisplayedNodes = [];
+
+    $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
+                            { type: 'PRODUCED', limit: 2},
+                            { type: 'DIRECTED', limit: 2},
+                            { type: 'COMPOSED_MUSIC', limit: 1},
+                            { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
+                            { type: 'WROTE', limit: 5},
+                            { type: 'EDITED', limit: 3},
+                            { type: 'DESIGNED_PRODUCTION', limit: 3},
+                            { type: 'DESIGNED_COSTUMES', limit: 2} ];
+
+    $scope.findLimitForJob = function(type) {
+        for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {
+            if ($scope.typesAndLimits[i].type == type) {
+                return $scope.typesAndLimits[i].limit;
+            }
+        }
+    }
+
+    $scope.filterByDirector = function() {
+        if ($scope.selectedJobs.director) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
+
+    $scope.filterByProducer = function() {
+        if ($scope.selectedJobs.producer) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
+
+    $scope.filterByWriter = function() {
+        if ($scope.selectedJobs.writer) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'WROTE', $scope.findLimitForJob('WROTE'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
+
+    $scope.filterByEditor = function() {
+        if ($scope.selectedJobs.writer) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'EDITED', $scope.findLimitForJob('EDITED'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
+
+    $scope.filterByDirPhotography = function() {
+        if ($scope.selectedJobs.dirphotography) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED_PHOTOGRAPHY', $scope.findLimitForJob('DIRECTED_PHOTOGRAPHY'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
+
+    $scope.filterByMusicComposer = function() {
+        if ($scope.selectedJobs.musiccomposer) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'COMPOSED_MUSIC', $scope.findLimitForJob('COMPOSED_MUSIC'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
+
+    $scope.filterByCosDesigner = function() {
+        if ($scope.selectedJobs.cosdesigner) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_COSTUMES', $scope.findLimitForJob('DESIGNED_COSTUMES'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
+
+    $scope.filterByProdDesigner = function() {
+        if ($scope.selectedJobs.proddesigner) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_PRODUCTION', $scope.findLimitForJob('DESIGNED_PRODUCTION'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
 });
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
@@ -111,18 +209,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var nodePosition = new THREE.Vector3(0, 0, 0);
             var nodeScale = new THREE.Vector3(2, 2, 1);
             var randomVector = new THREE.Vector3(Math.random() * 60 - 20, Math.random() * 60 - 20, Math.random() * 60 - 20);
-            var typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
-                                    { type: 'PRODUCED', limit: 2},
-                                    { type: 'DIRECTED', limit: 2},
-                                    { type: 'COMPOSED_MUSIC', limit: 1},
-                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1} ];
             var viewWidth, viewHeight;
             var movieImageWidth = 990;
             var movieHeightWidth = 1485;
             var movieImageOffsetX = 20;
             var movieImageOffsetY = -450;
             var background;
-            var currentDisplayedNodes = [];
 
             function init() {
                 renderer.setSize($('#graph').width(), window.innerHeight - $('header').height());
@@ -190,16 +282,27 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         /* callback called when getting a node from the API */
         function draw(node, nodePosition) {
             var nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition);
-            getRelatedNodes(node, nodeSprite.sprite, typesAndLimits, drawRelatedNodes);
+            getRelatedNodes(node, nodeSprite.sprite, scope.typesAndLimits, drawRelatedNodes);
         }
 
 
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
-            for (var i = 0; i < typesAndLimits.length; i++) {
-                getRelatedNodesForType(startNode, typesAndLimits[i].type, typesAndLimits[i].limit, index, startNodeSprite, callback);
-                index += typesAndLimits[i].limit;
-            }
+                var limit;
+                var type;
+                if (startNode.type == "Person") {
+                    type = startNode.jobs[0].name;
+                    limit = scope.findLimitForJob(type);
+                    getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback);
+                }
+                else {
+                    for (var i = 0; i < typesAndLimits.length; i++) {
+                        type = typesAndLimits[i].type;
+                        limit = typesAndLimits[i].limit;
+                        getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback);
+                        index += limit;
+                    }
+                }
         }
 
         function getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback) {
@@ -213,6 +316,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 }
             });
         }
+        scope.getRelatedNodesForType = getRelatedNodesForType;
 
         /* draws a node
         param node : JSON object returned from request to DB
@@ -221,7 +325,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
         function drawNode(node, radius, segments, position) {
-
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var canvas = generateTexture(text);
             var texture = new THREE.Texture(canvas);
@@ -239,13 +342,14 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.scale.set(8, 8, 8);
 
             var added = false;
-            if ($.inArray(node.id, currentDisplayedNodes) == -1) {
+            if ($.inArray(node.id, scope.currentDisplayedNodes) == -1) {
                 scene.add(sprite);
                 added = true;
+                scope.currentDisplayedNodes.push(node.id);
             }
-            currentDisplayedNodes.push(node.id);
             return {sprite: sprite, added: added};
         }
+
 
         function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
             var slice = 2 * Math.PI / 11;
@@ -274,6 +378,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 scene.add(line);
             }
         }
+        scope.drawRelatedNodes = drawRelatedNodes;
 
         function wrapText(context, text, x, y, maxWidth, lineHeight) {
             if (text.indexOf(' ') == -1) {
@@ -423,6 +528,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         // getting nodes
                         $http.get('/api/common/' + id).success(function(node) {
                             scope.currentNode = node;
+                            scope.currentNode.sprite = intersection.object;
                             // updating background
                             var crossFade = new Object();
                             crossFade.startCanvas = cloneCanvas(background.bgCanvas);

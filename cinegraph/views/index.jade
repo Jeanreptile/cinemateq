@@ -15,7 +15,7 @@ section.vbox
 						button.btn.btn-sm.bg-white.b-white.btn-icon(type='submit')
 							span.glyphicon.glyphicon-search
 					input.form-control.input-sm.no-border(type='text', placeholder='Search for a movie...')
-		a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(href='#nav, #sidebar', data-toggle='class:nav-xs, show')
+		a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(href='#nav,#sidebar', data-toggle='class:nav-xs, show')
 			i.fa.fa-bars
 		ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
 			li.dropdown
@@ -130,52 +130,58 @@ section.vbox
 							.panel-body
 								form.form-horizontal
 									.form-group
+										label.control-label.col-sm-6 Actor
+										.col-sm-6
+											label.switch.actor
+												input(type='checkbox', ng-model="selectedJobs.actor", ng-checked="currentNode.jobs[0].name == 'ACTED_IN'", ng-change="filterByActor()")
+												span
+									.form-group
 										label.control-label.col-sm-6 Producer
 										.col-sm-6
 											label.switch.producer
-												input(type='checkbox')  
+												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'PRODUCED'", ng-model="selectedJobs.producer", ng-change="filterByProducer()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Director
 										.col-sm-6
 											label.switch.director
-												input(type='checkbox')  
+												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DIRECTED'", ng-model="selectedJobs.director",  ng-change="filterByDirector()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Writer
 										.col-sm-6
 											label.switch.writer
-												input(type='checkbox')  
+												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'WROTE'", ng-model="selectedJobs.writer", ng-change="filterByWriter()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Editor
 										.col-sm-6
 											label.switch.editor
-												input(type='checkbox')  
+												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'EDITED'", ng-model="selectedJobs.editor", ng-change="filterByEditor()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Director of photography
 										.col-sm-6
 											label.switch.dir-photography
-												input(type='checkbox')  
+												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY'", ng-model="selectedJobs.dirphotography", ng-change="filterByDirPhotography()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Music Composer
 										.col-sm-6
 											label.switch.music-composer
-												input(type='checkbox')  
+												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'COMPOSED_MUSIC'", ng-model="selectedJobs.musiccomposer", ng-change="filterByMusicComposer()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Costume designer
 										.col-sm-6
 											label.switch.cos-designer
-												input(type='checkbox')  
+												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DESIGNED_COSTUMES'", ng-model="selectedJobs.cosdesigner", ng-change="filterByCosDesigner()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Production designer
 										.col-sm-6
 											label.switch.prod-designer
-												input(type='checkbox')  
+												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DESIGNED_PRODUCTION'", ng-model="selectedJobs.proddesigner", ng-change="filterByProdDesigner()")
 												span
 							.panel-heading.b-b.b-dark
 								i.fa.fa-filter.m-r-xs

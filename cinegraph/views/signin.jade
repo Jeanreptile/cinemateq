@@ -1,31 +1,37 @@
-extends layout
-
-block content
+section.vbox.allWindow
+  header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
+    .navbar-header.aside-md.dk(style="display: inline-block;float: none")
+      a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
+        i.fa.fa-bars
+      a.navbar-brand(href='/')
+        // img.m-r-sm(src='', alt='')
+        span.hidden-nav-xs
+          | C I N E M A T E Q
   section#content.m-t-lg.wrapper-md.animated.fadeInUp
-      .container.aside-xl
-        a.navbar-brand.block(href='/') Cinemateq
-        section.m-b-lg
-          header.wrapper.text-center
-            strong Sign in to get in touch
-          div(ng-controller="UserCtrl")
-            div {{message2}}
-            form(ng-submit="submit()")
-              .list-group
-                .list-group-item
-                  input.form-control.no-border(ng-model='user.username' name='username', type='text', placeholder='Username')
-                |             
-                .list-group-item
-                  input.form-control.no-border(ng-model='user.password' name='password', type='password', placeholder='Password')
-              button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in
-            .text-center.m-t.m-b
-              a(href='#')
-                small Forgot password?
-            .line.line-dashed
-            p.text-muted.text-center
-              small Do not have an account?
-            a.btn.btn-lg.btn-default.btn-block(href='/signup') Create an account
-            p
-            a(ng-click='callRestricted()', href='') Link to /restricted
-            p
-            a(ng-click='removeJWT()', href='') Remove JWT
-            div {{message}}
+    .container.aside-xl
+      section.m-b-lg
+        header.wrapper.text-center
+          strong Sign in to get in touch
+          #message
+            div(ng-if'message')
+              h2.text-center.error-message {{message}}
+          form(ng-submit="signin()")
+            .list-group
+              .list-group-item
+                input.form-control.no-border(ng-model='user.username' name='username', type='text', placeholder='Username')
+              |             
+              .list-group-item
+                input.form-control.no-border(ng-model='user.password' name='password', type='password', placeholder='Password')
+            button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in
+          .text-center.m-t.m-b
+            a(href='#')
+              small Forgot password?
+          .line.line-dashed
+          p.text-muted.text-center
+            small Do not have an account?
+          a.btn.btn-lg.btn-default.btn-block(href='/register') Create an account
+          p
+          a(ng-click='callRestricted()', href='') Link to /restricted
+          p
+          a(ng-click='removeJWT()', href='') Remove JWT
+          div {{message}}

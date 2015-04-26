@@ -1,27 +1,32 @@
-extends layout
-
-block content
+section.vbox.allWindow
+  header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
+    .navbar-header.aside-md.dk(style="display: inline-block;float: none")
+      a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
+        i.fa.fa-bars
+      a.navbar-brand(href='/')
+        // img.m-r-sm(src='', alt='')
+        span.hidden-nav-xs
+          | C I N E M A T E Q
   section#content.m-t-lg.wrapper-md.animated.fadeInDown
         .container.aside-xl
-          a.navbar-brand.block(href='/') Cinemateq
           section.m-b-lg
             header.wrapper.text-center
-              strong Sign up to find interesting thing
+              strong Sign up to explore the amazing galaxy of cinema
             #message
-              if message
-                h1.text-center.error-message #{message}
-            form(action='/signup', method='POST')
+              div(ng-if'message')
+                h1.text-center.error-message {{message}}
+            form(ng-submit='register()')
               .list-group
                 .list-group-item
-                  input.form-control.no-border(type='text', name='username', placeholder='Username', required, autofocus)
+                  input.form-control.no-border(ng-model = 'user.username' type='text', name='username', placeholder='Username', required, autofocus)
                 .list-group-item
-                  input.form-control.no-border(type='password', name='password', placeholder='Password', required)
+                  input.form-control.no-border(ng-model = 'user.password' type='password', name='password', placeholder='Password', required)
                 .list-group-item
-                  input.form-control.no-border(type='email', name='email', placeholder='Email', required)
+                  input.form-control.no-border(ng-model = 'user.email' type='email', name='email', placeholder='Email', required)
                 .list-group-item
-                  input.form-control.no-border(type='text', name='firstName' class='form-control', placeholder='First Name', required)
+                  input.form-control.no-border(ng-model = 'user.firstName' type='text', name='firstName' class='form-control', placeholder='First Name', required)
                 .list-group-item
-                  input.form-control.no-border(type='text', name='lastName' class='form-control', placeholder='Last Name', required)
+                  input.form-control.no-border(ng-model = 'user.lastName' type='text', name='lastName' class='form-control', placeholder='Last Name', required)
               // .checkbox.m-b
                 label
                   input(type='checkbox')

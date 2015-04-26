@@ -1,8 +1,38 @@
-var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap']);
+var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
-/*cinegraphApp.config(['$locationProvider', function($locationProvider) {
-        $locationProvider.html5Mode(true);
-}]);*/
+cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
+      console.log('oui ??');
+      $locationProvider.html5Mode(true);
+      $routeProvider
+            .when('/', {
+              templateUrl: 'partials/index', controller: 'cinegraphController'
+            })
+            .when('/signin', {
+                templateUrl: 'partials/signin', controller: "UserCtrl"
+            })
+            .when('/register', {
+                templateUrl: 'partials/register', controller: "UserCtrl"
+            })
+            .when('/home', {
+                templateUrl: 'partials/home', controller: 'UserCtrl'
+            })
+            .when('/restricted', {
+              templateUrl: '/partials/restricted', controller: 'UserCtrl'
+            })
+            .when('/mycinegraph', {
+              templateUrl: '/partials/mycinegraph', controller: 'UserCtrl'
+            })
+            .when('/error', {
+              templateUrl: '/partials/error'
+            })
+            .when('/search', {
+              templateUrl: '/partials/search', controller: 'TypeaheadCtrl'
+            })
+            .otherwise({
+                redirectTo: '/'
+            }
+        );
+}]);
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -16,13 +46,22 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
         return {
             async: function() {
                     return $http.get('/api/persons/all');
-                }
-            };
-        }
-    }]);
+            }
+        };
+    }
+}]);
 
-var cinegraphController = cinegraphApp.controller('cinegraphController', ['$scope', '$http', '$location',
-    function($scope, $http, $location) {
+
+var cinegraphController = cinegraphApp.controller('cinegraphController',
+    function($scope, $http, $window, $location, AuthService) {
+    $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
+      $scope.isLoggedIn = isLoggedIn;
+      $scope.currentUser = AuthService.currentUser();
+    });
+
+    $scope.logout = function(){
+      AuthService.logout();
+    }
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
     $scope.currentNode = {};
     var selectedNodeId = getParameterByName('id');
@@ -34,25 +73,28 @@ var cinegraphController = cinegraphApp.controller('cinegraphController', ['$scop
         $scope.currentNode = node;
     });
     $scope.currentNode.id = selectedNodeId;
-}]);
+
+});
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
 	return {
 		link: function link(scope, element, attrs) {
 			// global vars
             var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera(45, ($('#graph').width() - 20) / (window.innerHeight - $('header').height()), 1, 1000);
+            var camera = new THREE.PerspectiveCamera(45, ($('#graph').width()) / (window.innerHeight - $('header').height()), 1, 1000);
             var cameraControls;
+            var bgScene, bgCam;
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
-            var INTERSECTED;
+            var INTERSECTED = null;
             var spriteHover, spriteHoverContext, spriteHoverTexture, spriteHoverCanvas;
             var old = null;
             var current = null;
             var img = new Image();
             img.src = 'images/leonardo_dicaprio.jpeg';
-            //img.src = 'images/inception2.jpg';
+            var img2 = new Image();
+            img2.src = 'images/inception.jpg';
             var radius = 50;
             var theta = 0;
             var nodeRadius = 100, nodeSegments = 64;
@@ -69,20 +111,38 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var movieHeightWidth = 1485;
             var movieImageOffsetX = 20;
             var movieImageOffsetY = -450;
+            var background;
             var currentDisplayedNodes = [];
 
             function init() {
-                renderer.setSize($('#graph').width() - 20, window.innerHeight - $('header').height());
+                renderer.setSize($('#graph').width(), window.innerHeight - $('header').height());
                 renderer.setClearColor(0xf0f0f0);
                 document.getElementById('graph').appendChild(renderer.domElement);
                 viewWidth = $('#graph').width() - 20;
                 viewHeight = $('#graph').height();
 
+                // background scene
+                var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
+                var bgTexture = new THREE.Texture(bgCanvas);
+                background = new THREE.Mesh(
+                    new THREE.PlaneBufferGeometry(2, 2, 0),
+                    new THREE.MeshBasicMaterial({map: bgTexture})
+                );
+                background.bgCanvas = bgCanvas;
+                background.bgTexture = bgTexture;
+                background.bgTexture.needsUpdate = true;
+                background.material.depthTest = false;
+                background.material.depthWrite = false;
+                bgScene = new THREE.Scene();
+                bgCam = new THREE.Camera();
+                bgScene.add(bgCam);
+                bgScene.add(background);
+
+
                 // camera
                 camera.position.x = 0;
                 camera.position.y = 0;
                 camera.position.z = 50;
-
                 cameraControls = new THREE.TrackballControls(camera);
                 cameraControls.rotateSpeed = 2.0;
                 cameraControls.zoomSpeed = 1.2;
@@ -93,13 +153,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 cameraControls.dynamicDampingFactor = 0.3;
                 cameraControls.keys = [ 65, 83, 68 ];
 
-                // cube
-                var geometry = new THREE.BoxGeometry(1, 1, 1);
-                var material = new THREE.MeshBasicMaterial({ color: 0xf0f0f0, wireframe: true });
-                var cube = new THREE.Mesh(geometry, material);
-                INTERSECTED = cube;
-                scene.add(cube)
-
                 // hover text init
                 spriteHoverCanvas = generateHoverText("testtesttesttest");
                 spriteHoverContext = spriteHoverCanvas.getContext('2d');
@@ -108,7 +161,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 spriteHover = new THREE.Sprite(material);
                 spriteHover.position.set(0, 0, 0);
                 spriteHover.scale.set(8, 4, 1);
-                scene.add(spriteHover);
+                //scene.add(spriteHover);
 
                 getNode(scope.currentNode.id, nodePosition, draw);
 
@@ -158,12 +211,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
         function drawNode(node, radius, segments, position) {
-            var material = new THREE.MeshBasicMaterial();
-            var circleGeometry = new THREE.CircleGeometry(radius, segments);
-            var nodeMesh = new THREE.Mesh(circleGeometry, material);
-            nodeMesh.position.x = position.x;
-            nodeMesh.position.y = position.y;
-            nodeMesh.position.z = position.z;
 
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var canvas = generateTexture(text);
@@ -172,12 +219,15 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             texture.needsUpdate = true;
             var spriteMaterial = new THREE.SpriteMaterial({ map: texture });
             var sprite = new THREE.Sprite(spriteMaterial);
+
             sprite._id = node.id;
             sprite.name = node.name ? (node.firstname + " " + node.lastname) : node.title;
+            sprite.canvas = canvas;
             sprite.context = canvas.getContext('2d');
             sprite.texture = texture;
-            sprite.position.set(nodeMesh.position.x, nodeMesh.position.y, nodeMesh.position.z + 0.5);
+            sprite.position.set(position.x, position.y, position.z);
             sprite.scale.set(8, 8, 8);
+
             var added = false;
             if ($.inArray(node.id, currentDisplayedNodes) == -1) {
                 scene.add(sprite);
@@ -243,17 +293,52 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         	var canvas = document.createElement('canvas');
             canvas.width = 1000;
             canvas.height = 1000;
-        	var context = canvas.getContext('2d');
-            context.fillStyle = "#FFF";
-            drawCircle(context, canvas.width / 2, canvas.height / 2, canvas.width / 2.1);
-            context.globalAlpha = 0.6;
+            updateTexture(canvas, text, 0.6);
+            return canvas;
+        }
+
+        function updateTexture(canvas, text, opacity) {
+            var context = canvas.getContext('2d');
+            drawCircle(context, canvas.width / 2, canvas.height / 2, canvas.width / 2);
+            context.fillStyle = "#000";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.globalAlpha = opacity;
             context.drawImage(img, 0, 0, canvas.width, canvas.height);
             context.globalAlpha = 1;
             context.fillStyle = "#000";
             context.font = "130px Moon Bold";
             context.textAlign = "center";
             wrapText(context, text, canvas.width / 2, canvas.height / 2.4, canvas.width - 10, canvas.height / 4.5);
-            return canvas;
+        }
+
+        function generateBackgroundCanvas(width, height, image, blur) {
+            var bgCanvas = document.createElement('canvas');
+            bgCanvas.width = width;
+            bgCanvas.height = height;
+            var bgContext = bgCanvas.getContext('2d');
+            drawImageProp(bgContext, image, 0, 0, bgCanvas.width, bgCanvas.height);
+            stackBlurCanvasRGB(bgCanvas, 0, 0, bgCanvas.width, bgCanvas.height, blur);
+            return bgCanvas;
+        }
+
+        function crossFadeBackgroundCanvas(canvas, startCanvas, endCanvas, percentage) {
+            var bgContext = canvas.getContext('2d');
+            bgContext.fillStyle = "#000";
+            bgContext.fillRect(0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = 1 - (percentage / 100);
+            bgContext.drawImage(startCanvas, 0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = percentage / 100;
+            bgContext.drawImage(endCanvas, 0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = 1;
+        }
+
+        function cloneCanvas(canvas) {
+            var newCanvas = document.createElement('canvas');
+            newCanvas.width = canvas.width;
+            newCanvas.height = canvas.height;
+            newCanvasContext = newCanvas.getContext('2d');
+            newCanvasContext.drawImage(canvas, 0, 0, newCanvas.width, newCanvas.height);
+            return newCanvas;
         }
 
         function generateHoverText(text) {
@@ -280,12 +365,20 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         // render the scene
         function render() {
+            renderer.autoClear = false;
+            renderer.clear();
+            renderer.render(bgScene, bgCam);
             renderer.render(scene, camera);
         }
 
         function onMouseHover(event) {
-            mouse.x = (event.offsetX / viewWidth) * 2 - 1;
-            mouse.y = -(event.offsetY / viewHeight) * 2 + 1;
+            event = event || window.event;
+            var target = event.target || event.srcElement,
+                rect = target.getBoundingClientRect(),
+                offsetX = event.clientX - rect.left,
+                offsetY = event.clientY - rect.top;
+            mouse.x = (offsetX / viewWidth) * 2 - 1;
+            mouse.y = -(offsetY / viewHeight) * 2 + 1;
         }
 
         function onClick(event) {
@@ -315,47 +408,32 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     x: targetX,
                     y: targetY,
                     z: targetZ}, duration)
-                  .easing(TWEEN.Easing.Linear.None).start();
-
-                $http.get('/api/common/' + id).success(function(node) {
-                    scope.currentNode = node;
-                });
-                nodePosition = intersection.object.position;
-                getNode(id, nodePosition, draw);
+                  .easing(TWEEN.Easing.Linear.None)
+                  .onComplete(function(){
+                        // getting nodes
+                        $http.get('/api/common/' + id).success(function(node) {
+                            scope.currentNode = node;
+                            // updating background
+                            var crossFade = new Object();
+                            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
+                            if (Math.random() < 0.5)
+                                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
+                            else
+                                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img2, 60);
+                            crossFade.percentage = 0;
+                            var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 1000)
+                                .easing(TWEEN.Easing.Linear.None)
+                                .onUpdate(function (){
+                                    crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
+                                        crossFade.endCanvas, crossFade.percentage);
+                                    background.bgTexture.needsUpdate = true;
+                                }).start();
+                        });
+                        nodePosition = intersection.object.position;
+                        getNode(id, nodePosition, draw);
+                  })
+                  .start();
             }
-        }
-
-        function makeTextSprite(message, parameters) {
-        	if (parameters === undefined) parameters = {};
-        	var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
-        	var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
-        	var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
-        	var borderColor = parameters.hasOwnProperty("borderColor") ? parameters["borderColor"] : { r: 0, g: 0, b: 0, a: 1.0 };
-        	var backgroundColor = parameters.hasOwnProperty("backgroundColor") ? parameters["backgroundColor"] : { r: 255, g: 255, b: 255, a: 1.0 };
-        	var textColor = parameters.hasOwnProperty("textColor") ? parameters["textColor"] : { r: 0, g: 0, b: 0, a: 1.0 };
-
-        	var canvas = document.createElement('canvas');
-        	var context = canvas.getContext('2d');
-        	context.font = "Bold " + fontsize + "px " + fontface;
-        	var metrics = context.measureText(message);
-        	var textWidth = metrics.width;
-
-            //context.fillStyle = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
-            //context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
-
-            //context.lineWidth = borderThickness;
-            //roundRect(context, borderThickness / 2, borderThickness / 2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
-
-            context.fillStyle = "rgba(" + textColor.r + ", " + textColor.g + ", " + textColor.b + ", 1.0)";
-            context.fillText(message, borderThickness, fontsize + borderThickness);
-
-            var texture = new THREE.Texture(canvas)
-            texture.needsUpdate = true;
-
-            var spriteMaterial = new THREE.SpriteMaterial({ map: texture, useScreenCoordinates: false });
-            var sprite = new THREE.Sprite(spriteMaterial);
-            sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
-            return sprite;
         }
 
         // function for drawing rounded rectangles
@@ -378,64 +456,102 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function drawCircle(ctx, x, y, radius) {
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, 2 * Math.PI);
-            ctx.lineWidth = 25;
-            ctx.stroke();
+            /*ctx.lineWidth = radius;*/
+            /*ctx.strokeStyle = '#f0f0f0';
+            ctx.stroke();*/
             ctx.clip();
+        }
+
+        // draw an image proportionally to fit inside a container
+        function drawImageProp(ctx, img, x, y, w, h, offsetX, offsetY) {
+            if (arguments.length === 2) {
+                x = y = 0;
+                w = ctx.canvas.width;
+                h = ctx.canvas.height;
+            }
+            // default offset is center
+            offsetX = typeof offsetX === "number" ? offsetX : 0.5;
+            offsetY = typeof offsetY === "number" ? offsetY : 0.5;
+            // keep bounds [0.0, 1.0]
+            if (offsetX < 0) offsetX = 0;
+            if (offsetY < 0) offsetY = 0;
+            if (offsetX > 1) offsetX = 1;
+            if (offsetY > 1) offsetY = 1;
+            var iw = img.width,
+                ih = img.height,
+                r = Math.min(w / iw, h / ih),
+                nw = iw * r,   // new prop. width
+                nh = ih * r,   // new prop. height
+                cx, cy, cw, ch, ar = 1;
+            // decide which gap to fill
+            if (nw < w) ar = w / nw;
+            if (nh < h) ar = h / nh;
+            nw *= ar;
+            nh *= ar;
+            // calc source rectangle
+            cw = iw / (nw / w);
+            ch = ih / (nh / h);
+            cx = (iw - cw) * offsetX;
+            cy = (ih - ch) * offsetY;
+            // make sure source rectangle is valid
+            if (cx < 0) cx = 0;
+            if (cy < 0) cy = 0;
+            if (cw > iw) cw = iw;
+            if (ch > ih) ch = ih;
+            // fill image in dest. rectangle
+            ctx.drawImage(img, cx, cy, cw, ch,  x, y, w, h);
         }
 
         function update() {
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
-            if (intersects.length > 0) {
-                if (intersects[0].object != INTERSECTED) {
-                    if (intersects[0].object._id !== undefined) {
-                        if (current && (current._id != intersects[0].object._id)) {
-                            current.context.fillStyle = "#FFF";
-                            drawCircle(current.context, current.context.canvas.width / 2, current.context.canvas.height / 2, current.context.canvas.width / 2);
-                            current.context.globalAlpha = 0.6;
-                            current.context.drawImage(img, 0, 0, current.context.canvas.width, current.context.canvas.height);
-                            current.context.globalAlpha = 1;
-                            current.context.fillStyle = "#000";
-                            current.context.font = "130px Moon Bold";
-                            var text = current.name;
-                            current.context.textAlign = "center";
-                            wrapText(current.context, text, current.context.canvas.width / 2, current.context.canvas.height / 2, current.context.canvas.width - 10, current.context.canvas.height / 3);
-                            old = current;
-                            current = intersects[0].object;
-                        }
-                        else {
-                            current = intersects[0].object;
-                        }
-                        //console.log("old : " + JSON.stringify(old));
-                        //console.log("current : " + JSON.stringify(current));
-                        var context = current.context;
-                        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-                        context.fillStyle = "#FFF";
-                        drawCircle(context, context.canvas.width / 2, context.canvas.height / 2, context.canvas.width / 2);
-                        context.globalAlpha = 1;
-                        context.drawImage(img, 0, 0, context.canvas.width, context.canvas.height);
-                        current.texture.needsUpdate = true;
 
-                        spriteHoverContext.fillStyle = "#FFF";
-                        spriteHoverContext.fillRect(0, 0, spriteHoverCanvas.width, spriteHoverCanvas.height);
-                        spriteHoverContext.strokeStyle = "#000";
-                        spriteHoverContext.stroke();
-                        spriteHoverContext.fillStyle = "#000";
-                        spriteHoverContext.font = "45px Moon Light";
-                        spriteHoverContext.textAlign = "center";
-                        var text = intersects[0].object.name;
-                        wrapText(spriteHoverContext, text, spriteHoverCanvas.width / 2, spriteHoverCanvas.height / 2, spriteHoverCanvas.width - 10, spriteHoverCanvas.height / 4);
-                        spriteHover.position.set(intersects[0].object.position.x, intersects[0].object.position.y + 5, intersects[0].object.position.z + 0.5 );
-                        spriteHoverTexture.needsUpdate = true;
+            // getting intersected object
+            if (intersects.length > 0 && intersects[0].object != INTERSECTED){
+                /*if (INTERSECTED)
+                    console.log(INTERSECTED.name + " " + INTERSECTED.type + " " + INTERSECTED._id + ' | '
+                        + intersects[0].object.name + " " + intersects[0].object.type + " " + intersects[0].object._id
+                        + " > " + (current != null ? current.name : "null"));*/
+                INTERSECTED = intersects[0].object;
+
+                if (INTERSECTED._id !== undefined) {
+                    // restoring node state when leaving it
+                    if (current && (current._id != INTERSECTED._id)) {
+                        //console.log('Restoring ' + current.name);
+                        updateTexture(current.canvas, current.name, 0.6);
+                        current.texture.needsUpdate = true;
+                        old = current;
                     }
-                    else {
-                        //console.log("OUT");
-                        spriteHoverContext.clearRect(0, 0, 500, 300);
-                        spriteHoverTexture.needsUpdate = true;
-                    }
+                    // updating intersected node and animating opacity
+                    current = INTERSECTED;
+                    //console.log('updating ' + current.name, current);
+                    current.animationOpacity = 0.6;
+                    var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
+                    .easing(TWEEN.Easing.Linear.None)
+                    .onUpdate(function (){
+                        updateTexture(current.canvas, current.name, current.animationOpacity);
+                        current.texture.needsUpdate = true;
+                    }).start();
+
+                    // drawing selected sprite hover text
+/*                    spriteHoverContext.fillStyle = "#FFF";
+                    spriteHoverContext.fillRect(0, 0, spriteHoverCanvas.width, spriteHoverCanvas.height);
+                    spriteHoverContext.strokeStyle = "#000";
+                    spriteHoverContext.stroke();
+                    spriteHoverContext.fillStyle = "#000";
+                    spriteHoverContext.font = "45px Moon Light";
+                    spriteHoverContext.textAlign = "center";
+                    var text = intersects[0].object.name;
+                    wrapText(spriteHoverContext, text, spriteHoverCanvas.width / 2, spriteHoverCanvas.height / 2, spriteHoverCanvas.width - 10, spriteHoverCanvas.height / 4);
+                    spriteHover.position.set(intersects[0].object.position.x, intersects[0].object.position.y + 5, intersects[0].object.position.z + 0.5 );
+                    spriteHoverTexture.needsUpdate = true;*/
                 }
+/*                    else {
+                    spriteHoverContext.clearRect(0, 0, 500, 300);
+                    spriteHoverTexture.needsUpdate = true;
+                }*/
             }
-            else
+/*            else
             {
                 if (old) {
                     old.context.fillStyle = "#FFF";
@@ -466,7 +582,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 old = null;
                 spriteHoverContext.clearRect(0, 0, 800, 300);
                 spriteHoverTexture.needsUpdate = true;
-            }
+            }*/
         }
 
         init();
@@ -474,26 +590,3 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
     }
 }
 }]);
-
-cinegraphApp.factory('authInterceptor', function ($rootScope, $q, $window) {
-  return {
-    request: function (config) {
-      console.log("alo");
-      config.headers = config.headers || {};
-      if ($window.sessionStorage.token) {
-        config.headers.Authorization = 'Bearer ' + $window.sessionStorage.token;
-      }
-      return config;
-    },
-    responseError: function (rejection) {
-      if (rejection.status === 401) {
-        // handle the case where the user is not authenticated
-      }
-      return $q.reject(rejection);
-    }
-  };
-});
-
-cinegraphApp.config(function ($httpProvider) {
-  $httpProvider.interceptors.push('authInterceptor');
-});

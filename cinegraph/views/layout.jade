@@ -1,8 +1,8 @@
 doctype html
-html.app
+html.app(ng-app='cinegraphApp')
   head
     meta(charset='utf-8')
-    title= title
+    title= "C I N E M A T E Q"
     link(rel='stylesheet', href='/stylesheets/bootstrap.css', type='text/css')
     link(rel='stylesheet', href='/stylesheets/animate.css', type='text/css')
     link(rel='stylesheet', href='/stylesheets/font-awesome.min.css', type='text/css')
@@ -17,6 +17,7 @@ html.app
     script(src='javascripts/slimscroll/jquery.slimscroll.min.js')
     script(src='javascripts/app.plugin.js')
     script(src='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js')
+    script(src='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-route.js')
     script(src='javascripts/home.js')
     script(src='javascripts/search.js')
     script(src='javascripts/auth.js')
@@ -26,6 +27,7 @@ html.app
     script(src='javascripts/tween.min.js')
     script(src='javascripts/ui-bootstrap-tpls-0.12.1.js')
     script(src='javascripts/randomBG.js')
+    script(src='javascripts/StackBlur.js')
+    body
+      ng-view
     base(href='/')
-  body(ng-app='cinegraphApp', ng-controller='cinegraphController')
-    block content

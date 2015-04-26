@@ -33,10 +33,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 		link: function link(scope, element, attrs) {
 			// global vars
             var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera(45, ($('#graph').width() - 20) / (window.innerHeight - $('header').height()), 1, 1000);
+            var camera;
             var cameraControls;
             var bgScene, bgCam;
-            var renderer = new THREE.WebGLRenderer({ antialias: true });
+            var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
             var mouseClickStart = new THREE.Vector2();
@@ -67,13 +67,19 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var movieImageOffsetY = -450;
             var background;
             var currentDisplayedNodes = [];
+            var orangeColor = '#ffa827';
+            var blueColor = '#319ef1';
 
             function init() {
-                renderer.setSize($('#graph').width() - 20, window.innerHeight - $('header').height());
-                renderer.setClearColor(0xf0f0f0);
-                document.getElementById('graph').appendChild(renderer.domElement);
-                viewWidth = $('#graph').width() - 20;
+                $('#graph').css('height','100%');
+                viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
+                camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, 1, 1000);
+                renderer.setSize(viewWidth, viewHeight);
+                //renderer.setClearColor(0xf0f0f0);
+                renderer.shadowMapType = THREE.PCFShadowMap;
+                document.getElementById('graph').appendChild(renderer.domElement);
+
 
                 // background scene
                 var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
@@ -122,7 +128,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             document.getElementById('graph').addEventListener('change', render, false);
             $('#graph').mousedown(onMouseDown);
             $('#graph').mouseup(onMouseUp);
-            //document.getElementById('graph').addEventListener('click', onClick, false);
             document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
         }
 
@@ -166,9 +171,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
         function drawNode(node, radius, segments, position, originPosition) {
-            
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
-            var canvas = generateTexture(text);
+            var circleColor = node.name ? blueColor : orangeColor;
+            var canvas = generateTexture(text, circleColor);
             var texture = new THREE.Texture(canvas);
             THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
             texture.needsUpdate = true;
@@ -184,23 +189,35 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 sprite.position.set(originPosition.x, originPosition.y, originPosition.z);
             else
                 sprite.position.set(position.x, position.y, position.z);
+            sprite.circleColor = circleColor;
             sprite.scale.set(0, 0, 0);
             
             var added = false;
             if ($.inArray(node.id, currentDisplayedNodes) == -1) {
                 scene.add(sprite);
+                // animating scale
                 new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
                     .easing(TWEEN.Easing.Linear.None)
                     .onUpdate(function (){
                         //updateTexture(current.canvas, current.name, current.animationOpacity);
                         //current.texture.needsUpdate = true;
                     }).start();
+                // animating position
                 if (originPosition !== undefined) {
                     new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
                         .easing(TWEEN.Easing.Linear.None)
-                        .onUpdate(function (){
-                            //updateTexture(current.canvas, current.name, current.animationOpacity);
-                            //current.texture.needsUpdate = true;
+                        .onComplete(function (){
+                            // drawing line
+                            var lineGeom = new THREE.Geometry();
+                            lineGeom.vertices.push(sprite.position, originPosition);
+                            lineGeom.colors.push(new THREE.Color(sprite.circleColor));
+                            lineGeom.colors.push(new THREE.Color(sprite.circleColor == orangeColor ? blueColor : orangeColor));
+                            var lineMat = new THREE.LineBasicMaterial({
+                                linewidth: 5,
+                                vertexColors: true
+                            });
+                            line = new THREE.Line(lineGeom, lineMat);
+                            scene.add(line);
                         }).start();
                 }
                 added = true;
@@ -229,23 +246,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 else {
                     endNodePosition = relatedNodeSprite.sprite.position;
                 }
-                /*var material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-                var geometry = new THREE.Geometry();
-                geometry.vertices.push(endNodePosition, startNodeSprite.position);
-                var line = new THREE.Line(geometry, material);
-                scene.add(line);*/
-                var lineGeom = new THREE.Geometry();
-                lineGeom.vertices.push(endNodePosition, startNodeSprite.position);
-                lineGeom.colors.push(new THREE.Color(0xff0000));
-                lineGeom.colors.push(new THREE.Color(0x00ff00));
-                var lineMat = new THREE.LineBasicMaterial({
-                    linewidth: 5,
-                    vertexColors: true
-                });
-                line = new THREE.Line(lineGeom, lineMat);
-                scene.add(line);
-                /*drawLine(lineMat, startNodeSprite.x, startNodeSprite.y, startNodeSprite.z,
-                    endNodePosition.x, endNodePosition.y, endNodePosition.z, 1);*/
             }
         }
 
@@ -272,7 +272,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 context.fillText(text, x, y);
                 return;
             }
-
             var words = text.split(' ');
             var line = '';
             for (var n = 0; n < words.length; n++) {
@@ -291,26 +290,39 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.fillText(line, x, y);
         }
 
-        function generateTexture(text) {
+        function generateTexture(text, circleColor) {
         	var canvas = document.createElement('canvas');
             canvas.width = 1000;
             canvas.height = 1000;
-            updateTexture(canvas, text, 0.6);
+            updateTexture(canvas, text, 0.6, circleColor);
             return canvas;
         }
 
-        function updateTexture(canvas, text, opacity) {
+        function updateTexture(canvas, text, opacity, circleColor) {
+            var borderThickness = canvas.width / 11;
+            drawCircle(canvas, borderThickness, circleColor);
             var context = canvas.getContext('2d');
-            drawCircle(context, canvas.width / 2, canvas.height / 2, canvas.width / 2);
             context.fillStyle = "#000";
             context.fillRect(0, 0, canvas.width, canvas.height);
             context.globalAlpha = opacity;
-            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+            context.drawImage(img, borderThickness, borderThickness,
+                canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
             context.globalAlpha = 1;
             context.fillStyle = "#FFF";
-            context.font = "130px Moon Bold";
+            context.font = "120px Moon Bold";
             context.textAlign = "center";
-            wrapText(context, text, canvas.width / 2, canvas.height / 2.4, canvas.width - 10, canvas.height / 4.5);
+            wrapText(context, text, canvas.width / 2, canvas.height / 2.4,
+                canvas.width -  3 * borderThickness, canvas.height / 4.5);
+        }
+
+        function drawCircle(canvas, thickness, color) {
+            var ctx = canvas.getContext('2d');
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - thickness, 0, 2 * Math.PI);
+            ctx.lineWidth = thickness;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            ctx.clip();
         }
 
         function generateBackgroundCanvas(width, height, image, blur) {
@@ -371,7 +383,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             renderer.render(bgScene, bgCam);
             renderer.render(scene, camera);
         }
-
 
         function setMousePosition(event)
         {
@@ -473,15 +484,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         	ctx.stroke();
         }
 
-        function drawCircle(ctx, x, y, radius) {
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, 2 * Math.PI);
-            /*ctx.lineWidth = radius;*/
-            /*ctx.strokeStyle = '#f0f0f0';
-            ctx.stroke();*/
-            ctx.clip();
-        }
-
         // draw an image proportionally to fit inside a container
         function drawImageProp(ctx, img, x, y, w, h, offsetX, offsetY) {
             if (arguments.length === 2) {
@@ -528,28 +530,21 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
             // getting intersected object
             if (intersects.length > 0 && intersects[0].object != INTERSECTED){
-                /*if (INTERSECTED)
-                    console.log(INTERSECTED.name + " " + INTERSECTED.type + " " + INTERSECTED._id + ' | '
-                        + intersects[0].object.name + " " + intersects[0].object.type + " " + intersects[0].object._id
-                        + " > " + (current != null ? current.name : "null"));*/
                 INTERSECTED = intersects[0].object;
-
                 if (INTERSECTED._id !== undefined) {
                     // restoring node state when leaving it
                     if (current && (current._id != INTERSECTED._id)) {
-                        //console.log('Restoring ' + current.name);
-                        updateTexture(current.canvas, current.name, 0.6);
+                        updateTexture(current.canvas, current.name, 0.6, current.circleColor);
                         current.texture.needsUpdate = true;
                         old = current;
                     }
                     // updating intersected node and animating opacity
                     current = INTERSECTED;
-                    //console.log('updating ' + current.name, current);
                     current.animationOpacity = 0.6;
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)
                     .onUpdate(function (){
-                        updateTexture(current.canvas, current.name, current.animationOpacity);
+                        updateTexture(current.canvas, current.name, current.animationOpacity, current.circleColor);
                         current.texture.needsUpdate = true;
                     }).start();
 

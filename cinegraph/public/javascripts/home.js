@@ -1,6 +1,5 @@
 var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
-
 cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
       console.log('oui ??');
       $locationProvider.html5Mode(true);
@@ -19,6 +18,9 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
             })
             .when('/restricted', {
               templateUrl: '/partials/restricted', controller: 'UserCtrl'
+            })
+            .when('/mycinegraph', {
+              templateUrl: '/partials/mycinegraph', controller: 'UserCtrl'
             })
             .when('/error', {
               templateUrl: '/partials/error'
@@ -43,15 +45,22 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
         );
 }]);
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 cinegraphApp.service('ModelDataService', ['$http', function ($http) {
     this.getData = function () {
         return {
             async: function() {
                     return $http.get('/api/persons/all');
-                }
-            };
-        }
-    }]);
+            }
+        };
+    }
+}]);
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
     function($scope, $http, $window, $location, AuthService) {
@@ -65,7 +74,8 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     }
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
     $scope.currentNode = {};
-    var selectedNodeId = $location.search()['id'];
+    var selectedNodeId = getParameterByName('id');
+    console.log(selectedNodeId);
     if (selectedNodeId == undefined) {
         selectedNodeId = 466302;
     }
@@ -81,7 +91,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 		link: function link(scope, element, attrs) {
 			// global vars
             var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera(45, ($('#graph').width() - 20) / (window.innerHeight - $('header').height()), 1, 1000);
+            var camera = new THREE.PerspectiveCamera(45, ($('#graph').width()) / (window.innerHeight - $('header').height()), 1, 1000);
             var cameraControls;
             var bgScene, bgCam;
             var renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -115,7 +125,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var currentDisplayedNodes = [];
 
             function init() {
-                renderer.setSize($('#graph').width() - 20, window.innerHeight - $('header').height());
+                renderer.setSize($('#graph').width(), window.innerHeight - $('header').height());
                 renderer.setClearColor(0xf0f0f0);
                 document.getElementById('graph').appendChild(renderer.domElement);
                 viewWidth = $('#graph').width() - 20;

@@ -2,8 +2,8 @@ section.vbox
 	header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 		.navbar-header.aside-md.dk
 			a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
-				i.fa.fa-bars			
-			a.navbar-brand(href='')
+				i.fa.fa-bars
+			a.navbar-brand(href='/')
 					img.m-r-sm(src='images/cinelogo1.png', alt='logo')
 				// span.hidden-nav-xs Cinemateq
 			a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
@@ -31,7 +31,7 @@ section.vbox
 					li(ng-if='currentUser')
 						a(href='') Profile
 					li(ng-if='currentUser')
-						a(href='/mycinegraph') My Cinegraphs
+						a(href='') My Cinegraphs
 					li.divider
 					li
 						a(ng-click='logout()' ng-if='currentUser') Logout
@@ -58,8 +58,8 @@ section.vbox
 													span.text-muted.text-xs.block Novice
 								.row.m-t-sm.hidden-nav-xs
 									.col-sm-12.text-center
-										a.btn.btn-s-md.btn-info.btn-sm(href='/mycinegraph')
-											|See my cinegraphs
+										a.btn.btn-s-md.btn-info.btn-sm(href='/')
+											|Go to Discovery mode
 											i.i.i-arrow-right.m-l-xs
 							div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 								div.m-t-sm(ng-show="currentNode.type == 'Person'")
@@ -68,10 +68,9 @@ section.vbox
 									img(src="images/inception.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
 									a(href="#", ng-show="currentNode.type == 'Person'")
-										{{currentNode.firstname}} {{currentNode.lastname}}
+										| {{currentNode.firstname}} {{currentNode.lastname}}
 									a(href="#", ng-show="currentNode.type == 'Movie'")
-										{{currentNode.title}}
-										| ({{currentNode.released}})
+										| {{currentNode.title}} ({{currentNode.released}})
 								small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
 									| Actor
 									i.i.i-dot
@@ -95,11 +94,11 @@ section.vbox
 										div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
 											| Biography
 										p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person' && currentNode.biography")
-											{{currentNode.biography | limitTo: 300}}...
+											| {{currentNode.biography | limitTo: 300}}...
 										div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.plot")
 											| Plot
 										p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
-											{{currentNode.plot | limitTo: 300}}...
+											| {{currentNode.plot | limitTo: 300}}...
 											a.m-l-xs(href="#")
 												| Read more...
 							nav.nav-primary.hidden-xs
@@ -115,10 +114,43 @@ section.vbox
 						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(href='#nav', data-toggle='class:nav-xs')
 							i.i.i-circleleft.text
 								i.i.i-circleright.text-active
-			section#content
+			section#content.mycinegraph
 				section.hbox.stretch
 					section
-						#graph(cinegraph="")
+						section.vbox
+							section.scrollable.padder
+								header.row.m-b-md
+									div.col-sm-12
+										h2.text-black
+											| Your cinegraphs
+											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(data-toggle="tooltip", data-placement="right", title="", data-original-title="Create a new cinegraph")
+												i.fa.fa-plus
+								section.row.m-md
+									section.col-sm-6
+										a.btn.btn-default.btn-block
+											h4.text-info
+												| Cinegraph 1
+									section.col-sm-6
+										a.btn.btn-default.btn-block
+											h4.text-info
+												| Cinegraph 2
+								section.row.m-md
+									section.col-sm-6
+										a.btn.btn-default.btn-block
+											.row
+												h4.text-info
+													| Cinegraph 3
+											.row
+												span.label.bg-light.m-xs
+													| Thriller
+												span.label.bg-light.m-xs
+													| Action
+												span.label.bg-light.m-xs
+													| Adventure
+									section.col-sm-6
+										a.btn.btn-default.btn-block
+											h4.text-info
+												| Cinegraph 4
 			aside#sidebar.aside-md.bg-black.hide
 				section.vbox.animated.fadeInRight
 					section.scrollable

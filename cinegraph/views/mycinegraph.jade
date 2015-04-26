@@ -167,46 +167,55 @@ block content
 									strong
 										|Filter by job
 								.panel-body
-									.checkbox.i-checks
-										label
-											input(type='checkbox', checked='', value='PRODUCED')
-											i
-											| Producer
-									.checkbox.i-checks
-										label
-											input(type='checkbox', value='DIRECTED')
-											i
-											| Director
-									.checkbox.i-checks
-										label
-											input(type='checkbox', value='WROTE')
-											i
-											| Writer
-									.checkbox.i-checks
-										label
-											input(type='checkbox', value='DIRECTED_PHOTOGRAPHY')
-											i
-											| Director of photography
-									.checkbox.i-checks
-										label
-											input(type='checkbox', value='EDITED')
-											i
-											| Editor
-									.checkbox.i-checks
-										label
-											input(type='checkbox', value='COMPOSED_MUSIC')
-											i
-											| Music Composer
-									.checkbox.i-checks
-										label
-											input(type='checkbox', checked='', value='DESIGNED_COSTUMES')
-											i
-											| Costume designer
-									.checkbox.i-checks
-										label
-											input(type='checkbox', value='DESIGNED_PRODUCTION')
-											i
-											| Production designer
+									form.form-horizontal
+										.form-group
+											label.control-label.col-sm-6 Producer
+											.col-sm-6
+												label.switch.producer
+													input(type='checkbox')  
+													span
+										.form-group
+											label.control-label.col-sm-6 Director
+											.col-sm-6
+												label.switch.director
+													input(type='checkbox')  
+													span
+										.form-group
+											label.control-label.col-sm-6 Writer
+											.col-sm-6
+												label.switch.writer
+													input(type='checkbox')  
+													span
+										.form-group
+											label.control-label.col-sm-6 Editor
+											.col-sm-6
+												label.switch.editor
+													input(type='checkbox')  
+													span
+										.form-group
+											label.control-label.col-sm-6 Director of photography
+											.col-sm-6
+												label.switch.dir-photography
+													input(type='checkbox')  
+													span
+										.form-group
+											label.control-label.col-sm-6 Music Composer
+											.col-sm-6
+												label.switch.music-composer
+													input(type='checkbox')  
+													span
+										.form-group
+											label.control-label.col-sm-6 Costume designer
+											.col-sm-6
+												label.switch.cos-designer
+													input(type='checkbox')  
+													span
+										.form-group
+											label.control-label.col-sm-6 Production designer
+											.col-sm-6
+												label.switch.prod-designer
+													input(type='checkbox')  
+													span
 								.panel-heading.b-b.b-dark
 									i.fa.fa-filter.m-r-xs
 									strong

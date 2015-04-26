@@ -39,6 +39,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var renderer = new THREE.WebGLRenderer({ antialias: true });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
+            var mouseClickStart = new THREE.Vector2();
+            var mouseIsDown = false;
             var INTERSECTED = null;
             var spriteHover, spriteHoverContext, spriteHoverTexture, spriteHoverCanvas;
             var old = null;
@@ -90,12 +92,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 bgScene.add(bgCam);
                 bgScene.add(background);
 
-
                 // camera
                 camera.position.x = 0;
                 camera.position.y = 0;
                 camera.position.z = 50;
-                cameraControls = new THREE.TrackballControls(camera);
+                cameraControls = new THREE.TrackballControls(camera, document.getElementById('graph'));
                 cameraControls.rotateSpeed = 2.0;
                 cameraControls.zoomSpeed = 1.2;
                 cameraControls.panSpeed = 0.8;
@@ -119,7 +120,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
             // listeners
             document.getElementById('graph').addEventListener('change', render, false);
-            document.getElementById('graph').addEventListener('click', onClick, false);
+            $('#graph').mousedown(onMouseDown);
+            $('#graph').mouseup(onMouseUp);
+            //document.getElementById('graph').addEventListener('click', onClick, false);
             document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
         }
 
@@ -162,7 +165,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param segments
         param position : THREE.Vector3 object for the position of the node
         */
-        function drawNode(node, radius, segments, position) {
+        function drawNode(node, radius, segments, position, originPosition) {
             
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var canvas = generateTexture(text);
@@ -177,12 +180,29 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.canvas = canvas;
             sprite.context = canvas.getContext('2d');
             sprite.texture = texture;
-            sprite.position.set(position.x, position.y, position.z);
-            sprite.scale.set(8, 8, 8);
+            if (originPosition !== undefined)
+                sprite.position.set(originPosition.x, originPosition.y, originPosition.z);
+            else
+                sprite.position.set(position.x, position.y, position.z);
+            sprite.scale.set(0, 0, 0);
             
             var added = false;
             if ($.inArray(node.id, currentDisplayedNodes) == -1) {
                 scene.add(sprite);
+                new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
+                    .easing(TWEEN.Easing.Linear.None)
+                    .onUpdate(function (){
+                        //updateTexture(current.canvas, current.name, current.animationOpacity);
+                        //current.texture.needsUpdate = true;
+                    }).start();
+                if (originPosition !== undefined) {
+                    new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
+                        .easing(TWEEN.Easing.Linear.None)
+                        .onUpdate(function (){
+                            //updateTexture(current.canvas, current.name, current.animationOpacity);
+                            //current.texture.needsUpdate = true;
+                        }).start();
+                }
                 added = true;
             }
             currentDisplayedNodes.push(node.id);
@@ -199,7 +219,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 var angle = slice * i;
                 relatedNodePosition.x = nodePosition.x + 20 * Math.cos(angle);
                 relatedNodePosition.y = nodePosition.y + 20 * Math.sin(angle);
-                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition);
+                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, nodePosition);
                 var endNodePosition;
                 if (relatedNodeSprite.added == false) {
                     var obj = scene.getObjectByName(relatedNodes[j].name ?
@@ -209,13 +229,43 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 else {
                     endNodePosition = relatedNodeSprite.sprite.position;
                 }
-                var material = new THREE.LineBasicMaterial({ color: 0x000000 });
+                /*var material = new THREE.LineBasicMaterial({ color: 0xff0000 });
                 var geometry = new THREE.Geometry();
                 geometry.vertices.push(endNodePosition, startNodeSprite.position);
                 var line = new THREE.Line(geometry, material);
+                scene.add(line);*/
+                var lineGeom = new THREE.Geometry();
+                lineGeom.vertices.push(endNodePosition, startNodeSprite.position);
+                lineGeom.colors.push(new THREE.Color(0xff0000));
+                lineGeom.colors.push(new THREE.Color(0x00ff00));
+                var lineMat = new THREE.LineBasicMaterial({
+                    linewidth: 5,
+                    vertexColors: true
+                });
+                line = new THREE.Line(lineGeom, lineMat);
                 scene.add(line);
+                /*drawLine(lineMat, startNodeSprite.x, startNodeSprite.y, startNodeSprite.z,
+                    endNodePosition.x, endNodePosition.y, endNodePosition.z, 1);*/
             }
         }
+
+        /*function drawLine(lineMaterial, x1, y1, z1, x2, y2, z2, thickness){
+            for (i = 0; i < thickness * 2; i++) {  // multiplied it by 2 to be more granule pixels
+                var routerLine1Geometry = new THREE.Geometry();
+                routerLine1Geometry.vertices.push( new THREE.Vector3(x1, y1+i/4, z1));//divided it by 4 to be more granule pixels 
+
+                routerLine1Geometry.vertices.push( new THREE.Vector3(x2, y2+i/4, z2)  );
+                var routerLine1 = new THREE.Line( routerLine1Geometry, lineMaterial );
+                scene.add(routerLine1);
+            }
+            for (i = 0; i < thickness * 2; i++) {
+                var routerLine1Geometry = new THREE.Geometry();
+                routerLine1Geometry.vertices.push( new THREE.Vector3(x1, y1-i/4, z1)  );  // 
+                routerLine1Geometry.vertices.push( new THREE.Vector3(x2, y2-i/4, z2)  );
+                var routerLine1 = new THREE.Line( routerLine1Geometry, lineMaterial );
+                scene.add(routerLine1);
+            }
+        }*/
 
         function wrapText(context, text, x, y, maxWidth, lineHeight) {
             if (text.indexOf(' ') == -1) {
@@ -257,7 +307,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.globalAlpha = opacity;
             context.drawImage(img, 0, 0, canvas.width, canvas.height);
             context.globalAlpha = 1;
-            context.fillStyle = "#000";
+            context.fillStyle = "#FFF";
             context.font = "130px Moon Bold";
             context.textAlign = "center";
             wrapText(context, text, canvas.width / 2, canvas.height / 2.4, canvas.width - 10, canvas.height / 4.5);
@@ -309,7 +359,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         // animation loop
         function animate() {
             requestAnimationFrame(animate);
-            update();
             TWEEN.update();
             cameraControls.update();
             render();
@@ -323,7 +372,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             renderer.render(scene, camera);
         }
 
-        function onMouseHover(event) {
+
+        function setMousePosition(event)
+        {
             event = event || window.event;
             var target = event.target || event.srcElement,
                 rect = target.getBoundingClientRect(),
@@ -333,7 +384,24 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             mouse.y = -(offsetY / viewHeight) * 2 + 1;
         }
 
-        function onClick(event) {
+        function onMouseHover(event) {
+            setMousePosition(event);
+            if (!mouseIsDown)
+                updateIntersection();
+        }
+
+        function onMouseDown(event) {
+            setMousePosition(event);
+            mouseClickStart.x = mouse.x;
+            mouseClickStart.y = mouse.y;
+            mouseIsDown = true;
+        }
+
+        function onMouseUp(event) {
+            mouseIsDown = false;
+            if (mouse.x != mouseClickStart.x || mouse.y != mouseClickStart.y)
+                return;
+
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
             var intersection = intersects[0];
@@ -454,7 +522,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             ctx.drawImage(img, cx, cy, cw, ch,  x, y, w, h);
         }
 
-        function update() {
+        function updateIntersection() {
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
 

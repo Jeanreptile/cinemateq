@@ -61,6 +61,7 @@ app.use('/api/movies', movies);
 app.use('/api/search', searchRoutes);
 app.use('/api/common', commons);
 
+app.get('/partials/restricted', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/:name', routes.partials);
 app.get('*', routes.index);
 

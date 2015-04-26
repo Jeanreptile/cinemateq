@@ -26,6 +26,17 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
             .when('/search', {
               templateUrl: '/partials/search', controller: 'TypeaheadCtrl'
             })
+            .when('/unauthorized', {
+              templateUrl: '/partials/unauthorized'
+            })
+            .when('/signout', {
+                redirectTo: '/',
+                resolve: {
+                  "deleteSession": function( $q, $window, AuthService ) {
+                    AuthService.logout();
+                  }
+                }
+              })
             .otherwise({
                 redirectTo: '/'
             }
@@ -41,7 +52,6 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
             };
         }
     }]);
-
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
     function($scope, $http, $window, $location, AuthService) {
@@ -201,7 +211,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
         function drawNode(node, radius, segments, position) {
-            
+
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var canvas = generateTexture(text);
             var texture = new THREE.Texture(canvas);
@@ -209,7 +219,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             texture.needsUpdate = true;
             var spriteMaterial = new THREE.SpriteMaterial({ map: texture });
             var sprite = new THREE.Sprite(spriteMaterial);
-            
+
             sprite._id = node.id;
             sprite.name = node.name ? (node.firstname + " " + node.lastname) : node.title;
             sprite.canvas = canvas;
@@ -217,7 +227,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.texture = texture;
             sprite.position.set(position.x, position.y, position.z);
             sprite.scale.set(8, 8, 8);
-            
+
             var added = false;
             if ($.inArray(node.id, currentDisplayedNodes) == -1) {
                 scene.add(sprite);

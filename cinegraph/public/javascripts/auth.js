@@ -113,7 +113,8 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
     responseError: function (rejection) {
       if (rejection.status === 401) {
         // handle the case where the user is not authenticated
-        console.log("Not authenticated");
+        console.log("Not authenticated :/");
+        $location.path("/unauthorized");
       }
       return $q.reject(rejection);
     }

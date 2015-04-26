@@ -36,7 +36,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var camera;
             var cameraControls;
             var bgScene, bgCam;
-            var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            var renderer = new THREE.WebGLRenderer({ alpha:true, autoClear: false });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
             var mouseClickStart = new THREE.Vector2();
@@ -70,6 +70,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var orangeColor = '#ffa827';
             var blueColor = '#319ef1';
 
+            var composer, composerBackground, blendComposer;
+
             function init() {
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
@@ -77,7 +79,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, 1, 1000);
                 renderer.setSize(viewWidth, viewHeight);
                 //renderer.setClearColor(0xf0f0f0);
-                renderer.shadowMapType = THREE.PCFShadowMap;
                 document.getElementById('graph').appendChild(renderer.domElement);
 
 
@@ -122,6 +123,36 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 spriteHover.scale.set(8, 4, 1);
                 //scene.add(spriteHover);
 
+                // over sampling for antialiasing
+                var sampleRatio = 2;
+                var parameters = {
+                    minFilter: THREE.LinearFilter,
+                    magFilter: THREE.LinearFilter,
+                    format: THREE.RGBAFormat,
+                    stencilBuffer: false
+                };
+                // background
+                var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
+                var renderBackgroundScene = new THREE.RenderPass(bgScene, bgCam);
+                var effectCopyBackground = new THREE.ShaderPass(THREE.CopyShader);
+                composerBackground = new THREE.EffectComposer(renderer, renderTargetBackground);
+                composerBackground.addPass(renderBackgroundScene);
+                composerBackground.addPass(effectCopyBackground);
+                // main scene
+                var renderTarget = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
+                var renderScene = new THREE.RenderPass(scene, camera);
+                var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+                composer = new THREE.EffectComposer(renderer, renderTarget);
+                composer.addPass(renderScene);
+                composer.addPass(effectCopy);
+                // composite
+                blendPass = new THREE.ShaderPass(THREE.TransparencyBlendShader);
+                blendPass.uniforms['tBase'].value = composerBackground.renderTarget1;
+                blendPass.uniforms['tAdd'].value = composer.renderTarget1;
+                blendComposer = new THREE.EffectComposer(renderer);
+                blendComposer.addPass(blendPass);
+                blendPass.renderToScreen = true;
+
                 getNode(scope.currentNode.id, nodePosition, draw);
 
             // listeners
@@ -129,6 +160,22 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             $('#graph').mousedown(onMouseDown);
             $('#graph').mouseup(onMouseUp);
             document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
+        }
+
+        // animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            TWEEN.update();
+            cameraControls.update();
+            render();
+        }
+
+        // render the scene
+        function render() {
+            renderer.clear();
+            composerBackground.render();
+            composer.render();
+            blendComposer.render();
         }
 
         function getNode(id, nodePostion, callback) {
@@ -366,22 +413,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             spriteHoverContext.stroke();
             wrapText(spriteHoverContext, text, 500 / 2, 500 / 4, 500 - 5, 500 / 2);
             return canvas;
-        }
-
-        // animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            TWEEN.update();
-            cameraControls.update();
-            render();
-        }
-
-        // render the scene
-        function render() {
-            renderer.autoClear = false;
-            renderer.clear();
-            renderer.render(bgScene, bgCam);
-            renderer.render(scene, camera);
         }
 
         function setMousePosition(event)

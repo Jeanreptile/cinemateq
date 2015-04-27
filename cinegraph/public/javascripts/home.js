@@ -33,10 +33,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 		link: function link(scope, element, attrs) {
 			// global vars
             var scene = new THREE.Scene();
+            var linesScene, linesCamera;
             var camera;
             var cameraControls;
             var bgScene, bgCam;
-            var renderer = new THREE.WebGLRenderer({ alpha:true, autoClear: false });
+            var renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, autoClear: false });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
             var mouseClickStart = new THREE.Vector2();
@@ -69,8 +70,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var currentDisplayedNodes = [];
             var orangeColor = '#ffa827';
             var blueColor = '#319ef1';
-
-            var composer, composerBackground, blendComposer;
+            var composer, composerBackground, composerLines,
+                blendIntermediateComposer, blendComposer;
 
             function init() {
                 $('#graph').css('height','100%');
@@ -78,9 +79,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 viewHeight = $('#graph').height();
                 camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, 1, 1000);
                 renderer.setSize(viewWidth, viewHeight);
-                //renderer.setClearColor(0xf0f0f0);
                 document.getElementById('graph').appendChild(renderer.domElement);
-
 
                 // background scene
                 var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
@@ -99,6 +98,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 bgScene.add(bgCam);
                 bgScene.add(background);
 
+                // lines scene
+                linesScene = new THREE.Scene();
+                linesCamera = new THREE.Camera();
+                linesScene.add(camera);
+
                 // camera
                 camera.position.x = 0;
                 camera.position.y = 0;
@@ -114,13 +118,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 cameraControls.keys = [ 65, 83, 68 ];
 
                 // hover text init
-                spriteHoverCanvas = generateHoverText("testtesttesttest");
+                /*spriteHoverCanvas = generateHoverText("testtesttesttest");
                 spriteHoverContext = spriteHoverCanvas.getContext('2d');
                 spriteHoverTexture = new THREE.Texture(spriteHoverCanvas);
                 var material = new THREE.SpriteMaterial({ map: spriteHoverTexture, useScreenCoordinates: false });
                 spriteHover = new THREE.Sprite(material);
                 spriteHover.position.set(0, 0, 0);
-                spriteHover.scale.set(8, 4, 1);
+                spriteHover.scale.set(8, 4, 1);*/
                 //scene.add(spriteHover);
 
                 // over sampling for antialiasing
@@ -132,12 +136,33 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     stencilBuffer: false
                 };
                 // background
-                var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
+                var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth, viewHeight, parameters);
                 var renderBackgroundScene = new THREE.RenderPass(bgScene, bgCam);
                 var effectCopyBackground = new THREE.ShaderPass(THREE.CopyShader);
                 composerBackground = new THREE.EffectComposer(renderer, renderTargetBackground);
                 composerBackground.addPass(renderBackgroundScene);
                 composerBackground.addPass(effectCopyBackground);
+                // lines
+                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth, viewHeight, parameters);
+                var renderLinesScene = new THREE.RenderPass(linesScene, camera);
+                var lineShader = new THREE.ShaderPass(THREE.ThickLineShader);
+                lineShader.uniforms.totalWidth.value = viewWidth;
+                lineShader.uniforms.totalHeight.value = viewHeight;
+                lineShader.uniforms['edgeWidth'].value = 6;
+                var dpr = 2;
+                if (window.devicePixelRatio !== undefined) dpr = window.devicePixelRatio;
+                var effectFXAA = new THREE.ShaderPass(THREE.FXAAShader);
+                effectFXAA.uniforms['resolution'].value.set(1 / (viewWidth * dpr), 1 / (viewHeight * dpr));
+                composerLines = new THREE.EffectComposer(renderer, renderLinesTarget);
+                composerLines.addPass(renderLinesScene);
+                composerLines.addPass(lineShader);
+                composerLines.addPass(effectFXAA);
+                // intermediate composite
+                var blendIntermediatePass = new THREE.ShaderPass(THREE.TransparencyBlendShader);
+                blendIntermediatePass.uniforms['tBase'].value = composerBackground.renderTarget1;
+                blendIntermediatePass.uniforms['tAdd'].value = composerLines.renderTarget1;
+                blendIntermediateComposer = new THREE.EffectComposer(renderer);
+                blendIntermediateComposer.addPass(blendIntermediatePass);
                 // main scene
                 var renderTarget = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
                 var renderScene = new THREE.RenderPass(scene, camera);
@@ -146,8 +171,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 composer.addPass(renderScene);
                 composer.addPass(effectCopy);
                 // composite
-                blendPass = new THREE.ShaderPass(THREE.TransparencyBlendShader);
-                blendPass.uniforms['tBase'].value = composerBackground.renderTarget1;
+                var blendPass = new THREE.ShaderPass(THREE.TransparencyBlendShader);
+                blendPass.uniforms['tBase'].value = blendIntermediateComposer.renderTarget1;
                 blendPass.uniforms['tAdd'].value = composer.renderTarget1;
                 blendComposer = new THREE.EffectComposer(renderer);
                 blendComposer.addPass(blendPass);
@@ -174,6 +199,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function render() {
             renderer.clear();
             composerBackground.render();
+            composerLines.render();
+            blendIntermediateComposer.render();
             composer.render();
             blendComposer.render();
         }
@@ -260,11 +287,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             lineGeom.colors.push(new THREE.Color(sprite.circleColor));
                             lineGeom.colors.push(new THREE.Color(sprite.circleColor == orangeColor ? blueColor : orangeColor));
                             var lineMat = new THREE.LineBasicMaterial({
-                                linewidth: 5,
+                                linewidth: 1,
                                 vertexColors: true
                             });
                             line = new THREE.Line(lineGeom, lineMat);
-                            scene.add(line);
+                            linesScene.add(line);
                         }).start();
                 }
                 added = true;

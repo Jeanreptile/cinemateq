@@ -118,13 +118,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 cameraControls.keys = [ 65, 83, 68 ];
 
                 // hover text init
-                /*spriteHoverCanvas = generateHoverText("testtesttesttest");
+                spriteHoverCanvas = generateHoverText("testtesttesttest");
                 spriteHoverContext = spriteHoverCanvas.getContext('2d');
                 spriteHoverTexture = new THREE.Texture(spriteHoverCanvas);
                 var material = new THREE.SpriteMaterial({ map: spriteHoverTexture, useScreenCoordinates: false });
                 spriteHover = new THREE.Sprite(material);
                 spriteHover.position.set(0, 0, 0);
-                spriteHover.scale.set(8, 4, 1);*/
+                spriteHover.scale.set(8, 4, 1);
                 //scene.add(spriteHover);
 
                 // over sampling for antialiasing
@@ -149,14 +149,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 lineShader.uniforms.totalWidth.value = viewWidth;
                 lineShader.uniforms.totalHeight.value = viewHeight;
                 lineShader.uniforms['edgeWidth'].value = 6;
-                var dpr = 2;
-                if (window.devicePixelRatio !== undefined) dpr = window.devicePixelRatio;
-                var effectFXAA = new THREE.ShaderPass(THREE.FXAAShader);
-                effectFXAA.uniforms['resolution'].value.set(1 / (viewWidth * dpr), 1 / (viewHeight * dpr));
                 composerLines = new THREE.EffectComposer(renderer, renderLinesTarget);
                 composerLines.addPass(renderLinesScene);
                 composerLines.addPass(lineShader);
-                composerLines.addPass(effectFXAA);
                 // intermediate composite
                 var blendIntermediatePass = new THREE.ShaderPass(THREE.TransparencyBlendShader);
                 blendIntermediatePass.uniforms['tBase'].value = composerBackground.renderTarget1;
@@ -308,8 +303,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
             for (i = index, j = 0; i < limit + index, j < limit; i++, j++) {
                 var angle = slice * i;
-                relatedNodePosition.x = nodePosition.x + 20 * Math.cos(angle);
-                relatedNodePosition.y = nodePosition.y + 20 * Math.sin(angle);
+                relatedNodePosition.x = nodePosition.x + 18 * Math.cos(angle);
+                relatedNodePosition.y = nodePosition.y + 18 * Math.sin(angle);
+                //relatedNodePosition.z = nodePosition.z + 18 * Math.random();
                 var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, nodePosition);
                 var endNodePosition;
                 if (relatedNodeSprite.added == false) {
@@ -322,24 +318,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 }
             }
         }
-
-        /*function drawLine(lineMaterial, x1, y1, z1, x2, y2, z2, thickness){
-            for (i = 0; i < thickness * 2; i++) {  // multiplied it by 2 to be more granule pixels
-                var routerLine1Geometry = new THREE.Geometry();
-                routerLine1Geometry.vertices.push( new THREE.Vector3(x1, y1+i/4, z1));//divided it by 4 to be more granule pixels 
-
-                routerLine1Geometry.vertices.push( new THREE.Vector3(x2, y2+i/4, z2)  );
-                var routerLine1 = new THREE.Line( routerLine1Geometry, lineMaterial );
-                scene.add(routerLine1);
-            }
-            for (i = 0; i < thickness * 2; i++) {
-                var routerLine1Geometry = new THREE.Geometry();
-                routerLine1Geometry.vertices.push( new THREE.Vector3(x1, y1-i/4, z1)  );  // 
-                routerLine1Geometry.vertices.push( new THREE.Vector3(x2, y2-i/4, z2)  );
-                var routerLine1 = new THREE.Line( routerLine1Geometry, lineMaterial );
-                scene.add(routerLine1);
-            }
-        }*/
 
         function wrapText(context, text, x, y, maxWidth, lineHeight) {
             if (text.indexOf(' ') == -1) {
@@ -381,12 +359,14 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.globalAlpha = opacity;
             context.drawImage(img, borderThickness, borderThickness,
                 canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
-            context.globalAlpha = 1;
+            var a = (1 / (0.6 - 1));
+            context.globalAlpha = a * (opacity - 1);
             context.fillStyle = "#FFF";
             context.font = "120px Moon Bold";
             context.textAlign = "center";
             wrapText(context, text, canvas.width / 2, canvas.height / 2.4,
                 canvas.width -  3 * borderThickness, canvas.height / 4.5);
+            context.globalAlpha = 1;
         }
 
         function drawCircle(canvas, thickness, color) {
@@ -605,57 +585,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         updateTexture(current.canvas, current.name, current.animationOpacity, current.circleColor);
                         current.texture.needsUpdate = true;
                     }).start();
-
-                    // drawing selected sprite hover text
-/*                    spriteHoverContext.fillStyle = "#FFF";
-                    spriteHoverContext.fillRect(0, 0, spriteHoverCanvas.width, spriteHoverCanvas.height);
-                    spriteHoverContext.strokeStyle = "#000";
-                    spriteHoverContext.stroke();
-                    spriteHoverContext.fillStyle = "#000";
-                    spriteHoverContext.font = "45px Moon Light";
-                    spriteHoverContext.textAlign = "center";
-                    var text = intersects[0].object.name;
-                    wrapText(spriteHoverContext, text, spriteHoverCanvas.width / 2, spriteHoverCanvas.height / 2, spriteHoverCanvas.width - 10, spriteHoverCanvas.height / 4);
-                    spriteHover.position.set(intersects[0].object.position.x, intersects[0].object.position.y + 5, intersects[0].object.position.z + 0.5 );
-                    spriteHoverTexture.needsUpdate = true;*/
                 }
-/*                    else {
-                    spriteHoverContext.clearRect(0, 0, 500, 300);
-                    spriteHoverTexture.needsUpdate = true;
-                }*/
             }
-/*            else
-            {
-                if (old) {
-                    old.context.fillStyle = "#FFF";
-                    drawCircle(old.context, old.context.canvas.width / 2, old.context.canvas.height / 2, old.context.canvas.width / 2);
-                    old.context.globalAlpha = 0.6;
-                    old.context.drawImage(img, 0, 0, old.context.canvas.width, old.context.canvas.height);
-                    old.context.globalAlpha = 1;
-                    old.context.fillStyle = "#000";
-                    old.context.font = "Bold 160px Open Sans";
-                    var text = old.name;
-                    old.context.textAlign = "center";
-                    wrapText(old.context, text, old.context.canvas.width / 2, old.context.canvas.height / 2, old.context.canvas.width - 10, old.context.canvas.height / 3);
-                }
-                else {
-                    if (current) {
-                    current.context.fillStyle = "#FFF";
-                    drawCircle(current.context, current.context.canvas.width / 2, current.context.canvas.height / 2, current.context.canvas.width / 2);
-                    current.context.globalAlpha = 0.6;
-                    current.context.drawImage(img, 0, 0, current.context.canvas.width, current.context.canvas.height);
-                    current.context.globalAlpha = 1;
-                    current.context.fillStyle = "#000";
-                    current.context.font = "Bold 160px Open Sans";
-                    var text = current.name;
-                    current.context.textAlign = "center";
-                    wrapText(current.context, text, current.context.canvas.width / 2, current.context.canvas.height / 2, current.context.canvas.width - 10, current.context.canvas.height / 3);
-                    }
-                }
-                old = null;
-                spriteHoverContext.clearRect(0, 0, 800, 300);
-                spriteHoverTexture.needsUpdate = true;
-            }*/
         }
 
         init();

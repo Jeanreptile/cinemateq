@@ -221,6 +221,10 @@ i.fa-eye:hover {
   left: 23px;
 }
 
+.filter-menu .switch.actor input:checked + span {
+  background-color: #222733;
+}
+
 .filter-menu .switch.director input:checked + span {
   background-color: #177bbb;
 }

@@ -28,7 +28,12 @@ html.app(ng-app='cinegraphApp')
     script(src='javascripts/ui-bootstrap-tpls-0.12.1.js')
     script(src='javascripts/randomBG.js')
     script(src='javascripts/StackBlur.js')
-    script(src='javascripts/mycinegraph.js')    
+    script(src="javascripts/threejs_antialias/CopyShader.js")
+    script(src="javascripts/threejs_antialias/EffectComposer.js")
+    script(src="javascripts/threejs_antialias/MaskPass.js")
+    script(src="javascripts/threejs_antialias/RenderPass.js")
+    script(src="javascripts/threejs_antialias/ShaderPass.js")
+    script(src="javascripts/threejs_antialias/CustomShaders.js")
     body
       ng-view
     base(href='/')

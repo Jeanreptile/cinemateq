@@ -20,7 +20,8 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
               templateUrl: '/partials/restricted'
             })
             .when('/mycinegraph', {
-              templateUrl: '/partials/mycinegraph', controller: 'cinegraphController'
+              templateUrl: '/partials/mycinegraph', controller: 'cinegraphController',
+              access: { requiredAuthentication: true }
             })
             .when('/error', {
               templateUrl: '/partials/error'
@@ -51,6 +52,16 @@ function getParameterByName(name) {
         results = regex.exec(location.search);
     return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
+
+cinegraphApp.run(function($rootScope, $location, $window, AuthService) {
+    $rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
+        //redirect only if both isAuthenticated is false and no token is set
+        if (nextRoute != null && nextRoute.access != null && nextRoute.access.requiredAuthentication
+            && !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
+            $location.path("/unauthorized");
+        }
+    });
+});
 
 cinegraphApp.service('ModelDataService', ['$http', function ($http) {
     this.getData = function () {

@@ -11,7 +11,6 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
         AuthService.login();
         $scope.message2 = "Signed and Token created";
         $location.path('/');
-        //$window.location.href = '/home';
       })
       .error(function (data, status, headers, config) {
         // Erase the token if the user fails to log in
@@ -79,7 +78,7 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
   };
 });
 
-angular.module('cinegraphApp').factory('AuthService', function($window) {
+angular.module('cinegraphApp').factory('AuthService', function($window, $location) {
 
   return {
     login: function() {
@@ -88,6 +87,7 @@ angular.module('cinegraphApp').factory('AuthService', function($window) {
     logout: function() {
       delete $window.localStorage.user;
       delete $window.localStorage.token;
+      $location.path('/');
     },
     isLoggedIn: function() {
       return ($window.localStorage.user != undefined);
@@ -110,10 +110,21 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
       console.log("Authorization Bearer ----")
       console.log($window.localStorage.token);
       if ($window.localStorage.token) {
-        console.log("configuration Bearer");
         config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
       }
+      else
+      {
+        console.log("MAIIIIS");
+        config.headers.Authorization = '';
+      }
       return config;
+    },
+    requestError: function (rejection) {
+      if (rejection.status === 401) {
+        // handle the case where the user is not authenticated
+        console.log("Not authenticated :/");
+      }
+      return $q.reject(rejection);
     },
     responseError: function (rejection) {
       if (rejection.status === 401) {

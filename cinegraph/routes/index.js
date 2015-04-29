@@ -9,6 +9,7 @@ exports.partials = function (req, res, err) {
   }
   else
   {
+    console.log("server siiide");
     var urlPath = req.url;
     var pieces = urlPath.split(/[\s/]+/);
     var name = pieces[pieces.length-1];

@@ -85,13 +85,19 @@ section.vbox
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star-o.m-l-xs.fa-lg
 									div.col-xs-12.m-t-sm
-											button.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button')
+											button.btn.btn-rounded.btn-sm.btn-icon.btn-default.btn-dark.dropdown-toggle(type='button')
 												i.fa.fa-heart.fa-lg
 											|  
 											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
-												button.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
+												button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
 													i.fa.fa-plus.fa-lg
 												ul.dropdown-menu(role='menu')
 													li(ng-if="mycinegraphs == undefined")
@@ -102,7 +108,7 @@ section.vbox
 													li(ng-if="mycinegraphs")
 														a(href='#') Create a myCINEGRAPH
 											|  
-											button.btn.btn-rounded.btn-sm.btn-icon.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
+											button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
 												i.fa.fa-eye.fa-lg
 								div.row
 									div.col-xs-12

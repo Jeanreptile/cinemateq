@@ -92,9 +92,23 @@ section.vbox
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star-o.m-l-xs.fa-lg
 									div.col-xs-12.m-t-sm
-										i.fa.fa-heart.fa-lg
-										i.fa.fa-plus.m-l-sm.fa-lg
-										i.fa.fa-eye.m-l-sm.fa-lg(ng-show="currentNode.type == 'Movie'")
+											button.btn.btn-rounded.btn-sm.btn-icon.btn-default.btn-dark.dropdown-toggle(type='button')
+												i.fa.fa-heart.fa-lg
+											|  
+											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
+												button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
+													i.fa.fa-plus.fa-lg
+												ul.dropdown-menu(role='menu')
+													li(ng-if="mycinegraphs == undefined")
+														a(href='/signin') You must be logged.
+													li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
+														a(href='#') {{cine.title}}
+													li.divider(ng-if="mycinegraphs")
+													li(ng-if="mycinegraphs")
+														a(href='#') Create a myCINEGRAPH
+											|  
+											button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
+												i.fa.fa-eye.fa-lg
 								div.row
 									div.col-xs-12
 										div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
@@ -141,8 +155,7 @@ section.vbox
 										a.btn.btn-default.btn-block(ng-click="getCinegraph(n.id)")
 											h4.text-info
 												| {{n.title}}
-								p
-									{{cineData}}
+								p {{cineData}}
 			aside#sidebar.aside-md.bg-black.hide
 				section.vbox.animated.fadeInRight
 					section.scrollable

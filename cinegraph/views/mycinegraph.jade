@@ -134,13 +134,15 @@ section.vbox
 								div(ng-repeat= "n in mycinegraphs")
 									section.row.m-md(ng-if="!(($index + 1) % 2)")
 										section.col-sm-6
-											a.btn.btn-default.btn-block
+											a.btn.btn-default.btn-block(ng-click="getCinegraph(n.id)")
 												h4.text-info
 													| {{n.title}}
 									section.col-sm-6(ng-if="(($index + 1) % 2)")
-										a.btn.btn-default.btn-block
+										a.btn.btn-default.btn-block(ng-click="getCinegraph(n.id)")
 											h4.text-info
 												| {{n.title}}
+								p
+									{{cineData}}
 			aside#sidebar.aside-md.bg-black.hide
 				section.vbox.animated.fadeInRight
 					section.scrollable

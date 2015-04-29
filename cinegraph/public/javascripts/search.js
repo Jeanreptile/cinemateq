@@ -1,5 +1,4 @@
 angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $http, $window, $location, AuthService) {
-  console.log('salut yo');
   $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
     $scope.isLoggedIn = isLoggedIn;
     $scope.currentUser = AuthService.currentUser();
@@ -48,7 +47,7 @@ $scope.OnItemClick = function(event) {
           }
           else
           {
-            return {'name': item.name, 'personId': item.id};
+            return {'name': item.name, 'thisId': item.id};
           }
         });
     });

@@ -72,9 +72,9 @@ function findOrCreateUser(req, res, next) {
       // if there is no user with that email create the user
       var user_name = req.body.username;
       var pass = createHash(req.body.password);
-      var email = req.params('email');
-      var firstName = req.params('firstName');
-      var lastName = req.params('lastName');
+      var email = req.body.email;
+      var firstName = req.body.firstName;
+      var lastName = req.body.lastName;
       console.log("ok");
 
       db.save({ 'username': user_name, 'password': pass,

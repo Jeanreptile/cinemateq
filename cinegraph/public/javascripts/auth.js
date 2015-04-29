@@ -35,7 +35,7 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
       .post('/users/register', $scope.user)
       .success(function (data, status, headers, config) {
         $window.localStorage.token = data.token;
-        $window.localStorage.user = data.user;
+        $window.localStorage.user = JSON.stringify(data.user);
         AuthService.login();
         $scope.message2 = "Signed in and Token created";
         $location.path('/');

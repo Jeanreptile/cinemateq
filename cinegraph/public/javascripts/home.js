@@ -376,7 +376,42 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             blendComposer.render();
         }
 
+        function removeFromScene(array, excludedId)
+        {
+        /*// getting center node to keep
+            var excludedPosition;
+            for (var i = 0 ; i < linesScene.length; i++)
+            {
+                var line = linesScene.children[i];
+                if (line.relatedNodeId == excludedId)
+                    excludedPosition = line.originPosition;
+            }
+            console.log('EXCLUDED ', excludedPosition);*/
+            // removing sprites
+            var length = scene.children.length;
+            for (var i = 0 ; i < length; i++)
+            {
+                var node = scene.children[i];
+                if (node._id != excludedId && array.indexOf(node._id) !== -1)
+                {
+                    scene.remove(node);
+                }
+            }
+            // removing lines
+            length = linesScene.children.length;
+            for (var i = 0 ; i < length; i++)
+            {
+                var line = linesScene.children[i];
+                if (array.indexOf(line.relatedNodeId) !== -1)
+                {
+                    linesScene.remove(line);
+                }
+            }
+        }
+
         function getNode(id, nodePostion, callback) {
+            removeFromScene(currentDisplayedNodes, id);
+            currentDisplayedNodes = [];
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
             });
@@ -476,6 +511,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                                 vertexColors: true
                             });
                             line = new THREE.Line(lineGeom, lineMat);
+                            line.relatedNodeId = sprite._id;
+                            line.originPosition = originPosition;
                             linesScene.add(line);
                         }).start();
                 }
@@ -660,6 +697,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
             var id = intersection.object._id;
             if (id != null) {
+
                 // animating camera
                 var moveX = intersection.object.position.x;
                 var moveY = intersection.object.position.y;
@@ -701,6 +739,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                                 }).start();
                         });
                         nodePosition = intersection.object.position;
+
+                        
                         getNode(id, nodePosition, draw);
                   })
                   .start();

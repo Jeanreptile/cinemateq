@@ -101,7 +101,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var mouseClickStart = new THREE.Vector2();
             var mouseIsDown = false;
             var INTERSECTED = null;
-            var spriteHover, spriteHoverContext, spriteHoverTexture, spriteHoverCanvas;
+            var spriteHover;
             var old = null;
             var current = null;
             var img = new Image();
@@ -176,14 +176,17 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 cameraControls.keys = [ 65, 83, 68 ];
 
                 // hover text init
-                spriteHoverCanvas = generateHoverText("testtesttesttest");
-                spriteHoverContext = spriteHoverCanvas.getContext('2d');
-                spriteHoverTexture = new THREE.Texture(spriteHoverCanvas);
-                var material = new THREE.SpriteMaterial({ map: spriteHoverTexture, useScreenCoordinates: false });
+                var spriteHoverCanvas = generateHoverText();
+                var spriteHoverTexture = new THREE.Texture(spriteHoverCanvas);
+                var material = new THREE.SpriteMaterial({ map: spriteHoverTexture });
                 spriteHover = new THREE.Sprite(material);
+                spriteHoverTexture.needsUpdate = true;
                 spriteHover.position.set(0, 0, 0);
-                spriteHover.scale.set(8, 4, 1);
-                //scene.add(spriteHover);
+                spriteHover.scale.set(12, 12, 12);
+                spriteHover.ignoreClick = true;
+                spriteHover.canvas = spriteHoverCanvas;
+                spriteHover.texture = spriteHoverTexture;
+                scene.add(spriteHover);
 
                 // over sampling for antialiasing
                 var sampleRatio = 2;
@@ -468,17 +471,23 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             return newCanvas;
         }
 
-        function generateHoverText(text) {
+        function generateHoverText() {
             var canvas = document.createElement('canvas');
-            spriteHoverContext = canvas.getContext('2d');
-            spriteHoverContext.fillStyle = "#FFF";
-            spriteHoverContext.fillRect(0, 0, 1000, 250);
-            spriteHoverContext.fillStyle = "#000";
-            spriteHoverContext.font = "45px Moon Light";
-            spriteHoverContext.textAlign = "center";
-            spriteHoverContext.stroke();
-            wrapText(spriteHoverContext, text, 500 / 2, 500 / 4, 500 - 5, 500 / 2);
+            canvas.width = 1500;
+            canvas.height = 1500;
             return canvas;
+        }
+
+        function updateHoverText(canvas, text)
+        {
+            var context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = "#aaaaaa";
+            context.fillRect(0, 0, canvas.width, 300);
+            context.fillStyle = "#000";
+            context.font = "110px Moon Bold";
+            context.textAlign = "center";
+            wrapText(context, text, canvas.width / 2, 300 / 2.4, canvas.width, 110);
         }
 
         function setMousePosition(event)
@@ -512,6 +521,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
+            // removing unwanted objects
+            while (intersects.length > 0 && intersects[0].object.ignoreClick == true)
+                intersects = intersects.slice(1);
             var intersection = intersects[0];
             if (intersection == undefined) {
                 return;
@@ -624,7 +636,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function updateIntersection() {
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
-
+            // removing unwanted objects
+            while (intersects.length > 0 && intersects[0].object.ignoreClick == true)
+                intersects = intersects.slice(1);
             // getting intersected object
             if (intersects.length > 0 && intersects[0].object != INTERSECTED){
                 INTERSECTED = intersects[0].object;
@@ -637,6 +651,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     }
                     // updating intersected node and animating opacity
                     current = INTERSECTED;
+                    updateHoverText(spriteHover.canvas, current.name);
+                    spriteHover.texture.needsUpdate = true;
+                    spriteHover.position.set(current.position.x, current.position.y, current.position.z);
                     current.animationOpacity = 0.6;
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)

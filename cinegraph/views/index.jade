@@ -3,7 +3,7 @@ section.vbox
 		.navbar-header.aside-md.dk
 			a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
 				i.fa.fa-bars			
-			a.navbar-brand(href='')
+			a.navbar-brand(href='/')
 					img.m-r-sm(src='images/cinelogo1.png', alt='logo')
 				// span.hidden-nav-xs Cinemateq
 			a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
@@ -15,7 +15,7 @@ section.vbox
 						button.btn.btn-sm.bg-white.b-white.btn-icon(type='submit')
 							span.glyphicon.glyphicon-search
 					input.form-control.input-sm.no-border(type='text', placeholder='Search for a movie...')
-		a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(href='#nav, #sidebar', data-toggle='class:nav-xs, show')
+		a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(data-target='#nav, #sidebar', data-toggle='class:nav-xs, show')
 			i.fa.fa-bars
 		ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
 			li.dropdown
@@ -80,16 +80,30 @@ section.vbox
 									| {{genre}}
 									i.i.i-dot(ng-hide="$last")
 								div.row
-									div.col-xs-6.m-t-sm
+									div.col-xs-12.m-t-sm
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star-o.m-l-xs.fa-lg
-									div.col-xs-6.m-t-sm
-										i.fa.fa-heart.fa-lg
-										i.fa.fa-plus.m-l-sm.fa-lg
-										i.fa.fa-eye.m-l-sm.fa-lg(ng-show="currentNode.type == 'Movie'")
+									div.col-xs-12.m-t-sm
+											button.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button')
+												i.fa.fa-heart.fa-lg
+											|  
+											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
+												button.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
+													i.fa.fa-plus.fa-lg
+												ul.dropdown-menu(role='menu')
+													li(ng-if="mycinegraphs == undefined")
+														a(href='/signin') You must be logged.
+													li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
+														a(href='#') {{cine.title}}
+													li.divider(ng-if="mycinegraphs")
+													li(ng-if="mycinegraphs")
+														a(href='#') Create a myCINEGRAPH
+											|  
+											button.btn.btn-rounded.btn-sm.btn-icon.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
+												i.fa.fa-eye.fa-lg
 								div.row
 									div.col-xs-12
 										div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
@@ -112,9 +126,9 @@ section.vbox
 											i.i.i-plus2.icon
 											span.font-bold Suggestions
 					footer.footer.hidden-xs.no-padder.text-center-nav-xs
-						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(href='#nav', data-toggle='class:nav-xs')
+						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(data-target='#nav', data-toggle='class:nav-xs')
 							i.i.i-circleleft.text
-								i.i.i-circleright.text-active
+							i.i.i-circleright.text-active
 			section#content
 				section.hbox.stretch
 					section

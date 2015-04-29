@@ -79,13 +79,19 @@ section.vbox
 									| {{genre}}
 									i.i.i-dot(ng-hide="$last")
 								div.row
-									div.col-xs-6.m-t-sm
+									div.col-xs-12.m-t-sm
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
+										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star-o.m-l-xs.fa-lg
-									div.col-xs-6.m-t-sm
+									div.col-xs-12.m-t-sm
 										i.fa.fa-heart.fa-lg
 										i.fa.fa-plus.m-l-sm.fa-lg
 										i.fa.fa-eye.m-l-sm.fa-lg(ng-show="currentNode.type == 'Movie'")
@@ -116,7 +122,7 @@ section.vbox
 								i.i.i-circleright.text-active
 			section#content.mycinegraph
 				section.hbox.stretch
-					section
+					section(ng-controller="MyCinegraphCtrl")
 						section.vbox
 							section.scrollable.padder
 								header.row.m-b-md
@@ -125,32 +131,16 @@ section.vbox
 											| Your cinegraphs
 											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(data-toggle="tooltip", data-placement="right", title="", data-original-title="Create a new cinegraph")
 												i.fa.fa-plus
-								section.row.m-md
-									section.col-sm-6
-										a.btn.btn-default.btn-block
-											h4.text-info
-												| Cinegraph 1
-									section.col-sm-6
-										a.btn.btn-default.btn-block
-											h4.text-info
-												| Cinegraph 2
-								section.row.m-md
-									section.col-sm-6
-										a.btn.btn-default.btn-block
-											.row
+								div(ng-repeat= "n in mycinegraphs")
+									section.row.m-md(ng-if="!(($index + 1) % 2)")
+										section.col-sm-6
+											a.btn.btn-default.btn-block
 												h4.text-info
-													| Cinegraph 3
-											.row
-												span.label.bg-light.m-xs
-													| Thriller
-												span.label.bg-light.m-xs
-													| Action
-												span.label.bg-light.m-xs
-													| Adventure
-									section.col-sm-6
+													| {{n.title}}
+									section.col-sm-6(ng-if="(($index + 1) % 2)")
 										a.btn.btn-default.btn-block
 											h4.text-info
-												| Cinegraph 4
+												| {{n.title}}
 			aside#sidebar.aside-md.bg-black.hide
 				section.vbox.animated.fadeInRight
 					section.scrollable

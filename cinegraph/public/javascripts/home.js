@@ -17,10 +17,10 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
                 templateUrl: 'partials/home', controller: 'UserCtrl'
             })
             .when('/restricted', {
-              templateUrl: '/partials/restricted', controller: 'UserCtrl'
+              templateUrl: '/partials/restricted'
             })
             .when('/mycinegraph', {
-              templateUrl: '/partials/mycinegraph', controller: 'UserCtrl'
+              templateUrl: '/partials/mycinegraph', controller: 'cinegraphController'
             })
             .when('/error', {
               templateUrl: '/partials/error'
@@ -29,7 +29,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
               templateUrl: '/partials/search', controller: 'TypeaheadCtrl'
             })
             .when('/unauthorized', {
-              templateUrl: '/partials/unauthorized'
+              templateUrl: '/partials/unauthorized', controller: 'restrictedController'
             })
             .when('/signout', {
                 redirectTo: '/',
@@ -62,6 +62,16 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
     }
 }]);
 
+var cinegraphController = cinegraphApp.controller('restrictedController',
+    function($scope, $http, $window, $location, AuthService) {
+    $(document).ready(function(){
+      console.log('alo ui le BG auuuth');
+      var randombgs=["multipass", "gandalf", "matrix"];
+      number = Math.floor(Math.random() * randombgs.length);
+      $('#unauthorizedpage').css({'background-image': 'url(/images/' + randombgs[number] + '.jpg)'});
+    });
+});
+
 var cinegraphController = cinegraphApp.controller('cinegraphController',
     function($scope, $http, $window, $location, AuthService) {
     $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
@@ -70,6 +80,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
     $scope.logout = function(){
+      console.log("allo ui");
       AuthService.logout();
     }
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });

@@ -7,7 +7,7 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
       .post('/users/login', $scope.user)
       .success(function (data, status, headers, config) {
         $window.localStorage.token = data.token;
-        $window.localStorage.user = data.user;
+        $window.localStorage.user = JSON.stringify(data.user);
         AuthService.login();
         $scope.message2 = "Signed and Token created";
         $location.path('/');
@@ -80,7 +80,6 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
 });
 
 angular.module('cinegraphApp').factory('AuthService', function($window) {
-  var currentUser;
 
   return {
     login: function() {
@@ -89,16 +88,22 @@ angular.module('cinegraphApp').factory('AuthService', function($window) {
     logout: function() {
       delete $window.localStorage.user;
       delete $window.localStorage.token;
-      currentUser = undefined;
     },
     isLoggedIn: function() {
       return ($window.localStorage.user != undefined);
     },
-    currentUser: function() { return currentUser; }
+    currentUser: function() { if ($window.localStorage.user != undefined){
+      return JSON.parse($window.localStorage.user);
+      }
+      else
+      {
+        return undefined;
+      }
+    }
   };
 });
 
-angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, $q, $window) {
+angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, $location, $q, $window) {
   return {
     request: function (config) {
       config.headers = config.headers || {};

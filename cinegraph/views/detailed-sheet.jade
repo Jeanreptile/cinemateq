@@ -43,6 +43,9 @@
 			div.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.released")
 				span.font-bold.h5.m-r Release year
 				span {{currentNode.released}}
+			div.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.duration")
+				span.font-bold.h5.m-r Duration
+				span {{currentNode.duration}} min
 			div.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie'")
 				span.font-bold.h5.m-r Genres
 				span(ng-repeat="genre in currentNode.genre")

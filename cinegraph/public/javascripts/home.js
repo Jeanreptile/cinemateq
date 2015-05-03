@@ -125,6 +125,16 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     }
 
+    $scope.filterByActor = function() {
+        if ($scope.selectedJobs.actor) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'ACTED_IN', $scope.findLimitForJob('ACTED_IN'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            // remove
+        }
+    };
+
     $scope.filterByDirector = function() {
         if ($scope.selectedJobs.director) {
             $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),

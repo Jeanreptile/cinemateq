@@ -67,11 +67,10 @@ section.vbox
 								div.m-t-sm(ng-show="currentNode.type == 'Movie'")
 									img(src="images/inception.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
-									a(ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
+									a(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
 										{{currentNode.firstname}} {{currentNode.lastname}}
-									a(ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
+									a(href='#', ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
 										{{currentNode.title}}
-										| ({{currentNode.released}})
 								small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
 									| Actor
 									i.i.i-dot
@@ -115,11 +114,13 @@ section.vbox
 											| Biography
 										p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person' && currentNode.biography")
 											{{currentNode.biography | limitTo: 300}}...
+											a.m-l-xs(href='#', ng-click="open('lg')")
+												| Read more...
 										div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.plot")
 											| Plot
 										p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
 											{{currentNode.plot | limitTo: 300}}...
-											a.m-l-xs(href="#")
+											a.m-l-xs(href='#', ng-click="open('lg')")
 												| Read more...
 							nav.nav-primary.hidden-xs
 								ul.nav.nav-main(data-ride='collapse')

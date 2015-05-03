@@ -1,6 +1,7 @@
 .modal-header
+	button.close(type="button", ng-click="close()") ×
 	h4.modal-title.font-bold(ng-show="currentNode.type == 'Person'") {{currentNode.firstname}} {{currentNode.lastname}}
-	h4.modal-title.font-bold(ng-show="currentNode.type == 'Movie'") {{currentNode.title}} ({{currentNode.released}})
+	h4.modal-title.font-bold(ng-show="currentNode.type == 'Movie'") {{currentNode.title}}
 .modal-body
 	.row
 		div.col-sm-4.text-center
@@ -40,11 +41,11 @@
 				p.text-center
 					em.h4(ng-show="currentNode.type == 'Movie' && currentNode.tagline") {{currentNode.tagline}}
 			div.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.released")
-				span.font-bold.h5.m-r Released
+				span.font-bold.h5.m-r Release year
 				span {{currentNode.released}}
-			div.text-lt.m-t.m-b-xs
+			div.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie'")
 				span.font-bold.h5.m-r Genres
-				span(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
+				span(ng-repeat="genre in currentNode.genre")
 					{{genre}}
 					span(ng-hide="$last") , 
 			div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")

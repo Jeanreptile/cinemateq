@@ -67,9 +67,9 @@ section.vbox
 								div.m-t-sm(ng-show="currentNode.type == 'Movie'")
 									img(src="images/inception.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
-									a(href="#", ng-show="currentNode.type == 'Person'")
+									a(ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
 										{{currentNode.firstname}} {{currentNode.lastname}}
-									a(href="#", ng-show="currentNode.type == 'Movie'")
+									a(ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
 										{{currentNode.title}}
 										| ({{currentNode.released}})
 								small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
@@ -90,14 +90,13 @@ section.vbox
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star.m-l-xs.fa-lg
-										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star-o.m-l-xs.fa-lg
 									div.col-xs-12.m-t-sm
-											button.btn.btn-rounded.btn-sm.btn-icon.btn-default.btn-dark.dropdown-toggle(type='button')
+											button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button')
 												i.fa.fa-heart.fa-lg
 											|  
 											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
-												button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
+												button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button', dropdown-toggle='')
 													i.fa.fa-plus.fa-lg
 												ul.dropdown-menu(role='menu')
 													li(ng-if="mycinegraphs == undefined")
@@ -108,7 +107,7 @@ section.vbox
 													li(ng-if="mycinegraphs")
 														a(href='#') Create a myCINEGRAPH
 											|  
-											button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
+											button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-show="currentNode.type == 'Movie'")
 												i.fa.fa-eye.fa-lg
 								div.row
 									div.col-xs-12

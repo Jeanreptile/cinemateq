@@ -1,0 +1,59 @@
+.modal-header
+	h4.modal-title.font-bold(ng-show="currentNode.type == 'Person'") {{currentNode.firstname}} {{currentNode.lastname}}
+	h4.modal-title.font-bold(ng-show="currentNode.type == 'Movie'") {{currentNode.title}} ({{currentNode.released}})
+.modal-body
+	.row
+		div.col-sm-4.text-center
+			img.col-sm-12(src="images/inception.jpg", ng-show="currentNode.type == 'Movie'")
+			img.img-circle.col-sm-12(src="images/leonardo_dicaprio.jpeg", ng-show="currentNode.type == 'Person'")
+			div.col-xs-12.m-t-sm
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star.m-l-xs.fa-lg
+				i.fa.fa-star-o.m-l-xs.fa-lg
+			div.col-xs-12.m-t-sm
+					button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button')
+						i.fa.fa-heart.fa-lg
+					|  
+					.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
+						button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
+							i.fa.fa-plus.fa-lg
+						ul.dropdown-menu(role='menu')
+							li(ng-if="mycinegraphs == undefined")
+								a(href='/signin') You must be logged.
+							li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
+								a(href='#') {{cine.title}}
+							li.divider(ng-if="mycinegraphs")
+							li(ng-if="mycinegraphs")
+								a(href='#') Create a myCINEGRAPH
+					|  
+					button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
+						i.fa.fa-eye.fa-lg
+		.col-sm-8
+			div
+				p.text-center
+					em.h4(ng-show="currentNode.type == 'Movie' && currentNode.tagline") {{currentNode.tagline}}
+			div.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.released")
+				span.font-bold.h5.m-r Released
+				span {{currentNode.released}}
+			div.text-lt.m-t.m-b-xs
+				span.font-bold.h5.m-r Genres
+				span(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
+					{{genre}}
+					span(ng-hide="$last") , 
+			div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
+				| Biography
+			p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person' && currentNode.biography")
+				{{currentNode.biography}}
+			div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.plot")
+				| Plot
+			p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
+				{{currentNode.plot}}
+.modal-footer
+	a.btn.btn-default(href='#', ng-click="close()") Close

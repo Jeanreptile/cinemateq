@@ -735,7 +735,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             else
                                 crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img2, 60);
                             crossFade.percentage = 0;
-                            var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 1000)
+                            var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
                                 .easing(TWEEN.Easing.Linear.None)
                                 .onUpdate(function (){
                                     crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
@@ -841,8 +841,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
         }
 
-        init();
-        animate();
+        img.onload = function () {
+            init();
+            animate();
+        }
     }
 }
 }]);

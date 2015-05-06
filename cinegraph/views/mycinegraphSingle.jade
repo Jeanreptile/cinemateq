@@ -95,7 +95,7 @@ section.vbox
 											button.btn.btn-rounded.btn-sm.btn-icon.btn-default.btn-dark.dropdown-toggle(type='button')
 												i.fa.fa-heart.fa-lg
 											|  
-											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
+											.btn-group(dropdown='')
 												button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
 													i.fa.fa-plus.fa-lg
 												ul.dropdown-menu(role='menu')
@@ -134,28 +134,10 @@ section.vbox
 						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(href='#nav', data-toggle='class:nav-xs')
 							i.i.i-circleleft.text
 								i.i.i-circleright.text-active
-			section#content.mycinegraph
+			section#content
 				section.hbox.stretch
-					section(ng-controller="MyCinegraphCtrl")
-						section.vbox
-							section.scrollable.padder
-								header.row.m-b-md
-									div.col-sm-12
-										h2.text-black
-											| Your cinegraphs
-											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(data-toggle="tooltip", data-placement="right", title="", data-original-title="Create a new cinegraph")
-												i.fa.fa-plus
-								div(ng-repeat= "n in mycinegraphs")
-									section.row.m-md(ng-if="!(($index + 1) % 2)")
-										section.col-sm-6
-											a.btn.btn-default.btn-block(href="/cinegraph/{{n.id}}")
-												h4.text-info
-													| {{n.title}}
-									section.col-sm-6(ng-if="(($index + 1) % 2)")
-										a.btn.btn-default.btn-block(href="/cinegraph/{{n.id}}")
-											h4.text-info
-												| {{n.title}}
-								p {{cineData}}
+					section
+						#graph(mycinegraph="")
 			aside#sidebar.aside-md.bg-black.hide
 				section.vbox.animated.fadeInRight
 					section.scrollable

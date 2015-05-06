@@ -35,15 +35,19 @@ i.fa-heart, i.fa-plus, i.fa-eye {
     transition: color 0.2s linear;
 }
 
-i.fa-heart:hover {
+.like-btn:hover i {
 	color: #cc1628;
 }
 
-i.fa-plus:hover {
+.add-cinegraph-btn:hover i {
 	color: white;
 }
 
-i.fa-eye:hover {
+.btn-default.add-cinegraph-btn:hover i {
+  color: black;
+}
+
+.seen-btn:hover i {
 	color: #159a78;
 }
 

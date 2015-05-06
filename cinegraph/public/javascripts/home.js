@@ -1,7 +1,6 @@
 var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
 cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
-      //console.log('oui ??');
       $locationProvider.html5Mode(true);
       $routeProvider
             .when('/', {
@@ -47,83 +46,83 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
 }]);
 
 function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+	name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+	var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+		results = regex.exec(location.search);
+	return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 cinegraphApp.run(function($rootScope, $location, $window, AuthService) {
-    $rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
-        //redirect only if both isAuthenticated is false and no token is set
-        if (nextRoute != null && nextRoute.access != null && nextRoute.access.requiredAuthentication
-            && !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
-            $location.path("/unauthorized");
-        }
-    });
+	$rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
+		//redirect only if both isAuthenticated is false and no token is set
+		if (nextRoute != null && nextRoute.access != null && nextRoute.access.requiredAuthentication
+			&& !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
+			$location.path("/unauthorized");
+		}
+	});
 });
 
 cinegraphApp.service('ModelDataService', ['$http', function ($http) {
-    this.getData = function () {
-        return {
-            async: function() {
-                    return $http.get('/api/persons/all');
-            }
-        };
-    }
+	this.getData = function () {
+		return {
+			async: function() {
+					return $http.get('/api/persons/all');
+			}
+		};
+	}
 }]);
 
 var cinegraphController = cinegraphApp.controller('restrictedController',
-    function($scope, $http, $window, $location, AuthService) {
-    $(document).ready(function(){
-      //console.log('alo ui le BG auuuth');
-      var randombgs=["multipass", "gandalf", "matrix"];
-      number = Math.floor(Math.random() * randombgs.length);
-      $('#unauthorizedpage').css({'background-image': 'url(/images/' + randombgs[number] + '.jpg)'});
-    });
+	function($scope, $http, $window, $location, AuthService) {
+	$(document).ready(function(){
+	  console.log('alo ui le BG auuuth');
+	  var randombgs=["multipass", "gandalf", "matrix"];
+	  number = Math.floor(Math.random() * randombgs.length);
+	  $('#unauthorizedpage').css({'background-image': 'url(/images/' + randombgs[number] + '.jpg)'});
+	});
 });
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
-    function($scope, $http, $window, $location, AuthService) {
-    $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
-      $scope.isLoggedIn = isLoggedIn;
-      $scope.currentUser = AuthService.currentUser();
-    });
+	function($scope, $http, $window, $location, AuthService, $modal) {
+	$scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
+	  $scope.isLoggedIn = isLoggedIn;
+	  $scope.currentUser = AuthService.currentUser();
+	});
 
-    $scope.logout = function(){
-      //console.log("allo ui");
-      AuthService.logout();
-    }
-    //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
-    $scope.currentNode = {};
-    var selectedNodeId = getParameterByName('id');
-    if (selectedNodeId == undefined) {
-        selectedNodeId = 466302;
-    }
-    $http.get('/api/common/' + selectedNodeId).success(function(node) {
-        $scope.currentNode = node;
-    });
-    $scope.currentNode.id = selectedNodeId;
+	$scope.logout = function(){
+	  console.log("allo ui");
+	  AuthService.logout();
+	}
+	//ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
+	$scope.currentNode = {};
+	var selectedNodeId = getParameterByName('id');
+	if (selectedNodeId == undefined) {
+		selectedNodeId = 466302;
+	}
+	$http.get('/api/common/' + selectedNodeId).success(function(node) {
+		$scope.currentNode = node;
+	});
+	$scope.currentNode.id = selectedNodeId;
 
-    $scope.currentDisplayedNodes = [];
+	$scope.currentDisplayedNodes = [];
 
-    $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
-                            { type: 'PRODUCED', limit: 2},
-                            { type: 'DIRECTED', limit: 2},
-                            { type: 'COMPOSED_MUSIC', limit: 1},
-                            { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                            { type: 'WROTE', limit: 5},
-                            { type: 'EDITED', limit: 3},
-                            { type: 'DESIGNED_PRODUCTION', limit: 3},
-                            { type: 'DESIGNED_COSTUMES', limit: 2} ];
+	$scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
+							{ type: 'PRODUCED', limit: 2},
+							{ type: 'DIRECTED', limit: 2},
+							{ type: 'COMPOSED_MUSIC', limit: 1},
+							{ type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
+							{ type: 'WROTE', limit: 5},
+							{ type: 'EDITED', limit: 3},
+							{ type: 'DESIGNED_PRODUCTION', limit: 3},
+							{ type: 'DESIGNED_COSTUMES', limit: 2} ];
 
-    $scope.findLimitForJob = function(type) {
-        for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {
-            if ($scope.typesAndLimits[i].type == type) {
-                return $scope.typesAndLimits[i].limit;
-            }
-        }
-    }
+	$scope.findLimitForJob = function(type) {
+		for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {
+			if ($scope.typesAndLimits[i].type == type) {
+				return $scope.typesAndLimits[i].limit;
+			}
+		}
+	}
 
     $scope.filterByActor = function() {
         if ($scope.selectedJobs.actor) {
@@ -135,85 +134,108 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     };
 
-    $scope.filterByDirector = function() {
-        if ($scope.selectedJobs.director) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByDirector = function() {
+		if ($scope.selectedJobs.director) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByProducer = function() {
-        if ($scope.selectedJobs.producer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByProducer = function() {
+		if ($scope.selectedJobs.producer) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByWriter = function() {
-        if ($scope.selectedJobs.writer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'WROTE', $scope.findLimitForJob('WROTE'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByWriter = function() {
+		if ($scope.selectedJobs.writer) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'WROTE', $scope.findLimitForJob('WROTE'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByEditor = function() {
-        if ($scope.selectedJobs.writer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'EDITED', $scope.findLimitForJob('EDITED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByEditor = function() {
+		if ($scope.selectedJobs.writer) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'EDITED', $scope.findLimitForJob('EDITED'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByDirPhotography = function() {
-        if ($scope.selectedJobs.dirphotography) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED_PHOTOGRAPHY', $scope.findLimitForJob('DIRECTED_PHOTOGRAPHY'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByDirPhotography = function() {
+		if ($scope.selectedJobs.dirphotography) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED_PHOTOGRAPHY', $scope.findLimitForJob('DIRECTED_PHOTOGRAPHY'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByMusicComposer = function() {
-        if ($scope.selectedJobs.musiccomposer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'COMPOSED_MUSIC', $scope.findLimitForJob('COMPOSED_MUSIC'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByMusicComposer = function() {
+		if ($scope.selectedJobs.musiccomposer) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'COMPOSED_MUSIC', $scope.findLimitForJob('COMPOSED_MUSIC'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByCosDesigner = function() {
-        if ($scope.selectedJobs.cosdesigner) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_COSTUMES', $scope.findLimitForJob('DESIGNED_COSTUMES'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByCosDesigner = function() {
+		if ($scope.selectedJobs.cosdesigner) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_COSTUMES', $scope.findLimitForJob('DESIGNED_COSTUMES'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByProdDesigner = function() {
-        if ($scope.selectedJobs.proddesigner) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_PRODUCTION', $scope.findLimitForJob('DESIGNED_PRODUCTION'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByProdDesigner = function() {
+		if ($scope.selectedJobs.proddesigner) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_PRODUCTION', $scope.findLimitForJob('DESIGNED_PRODUCTION'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
+
+	$scope.open = function (size) {
+		var modalInstance = $modal.open({
+			animation: $scope.animationsEnabled,
+			templateUrl: 'partials/detailed-sheet',
+			controller: 'ModalInstanceCtrl',
+			size: size,
+			resolve: {
+				currentNode: function() {
+					return $scope.currentNode;
+				}
+			}
+		});
+	};
+});
+
+cinegraphApp.controller('ModalInstanceCtrl', function ($scope, $modalInstance, currentNode) {
+
+	$scope.currentNode = currentNode;
+
+	$scope.close = function () {
+		$modalInstance.dismiss("close");
+	};
 });
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {

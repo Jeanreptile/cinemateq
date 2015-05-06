@@ -101,6 +101,35 @@ router.get('/:id/relationshipsRaw/:direction/:type', function(req, res) {
 });
 
 router.get('/:id/relationships/:direction/:type', function(req, res) {
+	if (req.params.type == "ACTED_IN")
+	{
+		var cypher = "MATCH (m:Movie) WHERE id(m) = " + req.params.id + "  MATCH (m)-[r:ACTED_IN]-(p:Person) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+		dbLocal.query(cypher,
+				function(err, relationships)
+				{
+						var nodes = [];
+						if (err)
+							throw err;
+						if (relationships.length > 0) {
+							for (var i = 0; i < relationships.length; i++) {
+								var endpoint = relationships[i].start;
+								if (req.params.direction == "out") {
+									endpoint = relationships[i].end;
+								}
+								dbLocal.read(endpoint, function(err, node) {
+									nodes.push(node);
+									if (nodes.length == relationships.length) {
+										res.json(nodes);
+									}
+								});
+							}
+						}
+						else
+							res.json(null);
+					});
+	}
+	else
+	{
 	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
 		var nodes = [];
 		if (err)
@@ -122,6 +151,7 @@ router.get('/:id/relationships/:direction/:type', function(req, res) {
 		else
 			res.json(null);
 	});
+}
 });
 
 

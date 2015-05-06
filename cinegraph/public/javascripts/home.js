@@ -106,16 +106,32 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $scope.currentNode.id = selectedNodeId;
 
     $scope.currentDisplayedNodes = [];
-
-    $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
-                            { type: 'PRODUCED', limit: 2},
-                            { type: 'DIRECTED', limit: 2},
+    console.log("type :" + $scope.currentNode.type);
+    if ($scope.currentNode.type == "Person")
+    {
+      $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
+                                { type: 'PRODUCED', limit: 2},
+                                { type: 'DIRECTED', limit: 2},
+                                { type: 'COMPOSED_MUSIC', limit: 1},
+                                { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
+                                { type: 'WROTE', limit: 5},
+                                { type: 'EDITED', limit: 3},
+                                { type: 'DESIGNED_PRODUCTION', limit: 3},
+                                { type: 'DESIGNED_COSTUMES', limit: 2} ];
+    }
+    else
+    {
+    $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4},
+                            { type: 'PRODUCED', limit: 1},
+                            { type: 'DIRECTED', limit: 1},
                             { type: 'COMPOSED_MUSIC', limit: 1},
                             { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                            { type: 'WROTE', limit: 5},
-                            { type: 'EDITED', limit: 3},
-                            { type: 'DESIGNED_PRODUCTION', limit: 3},
-                            { type: 'DESIGNED_COSTUMES', limit: 2} ];
+                            { type: 'WROTE', limit: 1},
+                            { type: 'EDITED', limit: 1}];
+                            /*
+                            { type: 'DESIGNED_PRODUCTION', limit: 1},
+                            { type: 'DESIGNED_COSTUMES', limit: 1} ];*/
+    }
 
     $scope.findLimitForJob = function(type) {
         for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {
@@ -529,7 +545,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
 
         function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
-            var slice = 2 * Math.PI / 11;
+            var slice = 2 * Math.PI / 10;
             var relatedNodePosition = new THREE.Vector3();
             if (limit > relatedNodes.length) {
                 limit = relatedNodes.length;
@@ -745,7 +761,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         });
                         nodePosition = intersection.object.position;
 
-                        
+
                         getNode(id, nodePosition, draw);
                   })
                   .start();

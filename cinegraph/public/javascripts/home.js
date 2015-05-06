@@ -1,7 +1,7 @@
 var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
 cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
-      console.log('oui ??');
+      //console.log('oui ??');
       $locationProvider.html5Mode(true);
       $routeProvider
             .when('/', {
@@ -76,7 +76,7 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
 var cinegraphController = cinegraphApp.controller('restrictedController',
     function($scope, $http, $window, $location, AuthService) {
     $(document).ready(function(){
-      console.log('alo ui le BG auuuth');
+      //console.log('alo ui le BG auuuth');
       var randombgs=["multipass", "gandalf", "matrix"];
       number = Math.floor(Math.random() * randombgs.length);
       $('#unauthorizedpage').css({'background-image': 'url(/images/' + randombgs[number] + '.jpg)'});
@@ -91,7 +91,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
     $scope.logout = function(){
-      console.log("allo ui");
+      //console.log("allo ui");
       AuthService.logout();
     }
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
@@ -378,40 +378,40 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         function removeFromScene(array, excludedId)
         {
-        /*// getting center node to keep
-            var excludedPosition;
-            for (var i = 0 ; i < linesScene.length; i++)
+            // getting id of center node to keep
+            var centerId;
+            for (var i = 0; i < linesScene.children.length; i++)
             {
                 var line = linesScene.children[i];
-                if (line.relatedNodeId == excludedId)
-                    excludedPosition = line.originPosition;
-            }
-            console.log('EXCLUDED ', excludedPosition);*/
-            // removing sprites
-            var length = scene.children.length;
-            for (var i = 0 ; i < length; i++)
-            {
-                var node = scene.children[i];
-                if (node._id != excludedId && array.indexOf(node._id) !== -1)
-                {
-                    scene.remove(node);
-                }
+                if (line.startNodeId == excludedId)
+                    centerId = line.endNodeId;
+                else if (line.endNodeId == excludedId)
+                    centerId = line.startNodeId;
             }
             // removing lines
-            length = linesScene.children.length;
-            for (var i = 0 ; i < length; i++)
+            var length = linesScene.children.length;
+            for (var i = length - 1; i >= 0; i--)
             {
                 var line = linesScene.children[i];
-                if (array.indexOf(line.relatedNodeId) !== -1)
-                {
+                if (line.startNodeId != excludedId && line.endNodeId != excludedId)
                     linesScene.remove(line);
+            }
+            // removing sprites
+            length = scene.children.length;
+            for (var i = length - 1; i >= 0; i--)
+            {
+                var node = scene.children[i];
+                var index = array.indexOf(node._id);
+                if (node._id != excludedId && node._id != centerId && index !== -1)
+                {
+                    scene.remove(node);
+                    array.splice(index, 1);
                 }
             }
         }
 
         function getNode(id, nodePostion, callback) {
-            removeFromScene(currentDisplayedNodes, id);
-            currentDisplayedNodes = [];
+            removeFromScene(scope.currentDisplayedNodes, id);
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
             });
@@ -463,7 +463,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
 
-        function drawNode(node, radius, segments, position, originPosition) {
+        function drawNode(node, radius, segments, position, startNodeSprite) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var circleColor = node.name ? blueColor : orangeColor;
             var canvas = generateTexture(text, circleColor);
@@ -479,8 +479,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.context = canvas.getContext('2d');
             sprite.texture = texture;
 
-            if (originPosition !== undefined)
-                sprite.position.set(originPosition.x, originPosition.y, originPosition.z);
+            if (startNodeSprite !== undefined)
+                sprite.position.set(startNodeSprite.position.x, startNodeSprite.position.y, startNodeSprite.position.z);
             else
                 sprite.position.set(position.x, position.y, position.z);
             sprite.circleColor = circleColor;
@@ -497,13 +497,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         //current.texture.needsUpdate = true;
                     }).start();
                 // animating position
-                if (originPosition !== undefined) {
+                if (startNodeSprite !== undefined) {
                     new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
                         .easing(TWEEN.Easing.Linear.None)
                         .onComplete(function (){
                             // drawing line
                             var lineGeom = new THREE.Geometry();
-                            lineGeom.vertices.push(sprite.position, originPosition);
+                            lineGeom.vertices.push(sprite.position, startNodeSprite.position);
                             lineGeom.colors.push(new THREE.Color(sprite.circleColor));
                             lineGeom.colors.push(new THREE.Color(sprite.circleColor == orangeColor ? blueColor : orangeColor));
                             var lineMat = new THREE.LineBasicMaterial({
@@ -511,8 +511,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                                 vertexColors: true
                             });
                             line = new THREE.Line(lineGeom, lineMat);
-                            line.relatedNodeId = sprite._id;
-                            line.originPosition = originPosition;
+                            line.endNodeId = sprite._id;
+                            line.startNodeId = startNodeSprite._id;
                             linesScene.add(line);
                         }).start();
                 }
@@ -534,7 +534,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 relatedNodePosition.x = nodePosition.x + 18 * Math.cos(angle);
                 relatedNodePosition.y = nodePosition.y + 18 * Math.sin(angle);
                 //relatedNodePosition.z = nodePosition.z + 18 * Math.random();
-                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, nodePosition);
+                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, startNodeSprite);
                 var endNodePosition;
                 if (relatedNodeSprite.added == false) {
                     var obj = scene.getObjectByName(relatedNodes[j].name ?

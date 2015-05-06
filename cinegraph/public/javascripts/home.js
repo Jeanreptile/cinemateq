@@ -228,6 +228,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             img.src = 'images/leonardo_dicaprio.jpeg';
             var img2 = new Image();
             img2.src = 'images/inception.jpg';
+            var defaultImg = new Image();
+            defaultImg.src = 'images/default.jpg';
             var radius = 50;
             var theta = 0;
             var nodeRadius = 100, nodeSegments = 64;
@@ -471,7 +473,15 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function drawNode(node, radius, segments, position, startNodeSprite) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var circleColor = node.name ? blueColor : orangeColor;
-            var canvas = generateTexture(text, circleColor);
+            var nodeImage;
+
+            if (node.imgUrl == undefined)
+                nodeImage = defaultImg;
+            else {
+                nodeImage = new Image();
+                nodeImage.src = node.imgUrl;
+            }
+            var canvas = generateTexture(defaultImg, text, circleColor);
             var texture = new THREE.Texture(canvas);
             THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
             texture.needsUpdate = true;
@@ -483,6 +493,15 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.canvas = canvas;
             sprite.context = canvas.getContext('2d');
             sprite.texture = texture;
+            sprite.nodeImage = nodeImage;
+
+            if (node.imgUrl != undefined)
+            {
+                nodeImage.onload = function () {
+                    updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor);
+                    sprite.texture.needsUpdate = true;
+                };
+            }
 
             if (startNodeSprite !== undefined)
                 sprite.position.set(startNodeSprite.position.x, startNodeSprite.position.y, startNodeSprite.position.z);
@@ -576,15 +595,15 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.fillText(line, x, y);
         }
 
-        function generateTexture(text, circleColor) {
+        function generateTexture(img, text, circleColor) {
         	var canvas = document.createElement('canvas');
             canvas.width = 1000;
             canvas.height = 1000;
-            updateTexture(canvas, text, 0.6, circleColor);
+            updateTexture(img, canvas, text, 0.6, circleColor);
             return canvas;
         }
 
-        function updateTexture(canvas, text, opacity, circleColor) {
+        function updateTexture(img, canvas, text, opacity, circleColor) {
             var borderThickness = canvas.width / 11;
             drawCircle(canvas, borderThickness, circleColor);
             var context = canvas.getContext('2d');
@@ -821,7 +840,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 if (INTERSECTED._id !== undefined) {
                     // restoring node state when leaving it
                     if (current && (current._id != INTERSECTED._id)) {
-                        updateTexture(current.canvas, current.name, 0.6, current.circleColor);
+                        updateTexture(current.nodeImage, current.canvas, current.name, 0.6, current.circleColor);
                         current.texture.needsUpdate = true;
                         old = current;
                     }
@@ -834,7 +853,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)
                     .onUpdate(function (){
-                        updateTexture(current.canvas, current.name, current.animationOpacity, current.circleColor);
+                        updateTexture(current.nodeImage, current.canvas, current.name, current.animationOpacity, current.circleColor);
                         current.texture.needsUpdate = true;
                     }).start();
                 }

@@ -11,11 +11,27 @@ router.get('/:id', function(req, res) {
 			throw err;
 		dbLocal.readLabels(result[0], function(err, labels) {
 			result[0].type = labels[0];
+			/*
+			if (result[0].img_url == undefined)
+			{
+				if (result[0].type == "Person" || result[0].type == "Movie")
+					setImg(result[0]);
+			}*/
 			res.json(result[0]);
 		});
 	});
 	// TODO: Handle errors
 });
+
+/*
+var setImg = function(object, type){
+	if (result[0].type == "Perso ")
+	{
+		http.get("http://api.themoviedb.org/3/search/" + type+ "?api_key=c3c017954845b8a2c648fd4fafd6cda0&query="
+							+ result[0].\);
+	}
+}
+*/
 
 router.get('/:id/relationships/:direction', function(req, res) {
 	dbLocal.relationships(req.params.id, req.params.direction, function(err, relationships) {

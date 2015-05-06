@@ -91,7 +91,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
     $scope.logout = function(){
-      //console.log("allo ui");
       AuthService.logout();
     }
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });

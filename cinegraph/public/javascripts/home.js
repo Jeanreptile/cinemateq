@@ -23,6 +23,10 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
               templateUrl: '/partials/mycinegraph', controller: 'cinegraphController',
               access: { requiredAuthentication: true }
             })
+            .when('/cinegraph/:id', {
+              templateUrl: '/partials/mycinegraphSingle', controller: 'MyCinegraphCtrl',
+              access: { requiredAuthentication: true }
+            })
             .when('/error', {
               templateUrl: '/partials/error'
             })
@@ -85,7 +89,7 @@ var cinegraphController = cinegraphApp.controller('restrictedController',
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
     function($scope, $http, $window, $location, AuthService) {
-    $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
+    $scope.$watch(AuthService.isLoggedIn, function ( isLoggedIn ) {
       $scope.isLoggedIn = isLoggedIn;
       $scope.currentUser = AuthService.currentUser();
     });

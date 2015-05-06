@@ -132,6 +132,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     });
 
+
     $scope.currentNode.id = selectedNodeId;
 
 	$scope.currentDisplayedNodes = [];
@@ -600,7 +601,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
 
         function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
-            var slice = 2 * Math.PI / 10;
+          var slice = 2 * Math.PI / 10;
             var relatedNodePosition = new THREE.Vector3();
             if (limit > relatedNodes.length) {
                 limit = relatedNodes.length;

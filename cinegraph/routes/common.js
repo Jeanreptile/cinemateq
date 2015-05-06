@@ -103,7 +103,11 @@ router.get('/:id/relationshipsRaw/:direction/:type', function(req, res) {
 router.get('/:id/relationships/:direction/:type', function(req, res) {
 	if (req.params.type == "ACTED_IN")
 	{
-		var cypher = "MATCH (m:Movie) WHERE id(m) = " + req.params.id + "  MATCH (m)-[r:ACTED_IN]-(p:Person) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+		if (req.params.direction == "in")
+			var cypher = "MATCH (m:Movie) WHERE id(m) = " + req.params.id + "  MATCH (m)-[r:ACTED_IN]-(p:Person) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+		else
+			var cypher = "MATCH (p:Person) WHERE id(p) = " + req.params.id + "  MATCH (p)-[r:ACTED_IN]-(m:Movie) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+
 		dbLocal.query(cypher,
 				function(err, relationships)
 				{
@@ -113,7 +117,8 @@ router.get('/:id/relationships/:direction/:type', function(req, res) {
 						if (relationships.length > 0) {
 							for (var i = 0; i < relationships.length; i++) {
 								var endpoint = relationships[i].start;
-								if (req.params.direction == "out") {
+								if (req.params.direction == "out")
+								{
 									endpoint = relationships[i].end;
 								}
 								dbLocal.read(endpoint, function(err, node) {

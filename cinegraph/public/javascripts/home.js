@@ -404,8 +404,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 var index = array.indexOf(node._id);
                 if (node._id != excludedId && node._id != centerId && index !== -1)
                 {
-                    scene.remove(node);
                     array.splice(index, 1);
+                    var n = node;
+                    new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
+                        .easing(TWEEN.Easing.Linear.None)
+                        .onComplete(function (){
+                            scene.remove(n);
+                        }).start();
                 }
             }
         }

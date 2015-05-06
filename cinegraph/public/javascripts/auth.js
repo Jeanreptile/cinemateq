@@ -7,11 +7,10 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
       .post('/users/login', $scope.user)
       .success(function (data, status, headers, config) {
         $window.localStorage.token = data.token;
-        $window.localStorage.user = data.user;
+        $window.localStorage.user = JSON.stringify(data.user);
         AuthService.login();
         $scope.message2 = "Signed and Token created";
         $location.path('/');
-        //$window.location.href = '/home';
       })
       .error(function (data, status, headers, config) {
         // Erase the token if the user fails to log in
@@ -19,7 +18,14 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
         $scope.user = {};
         delete $window.localStorage.token;
         // Handle login errors here
-        $scope.message = 'Error: Invalid user or password';
+        if (data.message)
+        {
+          $scope.message = data.message;
+        }
+        else
+        {
+          $scope.message = 'Error: Invalid user or password';
+        }
       });
 
   };
@@ -29,7 +35,7 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
       .post('/users/register', $scope.user)
       .success(function (data, status, headers, config) {
         $window.localStorage.token = data.token;
-        $window.localStorage.user = data.user;
+        $window.localStorage.user = JSON.stringify(data.user);
         AuthService.login();
         $scope.message2 = "Signed in and Token created";
         $location.path('/');
@@ -37,11 +43,19 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
       })
       .error(function (data, status, headers, config) {
         // Erase the token if the user fails to register
+        console.log("osadasd : " + data.message);
         $scope.message = 'Error';
         $scope.user = {};
         delete $window.localStorage.token;
         // Handle login errors here
-        $scope.message = 'Error: Invalid user or password';
+        if (data.message)
+        {
+          $scope.message = data.message;
+        }
+        else
+        {
+          $scope.message = 'Error: Invalid user or password';
+        }
       });
 
   };
@@ -64,8 +78,7 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
   };
 });
 
-angular.module('cinegraphApp').factory('AuthService', function($window) {
-  var currentUser;
+angular.module('cinegraphApp').factory('AuthService', function($window, $location) {
 
   return {
     login: function() {
@@ -74,31 +87,50 @@ angular.module('cinegraphApp').factory('AuthService', function($window) {
     logout: function() {
       delete $window.localStorage.user;
       delete $window.localStorage.token;
-      currentUser = undefined;
+      $location.path('/');
     },
     isLoggedIn: function() {
       return ($window.localStorage.user != undefined);
     },
-    currentUser: function() { return currentUser; }
+    currentUser: function() { if ($window.localStorage.user != undefined){
+      return JSON.parse($window.localStorage.user);
+      }
+      else
+      {
+        return undefined;
+      }
+    }
   };
 });
 
-angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, $q, $window) {
+angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, $location, $q, $window) {
   return {
     request: function (config) {
       config.headers = config.headers || {};
       console.log("Authorization Bearer ----")
       console.log($window.localStorage.token);
       if ($window.localStorage.token) {
-        console.log("configuration Bearer");
         config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
       }
+      else
+      {
+        console.log("MAIIIIS");
+        config.headers.Authorization = '';
+      }
       return config;
+    },
+    requestError: function (rejection) {
+      if (rejection.status === 401) {
+        // handle the case where the user is not authenticated
+        console.log("Not authenticated :/");
+      }
+      return $q.reject(rejection);
     },
     responseError: function (rejection) {
       if (rejection.status === 401) {
         // handle the case where the user is not authenticated
-        console.log("Not authenticated");
+        console.log("Not authenticated :/");
+        $location.path("/unauthorized");
       }
       return $q.reject(rejection);
     }

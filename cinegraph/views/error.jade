@@ -1,3 +1,5 @@
+h1 Woops ! Error !
 h1= message
-h2= error.status
-pre #{error.stack}
+if error
+  h2= error.status
+  pre #{error.stack}

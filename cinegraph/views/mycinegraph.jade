@@ -2,7 +2,7 @@ section.vbox
 	header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 		.navbar-header.aside-md.dk
 			a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
-				i.fa.fa-bars			
+				i.fa.fa-bars
 			a.navbar-brand(href='/')
 					img.m-r-sm(src='images/cinelogo1.png', alt='logo')
 				// span.hidden-nav-xs Cinemateq
@@ -15,7 +15,7 @@ section.vbox
 						button.btn.btn-sm.bg-white.b-white.btn-icon(type='submit')
 							span.glyphicon.glyphicon-search
 					input.form-control.input-sm.no-border(type='text', placeholder='Search for a movie...')
-		a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(data-target='#nav, #sidebar', data-toggle='class:nav-xs, show')
+		a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(href='#nav, #sidebar', data-toggle='class:nav-xs, show')
 			i.fa.fa-bars
 		ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
 			li.dropdown
@@ -31,7 +31,7 @@ section.vbox
 					li(ng-if='currentUser')
 						a(href='') Profile
 					li(ng-if='currentUser')
-						a(href='/mycinegraph') My Cinegraphs
+						a(href='') My Cinegraphs
 					li.divider
 					li
 						a(ng-click='logout()' ng-if='currentUser') Logout
@@ -58,8 +58,8 @@ section.vbox
 													span.text-muted.text-xs.block Novice
 								.row.m-t-sm.hidden-nav-xs
 									.col-sm-12.text-center
-										a.btn.btn-s-md.btn-info.btn-sm(href='/mycinegraph')
-											|See my cinegraphs
+										a.btn.btn-s-md.btn-info.btn-sm(href='/')
+											|Go to Discovery mode
 											i.i.i-arrow-right.m-l-xs
 							div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 								div.m-t-sm(ng-show="currentNode.type == 'Person'")
@@ -68,10 +68,9 @@ section.vbox
 									img(src="images/inception.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
 									a(href="#", ng-show="currentNode.type == 'Person'")
-										{{currentNode.firstname}} {{currentNode.lastname}}
+										| {{currentNode.firstname}} {{currentNode.lastname}}
 									a(href="#", ng-show="currentNode.type == 'Movie'")
-										{{currentNode.title}}
-										| ({{currentNode.released}})
+										| {{currentNode.title}} ({{currentNode.released}})
 								small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
 									| Actor
 									i.i.i-dot
@@ -115,11 +114,11 @@ section.vbox
 										div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
 											| Biography
 										p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person' && currentNode.biography")
-											{{currentNode.biography | limitTo: 300}}...
+											| {{currentNode.biography | limitTo: 300}}...
 										div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.plot")
 											| Plot
 										p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
-											{{currentNode.plot | limitTo: 300}}...
+											| {{currentNode.plot | limitTo: 300}}...
 											a.m-l-xs(href="#")
 												| Read more...
 							nav.nav-primary.hidden-xs
@@ -132,13 +131,31 @@ section.vbox
 											i.i.i-plus2.icon
 											span.font-bold Suggestions
 					footer.footer.hidden-xs.no-padder.text-center-nav-xs
-						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(data-target='#nav', data-toggle='class:nav-xs')
+						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(href='#nav', data-toggle='class:nav-xs')
 							i.i.i-circleleft.text
-							i.i.i-circleright.text-active
-			section#content
+								i.i.i-circleright.text-active
+			section#content.mycinegraph
 				section.hbox.stretch
-					section
-						#graph(cinegraph="")
+					section(ng-controller="MyCinegraphCtrl")
+						section.vbox
+							section.scrollable.padder
+								header.row.m-b-md
+									div.col-sm-12
+										h2.text-black
+											| Your cinegraphs
+											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(data-toggle="tooltip", data-placement="right", title="", data-original-title="Create a new cinegraph")
+												i.fa.fa-plus
+								div(ng-repeat= "n in mycinegraphs")
+									section.row.m-md(ng-if="!(($index + 1) % 2)")
+										section.col-sm-6
+											a.btn.btn-default.btn-block(ng-click="getCinegraph(n.id)")
+												h4.text-info
+													| {{n.title}}
+									section.col-sm-6(ng-if="(($index + 1) % 2)")
+										a.btn.btn-default.btn-block(ng-click="getCinegraph(n.id)")
+											h4.text-info
+												| {{n.title}}
+								p {{cineData}}
 			aside#sidebar.aside-md.bg-black.hide
 				section.vbox.animated.fadeInRight
 					section.scrollable
@@ -150,58 +167,52 @@ section.vbox
 							.panel-body
 								form.form-horizontal
 									.form-group
-										label.control-label.col-sm-6 Actor
-										.col-sm-6
-											label.switch.actor
-												input(type='checkbox', ng-model="selectedJobs.actor", ng-checked="currentNode.jobs[0].name == 'ACTED_IN'", ng-change="filterByActor()")
-												span
-									.form-group
 										label.control-label.col-sm-6 Producer
 										.col-sm-6
 											label.switch.producer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'PRODUCED'", ng-model="selectedJobs.producer", ng-change="filterByProducer()")
+												input(type='checkbox')  
 												span
 									.form-group
 										label.control-label.col-sm-6 Director
 										.col-sm-6
 											label.switch.director
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DIRECTED'", ng-model="selectedJobs.director",  ng-change="filterByDirector()")
+												input(type='checkbox')  
 												span
 									.form-group
 										label.control-label.col-sm-6 Writer
 										.col-sm-6
 											label.switch.writer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'WROTE'", ng-model="selectedJobs.writer", ng-change="filterByWriter()")
+												input(type='checkbox')  
 												span
 									.form-group
 										label.control-label.col-sm-6 Editor
 										.col-sm-6
 											label.switch.editor
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'EDITED'", ng-model="selectedJobs.editor", ng-change="filterByEditor()")
+												input(type='checkbox')  
 												span
 									.form-group
 										label.control-label.col-sm-6 Director of photography
 										.col-sm-6
 											label.switch.dir-photography
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY'", ng-model="selectedJobs.dirphotography", ng-change="filterByDirPhotography()")
+												input(type='checkbox')  
 												span
 									.form-group
 										label.control-label.col-sm-6 Music Composer
 										.col-sm-6
 											label.switch.music-composer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'COMPOSED_MUSIC'", ng-model="selectedJobs.musiccomposer", ng-change="filterByMusicComposer()")
+												input(type='checkbox')  
 												span
 									.form-group
 										label.control-label.col-sm-6 Costume designer
 										.col-sm-6
 											label.switch.cos-designer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DESIGNED_COSTUMES'", ng-model="selectedJobs.cosdesigner", ng-change="filterByCosDesigner()")
+												input(type='checkbox')  
 												span
 									.form-group
 										label.control-label.col-sm-6 Production designer
 										.col-sm-6
 											label.switch.prod-designer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DESIGNED_PRODUCTION'", ng-model="selectedJobs.proddesigner", ng-change="filterByProdDesigner()")
+												input(type='checkbox')  
 												span
 							.panel-heading.b-b.b-dark
 								i.fa.fa-filter.m-r-xs

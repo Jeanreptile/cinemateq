@@ -10,10 +10,10 @@ var jwt = require('jsonwebtoken');
 router.post('/login', authenticate, function(req, res) {
    if (!user) {
       console.log("no user");
-     return res.json(401, { error: 'no user' });
+     return res.json(401, { message: 'no user' });
    }
    //user has authenticated correctly thus we create a JWT token
-   var token = jwt.sign({ username: user.username}, 'SecretStory');
+   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresInMinutes : 1500 });
    res.json({ token : token, user : user });
 });
 
@@ -23,7 +23,7 @@ router.post('/register', findOrCreateUser, function(req, res) {
      return res.json(401, { error: 'no user' });
    }
    //user has authenticated correctly thus we create a JWT token
-   var token = jwt.sign({ username: user.username}, 'SecretStory');
+   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresInMinutes : 1500 });
    res.json({ token : token, user : user });
 });
 
@@ -34,7 +34,7 @@ function authenticate(req, res, next) {
   db.find(predicate, 'User', function (err, objs) {
       // In case of any error, return using the done method
     if (err) {
-      res.json(401, {"message" : "error ?"});
+      res.json(401, {"message" : "Error with database"});
     }
       // Username does not exist, log error & redirect back
     if (objs.length == 0) {
@@ -56,25 +56,25 @@ var isValidPassword = function(user, password){
 }
 
 function findOrCreateUser(req, res, next) {
-  predicate = {'username': username};
+  predicate = {'username': req.body.username};
   db.find(predicate, 'User', function (err, objs) {
       // In case of any error, return using the done method
     if (err){
       console.log('Error in SignUp: ' + err);
-      return res.json(401, {'message' : 'error'});
+      return res.json(401, {'message' : 'error with database'});
     }
     //already exists
     if (objs.length > 0) {
       console.log('User already exists');
-      return res.json(401, {'message' : 'User Already Exists !'});
+      return res.status(401).json({'message' : 'User Already Exists !'});
     }
     else{
       // if there is no user with that email create the user
       var user_name = req.body.username;
       var pass = createHash(req.body.password);
-      var email = req.param('email');
-      var firstName = req.param('firstName');
-      var lastName = req.param('lastName');
+      var email = req.body.email;
+      var firstName = req.body.firstName;
+      var lastName = req.body.lastName;
       console.log("ok");
 
       db.save({ 'username': user_name, 'password': pass,
@@ -82,6 +82,7 @@ function findOrCreateUser(req, res, next) {
                 'User', function(err, node) {
         if (err) throw err;
         console.log("User Registration Sucessful");
+        user = {'firstName':node.firstName, 'lastName':node.lastName, 'username': node.username, 'id':node.id}
         next();
       });
     }

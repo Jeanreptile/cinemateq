@@ -9,6 +9,8 @@ body {
   color: #00B7FF;
 }*/
 
+/* HEADER MENU BUTTON */
+
 .header .right-menu {
   float: right;
   margin: 12px;
@@ -18,6 +20,8 @@ body {
 	padding-bottom: 10px;
 	border-bottom: 2px solid black;
 }
+
+/* LEFT PANEL */
 
 .node-details img {
 	width: 128px;
@@ -42,6 +46,8 @@ i.fa-plus:hover {
 i.fa-eye:hover {
 	color: #159a78;
 }
+
+/* SEARCH PAGE */
 
 .blur-filter {
     -webkit-filter: blur(2px);
@@ -69,6 +75,18 @@ i.fa-eye:hover {
     background-position: center;
     /* background-image: url('http://image.tmdb.org/t/p/w1000/xu9zaAevzQ5nnrsXN6JcahLnG4i.jpg'); */
   /*  background-image: url('http://image.tmdb.org/t/p/w1000/tv8J6uCTKsTlASa8luJqrFiJlBX.jpg');*/
+    background-size: cover !important;
+    position: absolute;
+}
+
+
+#unauthorizedpage {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-image: url('/images/gandalf.jpg');
     background-size: cover !important;
     position: absolute;
 }
@@ -175,6 +193,66 @@ i.fa-eye:hover {
     color: #2580db;
 }
 
+/* RIGHT PANEL - FILTER MENU */
+
 .filter-menu .panel-body {
   font-size: 12px;
+}
+
+.filter-menu .form-group {
+  margin-bottom: 5px;
+}
+
+.filter-menu .switch {
+  padding-top: 7px;
+}
+
+.filter-menu .switch span {
+  width: 40px;
+  height: 19px;
+}
+
+.filter-menu .switch span:after {
+  width: 15px;
+  height: 16px;
+}
+
+.filter-menu .switch input:checked + span:after {
+  left: 23px;
+}
+
+.filter-menu .switch.actor input:checked + span {
+  background-color: #222733;
+}
+
+.filter-menu .switch.director input:checked + span {
+  background-color: #177bbb;
+}
+
+.filter-menu .switch.writer input:checked + span {
+  background-color: #fcc633;
+}
+
+.filter-menu .switch.editor input:checked + span {
+  background-color: #e33244;
+}
+
+.filter-menu .switch.producer input:checked + span {
+  background-color: #1aae88;
+}
+
+.filter-menu .switch.music-composer input:checked + span {
+  background-color: #27d4a8;
+}
+
+.filter-menu .switch.prod-designer input:checked + span {
+  background-color: #3ddcde;
+}
+
+.filter-menu .switch.dir-photography input:checked + span {
+  background-color: #f9d269;
+}
+
+.filter-menu .switch.cos-designer input:checked + span {
+  background-color: #e56371;
 }

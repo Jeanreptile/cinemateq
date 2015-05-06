@@ -1,8 +1,8 @@
 doctype html
-html(ng-app='cinegraphApp')
+html.app(ng-app='cinegraphApp')
   head
     meta(charset='utf-8')
-    title= title
+    title= "C I N E M A T E Q"
     link(rel='stylesheet', href='/stylesheets/bootstrap.css', type='text/css')
     link(rel='stylesheet', href='/stylesheets/animate.css', type='text/css')
     link(rel='stylesheet', href='/stylesheets/font-awesome.min.css', type='text/css')
@@ -26,6 +26,15 @@ html(ng-app='cinegraphApp')
     script(src='javascripts/trackballcontrols.js')
     script(src='javascripts/tween.min.js')
     script(src='javascripts/ui-bootstrap-tpls-0.12.1.js')
+    script(src='javascripts/randomBG.js')
+    script(src='javascripts/StackBlur.js')
+    script(src="javascripts/mycinegraph.js")
+    script(src="javascripts/threejs_antialias/CopyShader.js")
+    script(src="javascripts/threejs_antialias/EffectComposer.js")
+    script(src="javascripts/threejs_antialias/MaskPass.js")
+    script(src="javascripts/threejs_antialias/RenderPass.js")
+    script(src="javascripts/threejs_antialias/ShaderPass.js")
+    script(src="javascripts/threejs_antialias/CustomShaders.js")
     body
       ng-view
     base(href='/')

@@ -22,6 +22,10 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
               templateUrl: '/partials/mycinegraph', controller: 'cinegraphController',
               access: { requiredAuthentication: true }
             })
+            .when('/cinegraph/:id', {
+              templateUrl: '/partials/mycinegraphSingle', controller: 'MyCinegraphCtrl',
+              access: { requiredAuthentication: true }
+            })
             .when('/error', {
               templateUrl: '/partials/error'
             })

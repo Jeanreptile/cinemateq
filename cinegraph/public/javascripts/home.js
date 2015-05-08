@@ -361,11 +361,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
                 getNode(scope.currentNode.id, nodePosition, draw);
 
-            // listeners
-            document.getElementById('graph').addEventListener('change', render, false);
-            $('#graph').mousedown(onMouseDown);
-            $('#graph').mouseup(onMouseUp);
-            document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
+                // listeners
+                document.getElementById('graph').addEventListener('change', render, false);
+                $('#graph').mousedown(onMouseDown);
+                $('#graph').mouseup(onMouseUp);
+                document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
         }
 
         // animation loop
@@ -437,20 +437,34 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
                 var limit;
-                var type;
+                var job;
                 if (startNode.type == "Person") {
-                    type = startNode.jobs[0].name;
-                    limit = scope.findLimitForJob(type);
-                    getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback);
+                    job = startNode.jobs[0].name;
+                    limit = scope.findLimitForJob(job);
+                    getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
                 }
                 else {
                     for (var i = 0; i < typesAndLimits.length; i++) {
-                        type = typesAndLimits[i].type;
+                        job = typesAndLimits[i].type;
                         limit = typesAndLimits[i].limit;
-                        getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback);
+                        getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
                         index += limit;
                     }
                 }
+        }
+
+        function pushRelations(index, direction, relationships, rels, callback) {
+            scope.currentDisplayedNodes.push(relationships[index]);
+            var endpoint = relationships[index].start;
+            if (direction == "out") {
+                endpoint = relationships[index].end;
+            }
+            $http.get('/api/common/' + endpoint).success(function(node) {
+                rels.push(node);
+                if (index == relationships.length - 1) {
+                    callback(rels);
+                }
+            });
         }
 
         function getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback) {
@@ -458,10 +472,25 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             if (startNode.type == 'Person') {
                 direction = 'out';
             }
-            $http.get('/api/common/' + startNode.id + '/relationships/' + direction + '/' + type).success(function(relationships) {
-                if (relationships != null) {
-                    callback(startNodeSprite, relationships, index, limit);
-                }
+            $http.get('/api/common/' + startNode.id + '/relationshipsRaw/' + direction + '/' + type + '/' + limit)
+                .success(function(relationships) {
+                    if (relationships.length > 0) {
+                        var rels = [];
+                        for (var i = 0; i < relationships.length; i++) {
+                            var found = false;
+                            $.each(scope.currentDisplayedNodes, function(j, obj) {
+                                if (relationships[i].id === obj.id) {
+                                    found = true;
+                                    return false;
+                                }
+                            });
+                            if (found == false) {
+                                pushRelations(i, direction, relationships, rels, function(relsResult) {
+                                    callback(startNodeSprite, relsResult, index, limit);
+                                });
+                            }
+                        }
+                    }
             });
         }
         scope.getRelatedNodesForType = getRelatedNodesForType;
@@ -497,7 +526,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.scale.set(0, 0, 0);
 
             var added = false;
-            if ($.inArray(node.id, scope.currentDisplayedNodes) == -1) {
+
+            //if (isAlreadyDisplayed == false) {
                 scene.add(sprite);
                 // animating scale
                 new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
@@ -527,8 +557,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         }).start();
                 }
                 added = true;
-                scope.currentDisplayedNodes.push(node.id);
-            }
+                //scope.currentDisplayedNodes.push(node.id);
+            //}
             return {sprite: sprite, added: added};
         }
 
@@ -727,7 +757,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     y: targetY,
                     z: targetZ}, duration)
                   .easing(TWEEN.Easing.Linear.None)
-                  .onComplete(function(){
+                  .onComplete(function() {
                         // getting nodes
                         $http.get('/api/common/' + id).success(function(node) {
                             scope.currentNode = node;

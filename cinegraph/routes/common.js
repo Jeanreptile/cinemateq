@@ -84,6 +84,12 @@ router.get('/:id/relationshipsRaw/:direction/:type', function(req, res) {
 	});
 });
 
+router.get('/:id/relationshipsRaw/:direction/:type/:limit', function(req, res) {
+	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
+		res.json(relationships.slice(0, req.params.limit));
+	});
+});
+
 router.get('/:id/relationships/:direction/:type', function(req, res) {
 	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
 		var nodes = [];
@@ -98,6 +104,31 @@ router.get('/:id/relationships/:direction/:type', function(req, res) {
 				dbLocal.read(endpoint, function(err, node) {
 					nodes.push(node);
 					if (nodes.length == relationships.length) {
+						res.json(nodes);
+					}
+				});
+			}
+		}
+		else
+			res.json(null);
+	});
+});
+
+
+router.get('/:id/relationships/:direction/:type/:limit', function(req, res) {
+	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
+		var nodes = [];
+		if (err)
+			throw err;
+		if (relationships.length > 0) {
+			for (var i = 0; i < relationships.length; i++) {
+				var endpoint = relationships[i].start;
+				if (req.params.direction == "out") {
+					endpoint = relationships[i].end;
+				}
+				dbLocal.read(endpoint, function(err, node) {
+					nodes.push(node);
+					if (nodes.length == req.params.limit) {
 						res.json(nodes);
 					}
 				});

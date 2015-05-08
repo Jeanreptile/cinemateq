@@ -1,7 +1,6 @@
 var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
 cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
-      console.log('oui ??');
       $locationProvider.html5Mode(true);
       $routeProvider
             .when('/', {
@@ -21,6 +20,10 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
             })
             .when('/mycinegraph', {
               templateUrl: '/partials/mycinegraph', controller: 'cinegraphController',
+              access: { requiredAuthentication: true }
+            })
+            .when('/cinegraph/:id', {
+              templateUrl: '/partials/mycinegraphSingle', controller: 'MyCinegraphCtrl',
               access: { requiredAuthentication: true }
             })
             .when('/error', {
@@ -47,51 +50,50 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
 }]);
 
 function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+	name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+	var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+		results = regex.exec(location.search);
+	return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 cinegraphApp.run(function($rootScope, $location, $window, AuthService) {
-    $rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
-        //redirect only if both isAuthenticated is false and no token is set
-        if (nextRoute != null && nextRoute.access != null && nextRoute.access.requiredAuthentication
-            && !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
-            $location.path("/unauthorized");
-        }
-    });
+	$rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
+		//redirect only if both isAuthenticated is false and no token is set
+		if (nextRoute != null && nextRoute.access != null && nextRoute.access.requiredAuthentication
+			&& !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
+			$location.path("/unauthorized");
+		}
+	});
 });
 
 cinegraphApp.service('ModelDataService', ['$http', function ($http) {
-    this.getData = function () {
-        return {
-            async: function() {
-                    return $http.get('/api/persons/all');
-            }
-        };
-    }
+	this.getData = function () {
+		return {
+			async: function() {
+					return $http.get('/api/persons/all');
+			}
+		};
+	}
 }]);
 
 var cinegraphController = cinegraphApp.controller('restrictedController',
-    function($scope, $http, $window, $location, AuthService) {
-    $(document).ready(function(){
-      console.log('alo ui le BG auuuth');
-      var randombgs=["multipass", "gandalf", "matrix"];
-      number = Math.floor(Math.random() * randombgs.length);
-      $('#unauthorizedpage').css({'background-image': 'url(/images/' + randombgs[number] + '.jpg)'});
-    });
+	function($scope, $http, $window, $location, AuthService) {
+	$(document).ready(function(){
+	  console.log('alo ui le BG auuuth');
+	  var randombgs=["multipass", "gandalf", "matrix"];
+	  number = Math.floor(Math.random() * randombgs.length);
+	  $('#unauthorizedpage').css({'background-image': 'url(/images/' + randombgs[number] + '.jpg)'});
+	});
 });
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
-    function($scope, $http, $window, $location, AuthService) {
-    $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
-      $scope.isLoggedIn = isLoggedIn;
-      $scope.currentUser = AuthService.currentUser();
-    });
+	function($scope, $http, $window, $location, AuthService, $modal) {
+	$scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
+	  $scope.isLoggedIn = isLoggedIn;
+	  $scope.currentUser = AuthService.currentUser();
+	});
 
     $scope.logout = function(){
-      console.log("allo ui");
       AuthService.logout();
     }
     //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
@@ -102,20 +104,38 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     }
     $http.get('/api/common/' + selectedNodeId).success(function(node) {
         $scope.currentNode = node;
+        if ($scope.currentNode.type == "Person")
+        {
+          $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
+                                    { type: 'PRODUCED', limit: 2},
+                                    { type: 'DIRECTED', limit: 2},
+                                    { type: 'COMPOSED_MUSIC', limit: 1},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
+                                    { type: 'WROTE', limit: 5},
+                                    { type: 'EDITED', limit: 3},
+                                    { type: 'DESIGNED_PRODUCTION', limit: 3},
+                                    { type: 'DESIGNED_COSTUMES', limit: 2} ];
+        }
+        else
+        {
+        $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4},
+                                { type: 'PRODUCED', limit: 1},
+                                { type: 'DIRECTED', limit: 1},
+                                { type: 'COMPOSED_MUSIC', limit: 1},
+                                { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
+                                { type: 'WROTE', limit: 1},
+                                { type: 'EDITED', limit: 1}];
+                                /*
+                                { type: 'DESIGNED_PRODUCTION', limit: 1},
+                                { type: 'DESIGNED_COSTUMES', limit: 1} ];*/
+        }
+
     });
+
+
     $scope.currentNode.id = selectedNodeId;
 
-    $scope.currentDisplayedNodes = [];
-
-    $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
-                            { type: 'PRODUCED', limit: 2},
-                            { type: 'DIRECTED', limit: 2},
-                            { type: 'COMPOSED_MUSIC', limit: 1},
-                            { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                            { type: 'WROTE', limit: 5},
-                            { type: 'EDITED', limit: 3},
-                            { type: 'DESIGNED_PRODUCTION', limit: 3},
-                            { type: 'DESIGNED_COSTUMES', limit: 2} ];
+	$scope.currentDisplayedNodes = [];
 
     $scope.findLimitForJob = function(type) {
         for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {
@@ -135,85 +155,108 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     };
 
-    $scope.filterByDirector = function() {
-        if ($scope.selectedJobs.director) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByDirector = function() {
+		if ($scope.selectedJobs.director) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByProducer = function() {
-        if ($scope.selectedJobs.producer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByProducer = function() {
+		if ($scope.selectedJobs.producer) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByWriter = function() {
-        if ($scope.selectedJobs.writer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'WROTE', $scope.findLimitForJob('WROTE'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByWriter = function() {
+		if ($scope.selectedJobs.writer) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'WROTE', $scope.findLimitForJob('WROTE'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByEditor = function() {
-        if ($scope.selectedJobs.writer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'EDITED', $scope.findLimitForJob('EDITED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByEditor = function() {
+		if ($scope.selectedJobs.writer) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'EDITED', $scope.findLimitForJob('EDITED'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByDirPhotography = function() {
-        if ($scope.selectedJobs.dirphotography) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED_PHOTOGRAPHY', $scope.findLimitForJob('DIRECTED_PHOTOGRAPHY'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByDirPhotography = function() {
+		if ($scope.selectedJobs.dirphotography) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED_PHOTOGRAPHY', $scope.findLimitForJob('DIRECTED_PHOTOGRAPHY'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByMusicComposer = function() {
-        if ($scope.selectedJobs.musiccomposer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'COMPOSED_MUSIC', $scope.findLimitForJob('COMPOSED_MUSIC'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByMusicComposer = function() {
+		if ($scope.selectedJobs.musiccomposer) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'COMPOSED_MUSIC', $scope.findLimitForJob('COMPOSED_MUSIC'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByCosDesigner = function() {
-        if ($scope.selectedJobs.cosdesigner) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_COSTUMES', $scope.findLimitForJob('DESIGNED_COSTUMES'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByCosDesigner = function() {
+		if ($scope.selectedJobs.cosdesigner) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_COSTUMES', $scope.findLimitForJob('DESIGNED_COSTUMES'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
 
-    $scope.filterByProdDesigner = function() {
-        if ($scope.selectedJobs.proddesigner) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_PRODUCTION', $scope.findLimitForJob('DESIGNED_PRODUCTION'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            // remove
-        }
-    };
+	$scope.filterByProdDesigner = function() {
+		if ($scope.selectedJobs.proddesigner) {
+			$scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_PRODUCTION', $scope.findLimitForJob('DESIGNED_PRODUCTION'),
+				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+		}
+		else {
+			// remove
+		}
+	};
+
+	$scope.open = function (size) {
+		var modalInstance = $modal.open({
+			animation: $scope.animationsEnabled,
+			templateUrl: 'partials/detailed-sheet',
+			controller: 'ModalInstanceCtrl',
+			size: size,
+			resolve: {
+				currentNode: function() {
+					return $scope.currentNode;
+				}
+			}
+		});
+	};
+});
+
+cinegraphApp.controller('ModalInstanceCtrl', function ($scope, $modalInstance, currentNode) {
+
+	$scope.currentNode = currentNode;
+
+	$scope.close = function () {
+		$modalInstance.dismiss("close");
+	};
 });
 
 cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
@@ -238,6 +281,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             img.src = 'images/leonardo_dicaprio.jpeg';
             var img2 = new Image();
             img2.src = 'images/inception.jpg';
+            var defaultImg = new Image();
+            defaultImg.src = 'images/default.jpg';
             var radius = 50;
             var theta = 0;
             var nodeRadius = 100, nodeSegments = 64;
@@ -388,40 +433,45 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         function removeFromScene(array, excludedId)
         {
-        /*// getting center node to keep
-            var excludedPosition;
-            for (var i = 0 ; i < linesScene.length; i++)
+            // getting id of center node to keep
+            var centerId;
+            for (var i = 0; i < linesScene.children.length; i++)
             {
                 var line = linesScene.children[i];
-                if (line.relatedNodeId == excludedId)
-                    excludedPosition = line.originPosition;
-            }
-            console.log('EXCLUDED ', excludedPosition);*/
-            // removing sprites
-            var length = scene.children.length;
-            for (var i = 0 ; i < length; i++)
-            {
-                var node = scene.children[i];
-                if (node._id != excludedId && array.indexOf(node._id) !== -1)
-                {
-                    scene.remove(node);
-                }
+                if (line.startNodeId == excludedId)
+                    centerId = line.endNodeId;
+                else if (line.endNodeId == excludedId)
+                    centerId = line.startNodeId;
             }
             // removing lines
-            length = linesScene.children.length;
-            for (var i = 0 ; i < length; i++)
+            var length = linesScene.children.length;
+            for (var i = length - 1; i >= 0; i--)
             {
                 var line = linesScene.children[i];
-                if (array.indexOf(line.relatedNodeId) !== -1)
-                {
+                if (line.startNodeId != excludedId && line.endNodeId != excludedId)
                     linesScene.remove(line);
+            }
+            // removing sprites
+            length = scene.children.length;
+            for (var i = length - 1; i >= 0; i--)
+            {
+                var node = scene.children[i];
+                var index = array.indexOf(node._id);
+                if (node._id != excludedId && node._id != centerId && index !== -1)
+                {
+                    array.splice(index, 1);
+                    var n = node;
+                    new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
+                        .easing(TWEEN.Easing.Linear.None)
+                        .onComplete(function (){
+                            scene.remove(n);
+                        }).start();
                 }
             }
         }
 
         function getNode(id, nodePostion, callback) {
-            removeFromScene(currentDisplayedNodes, id);
-            currentDisplayedNodes = [];
+            removeFromScene(scope.currentDisplayedNodes, id);
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
             });
@@ -502,10 +552,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
 
-        function drawNode(node, radius, segments, position, originPosition) {
+        function drawNode(node, radius, segments, position, startNodeSprite) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var circleColor = node.name ? blueColor : orangeColor;
-            var canvas = generateTexture(text, circleColor);
+            var nodeImage;
+
+            if (node.imgUrl == undefined)
+                nodeImage = defaultImg;
+            else {
+                nodeImage = new Image();
+                nodeImage.src = node.imgUrl;
+            }
+            var canvas = generateTexture(defaultImg, text, circleColor);
             var texture = new THREE.Texture(canvas);
             THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
             texture.needsUpdate = true;
@@ -517,9 +575,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.canvas = canvas;
             sprite.context = canvas.getContext('2d');
             sprite.texture = texture;
+            sprite.nodeImage = nodeImage;
 
-            if (originPosition !== undefined)
-                sprite.position.set(originPosition.x, originPosition.y, originPosition.z);
+            if (node.imgUrl != undefined)
+            {
+                nodeImage.onload = function () {
+                    updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor);
+                    sprite.texture.needsUpdate = true;
+                };
+            }
+
+            if (startNodeSprite !== undefined)
+                sprite.position.set(startNodeSprite.position.x, startNodeSprite.position.y, startNodeSprite.position.z);
             else
                 sprite.position.set(position.x, position.y, position.z);
             sprite.circleColor = circleColor;
@@ -537,13 +604,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         //current.texture.needsUpdate = true;
                     }).start();
                 // animating position
-                if (originPosition !== undefined) {
+                if (startNodeSprite !== undefined) {
                     new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
                         .easing(TWEEN.Easing.Linear.None)
                         .onComplete(function (){
                             // drawing line
                             var lineGeom = new THREE.Geometry();
-                            lineGeom.vertices.push(sprite.position, originPosition);
+                            lineGeom.vertices.push(sprite.position, startNodeSprite.position);
                             lineGeom.colors.push(new THREE.Color(sprite.circleColor));
                             lineGeom.colors.push(new THREE.Color(sprite.circleColor == orangeColor ? blueColor : orangeColor));
                             var lineMat = new THREE.LineBasicMaterial({
@@ -551,8 +618,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                                 vertexColors: true
                             });
                             line = new THREE.Line(lineGeom, lineMat);
-                            line.relatedNodeId = sprite._id;
-                            line.originPosition = originPosition;
+                            line.endNodeId = sprite._id;
+                            line.startNodeId = startNodeSprite._id;
                             linesScene.add(line);
                         }).start();
                 }
@@ -564,7 +631,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
 
         function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
-            var slice = 2 * Math.PI / 11;
+          var slice = 2 * Math.PI / 10;
             var relatedNodePosition = new THREE.Vector3();
             if (limit > relatedNodes.length) {
                 limit = relatedNodes.length;
@@ -574,7 +641,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 relatedNodePosition.x = nodePosition.x + 18 * Math.cos(angle);
                 relatedNodePosition.y = nodePosition.y + 18 * Math.sin(angle);
                 //relatedNodePosition.z = nodePosition.z + 18 * Math.random();
-                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, nodePosition);
+                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, startNodeSprite);
                 var endNodePosition;
                 if (relatedNodeSprite.added == false) {
                     var obj = scene.getObjectByName(relatedNodes[j].name ?
@@ -611,15 +678,15 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.fillText(line, x, y);
         }
 
-        function generateTexture(text, circleColor) {
+        function generateTexture(img, text, circleColor) {
         	var canvas = document.createElement('canvas');
             canvas.width = 1000;
             canvas.height = 1000;
-            updateTexture(canvas, text, 0.6, circleColor);
+            updateTexture(img, canvas, text, 0.6, circleColor);
             return canvas;
         }
 
-        function updateTexture(canvas, text, opacity, circleColor) {
+        function updateTexture(img, canvas, text, opacity, circleColor) {
             var borderThickness = canvas.width / 11;
             drawCircle(canvas, borderThickness, circleColor);
             var context = canvas.getContext('2d');
@@ -770,7 +837,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             else
                                 crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img2, 60);
                             crossFade.percentage = 0;
-                            var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 1000)
+                            var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
                                 .easing(TWEEN.Easing.Linear.None)
                                 .onUpdate(function (){
                                     crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
@@ -780,7 +847,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         });
                         nodePosition = intersection.object.position;
 
-                        
+
                         getNode(id, nodePosition, draw);
                   })
                   .start();
@@ -856,7 +923,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 if (INTERSECTED._id !== undefined) {
                     // restoring node state when leaving it
                     if (current && (current._id != INTERSECTED._id)) {
-                        updateTexture(current.canvas, current.name, 0.6, current.circleColor);
+                        updateTexture(current.nodeImage, current.canvas, current.name, 0.6, current.circleColor);
                         current.texture.needsUpdate = true;
                         old = current;
                     }
@@ -869,15 +936,17 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)
                     .onUpdate(function (){
-                        updateTexture(current.canvas, current.name, current.animationOpacity, current.circleColor);
+                        updateTexture(current.nodeImage, current.canvas, current.name, current.animationOpacity, current.circleColor);
                         current.texture.needsUpdate = true;
                     }).start();
                 }
             }
         }
 
-        init();
-        animate();
+        img.onload = function () {
+            init();
+            animate();
+        }
     }
 }
 }]);

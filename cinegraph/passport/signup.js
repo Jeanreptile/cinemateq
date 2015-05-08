@@ -1,5 +1,7 @@
 var LocalStrategy   = require('passport-local').Strategy;
 var bCrypt = require('bcrypt-nodejs');
+var expressJwt = require('express-jwt');
+var jwt = require('jsonwebtoken');
 
 module.exports = function(db, passport){
 passport.use('signup', new LocalStrategy({
@@ -42,7 +44,7 @@ passport.use('signup', new LocalStrategy({
     });
     };
 
-    // Delay the execution of findOrCreateUser and execute 
+    // Delay the execution of findOrCreateUser and execute
     // the method in the next tick of the event loop
     process.nextTick(findOrCreateUser);
   }));

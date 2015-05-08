@@ -29,6 +29,12 @@ router.get('/:id', function(req, res) {
 			throw err;
 		dbLocal.readLabels(result[0], function(err, labels) {
 			result[0].type = labels[0];
+			/*
+			if (result[0].img_url == undefined)
+			{
+				if (result[0].type == "Person" || result[0].type == "Movie")
+					setImg(result[0]);
+			}*/
 			if (result[0].type == "Person") {
 				var relTypes = [{ "name": "PRODUCED", "number": 0 }, { "name": "ACTED_IN", "number": 0 }, { "name": "DIRECTED", "number": 0 },
 				{ "name": "COMPOSED_MUSIC", "number": 0 }, { "name": "WROTE", "number": 0 }, { "name": "DIRECTED_PHOTOGRAPHY", "number": 0 },
@@ -47,6 +53,16 @@ router.get('/:id', function(req, res) {
 	});
 	// TODO: Handle errors
 });
+
+/*
+var setImg = function(object, type){
+	if (result[0].type == "Perso ")
+	{
+		http.get("http://api.themoviedb.org/3/search/" + type+ "?api_key=c3c017954845b8a2c648fd4fafd6cda0&query="
+							+ result[0].\);
+	}
+}
+*/
 
 router.get('/:id/relationships/:direction', function(req, res) {
 	dbLocal.relationships(req.params.id, req.params.direction, function(err, relationships) {
@@ -91,6 +107,40 @@ router.get('/:id/relationshipsRaw/:direction/:type/:limit', function(req, res) {
 });
 
 router.get('/:id/relationships/:direction/:type', function(req, res) {
+	if (req.params.type == "ACTED_IN")
+	{
+		if (req.params.direction == "in")
+			var cypher = "MATCH (m:Movie) WHERE id(m) = " + req.params.id + "  MATCH (m)-[r:ACTED_IN]-(p:Person) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+		else
+			var cypher = "MATCH (p:Person) WHERE id(p) = " + req.params.id + "  MATCH (p)-[r:ACTED_IN]-(m:Movie) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+
+		dbLocal.query(cypher,
+				function(err, relationships)
+				{
+						var nodes = [];
+						if (err)
+							throw err;
+						if (relationships.length > 0) {
+							for (var i = 0; i < relationships.length; i++) {
+								var endpoint = relationships[i].start;
+								if (req.params.direction == "out")
+								{
+									endpoint = relationships[i].end;
+								}
+								dbLocal.read(endpoint, function(err, node) {
+									nodes.push(node);
+									if (nodes.length == relationships.length) {
+										res.json(nodes);
+									}
+								});
+							}
+						}
+						else
+							res.json(null);
+					});
+	}
+	else
+	{
 	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
 		var nodes = [];
 		if (err)
@@ -112,8 +162,8 @@ router.get('/:id/relationships/:direction/:type', function(req, res) {
 		else
 			res.json(null);
 	});
+}
 });
-
 
 router.get('/:id/relationships/:direction/:type/:limit', function(req, res) {
 	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {

@@ -13,11 +13,11 @@ router.get('/query', function(req, res) {
 });
 
 /* DELETE a cinegraph */
-router.delete('/{id}', function(req, res) {
-	var cypher = "MATCH (n:MyCinegraph) WHERE n.idUser = {userId} RETURN n";
-	dbLocal.query(cypher, { userId : parseInt(req.params.idUser), personId: parseInt(req.params.id)}, function(err, result) {
+router.delete('/:id', function(req, res) {
+	var cypher = "MATCH (n:MyCinegraph)-[r]-() WHERE id(n) = {idCinegraph} DELETE n, r";
+	dbLocal.query(cypher, { idCinegraph : parseInt(req.params.id) }, function(err) {
 		if (err) throw err;
-		res.json(result[0]);
+		res.end();
 	});
 	// TODO: Handle errors
 });
@@ -34,9 +34,9 @@ router.post('/', function(req, res) {
 });
 
 /* EDIT a cinegraph */
-router.post('/{id}', function(req, res) {
-	var cypher = "MATCH (n:MyCinegraph) WHERE n.idUser = {userId} RETURN n";
-	dbLocal.query(cypher, { userId : parseInt(req.params.idUser), personId: parseInt(req.params.id)}, function(err, result) {
+router.put('/:id', function(req, res) {
+	var cypher = "MATCH (n:MyCinegraph) WHERE id(n) = {idCinegraph} SET n.title = {titleCinegraph} RETURN n";
+	dbLocal.query(cypher, { idCinegraph : parseInt(req.params.id), titleCinegraph : req.body.titleCinegraph }, function(err, result) {
 		if (err) throw err;
 		res.json(result[0]);
 	});

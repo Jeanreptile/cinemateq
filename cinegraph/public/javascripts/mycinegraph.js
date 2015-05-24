@@ -38,17 +38,68 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
         var createCinegraphModal = $modal.open({
             animation: $scope.animationsEnabled,
             templateUrl: 'partials/create-cinegraph',
-            controller: 'CreateCinegraphCtrl',
+            controller: 'CRUDCinegraphCtrl',
             size: 'md',
             resolve: {
                 mycinegraphs: function() {
                     return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
                 }
             }
         });
 
-        createCinegraphModal.result.then(function (newCinegraph) {
+        createCinegraphModal.result.then(function(newCinegraph) {
             $scope.mycinegraphs.push(newCinegraph);
+        }, function () {
+            console.log("Error");
+        });
+    };
+
+    $scope.openEditCinegraphTitleModal = function() {
+
+        var editCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/edit-cinegraph',
+            controller: 'CRUDCinegraphCtrl',
+            size: 'md',
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
+                }
+            }
+        });
+
+        editCinegraphModal.result.then(function(editedCinegraph) {
+            $scope.currentCinegraph = editedCinegraph;
+        }, function () {
+            console.log("Error");
+        });
+    };
+
+    $scope.openDeleteCinegraphModal = function() {
+
+        var deleteCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/delete-cinegraph',
+            controller: 'CRUDCinegraphCtrl',
+            size: 'sm',
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
+                }
+            }
+        });
+
+        deleteCinegraphModal.result.then(function() {
+            $location.path('/mycinegraph');
         }, function () {
             console.log("Error");
         });
@@ -56,7 +107,9 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 
 });
 
-cinegraphApp.controller('CreateCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, mycinegraphs) {
+cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, mycinegraphs, currentCinegraph) {
+
+    $scope.currentCinegraph = currentCinegraph;
 
     $scope.close = function () {
         $modalInstance.dismiss("close");
@@ -66,6 +119,19 @@ cinegraphApp.controller('CreateCinegraphCtrl', function($scope, $http, AuthServi
         var currentUser = AuthService.currentUser();
         $http.post('/api/mycinegraph/', { titleCinegraph: $scope.cinegraphTitle, idUser: currentUser.id }).success(function(res) {
             $modalInstance.close(res);
+        });
+    };
+
+    $scope.editCinegraph = function() {
+        var currentUser = AuthService.currentUser();
+        $http.put('/api/mycinegraph/' + currentCinegraph.id, { titleCinegraph: $scope.cinegraphTitle }).success(function(res) {
+            $modalInstance.close(res);
+        });
+    };
+
+    $scope.deleteCinegraph = function() {
+        $http.delete('/api/mycinegraph/' + currentCinegraph.id).success(function() {
+            $modalInstance.close();
         });
     };
 });
@@ -214,6 +280,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', function($http) {
                 blendPass.renderToScreen = true;
 
                 $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
+                    scope.currentCinegraph = cinegraph;
 					var cinegraphNodes = JSON.parse(cinegraph.nodes);
 					var slice = 2 * Math.PI / cinegraphNodes.length;
 

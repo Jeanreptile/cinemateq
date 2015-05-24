@@ -4,7 +4,7 @@ section.vbox
 			a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
 				i.fa.fa-bars			
 			a.navbar-brand(href='/')
-					img.m-r-sm(src='images/cinelogo1.png', alt='logo')
+				img.m-r-sm(src='images/cinelogo1.png', alt='logo')
 				// span.hidden-nav-xs Cinemateq
 			a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
 				i.fa.fa-cog
@@ -92,23 +92,21 @@ section.vbox
 										i.fa.fa-star.m-l-xs.fa-lg
 										i.fa.fa-star-o.m-l-xs.fa-lg
 									div.col-xs-12.m-t-sm
-											button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button')
-												i.fa.fa-heart.fa-lg
-											|  
-											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
-												button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button', dropdown-toggle='')
-													i.fa.fa-plus.fa-lg
-												ul.dropdown-menu(role='menu')
-													li(ng-if="mycinegraphs == undefined")
-														a(href='/signin') You must be logged.
-													li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
-														a(href='#') {{cine.title}}
-													li.divider(ng-if="mycinegraphs")
-													li(ng-if="mycinegraphs")
-														a(href='#') Create a myCINEGRAPH
-											|  
-											button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-show="currentNode.type == 'Movie'")
-												i.fa.fa-eye.fa-lg
+										button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button')
+											i.fa.fa-heart.fa-lg
+										.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
+											button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button', dropdown-toggle='')
+												i.fa.fa-plus.fa-lg
+											ul.dropdown-menu(role='menu')
+												li(ng-if="mycinegraphs == undefined")
+													a(href='/signin') You must be logged.
+												li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
+													a(href='#') {{cine.title}}
+												li.divider(ng-if="mycinegraphs")
+												li(ng-if="mycinegraphs")
+													a(href='#') Create a myCINEGRAPH
+										button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-show="currentNode.type == 'Movie'")
+											i.fa.fa-eye.fa-lg
 								div.row
 									div.col-xs-12
 										div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
@@ -154,55 +152,55 @@ section.vbox
 										label.control-label.col-sm-6 Actor
 										.col-sm-6
 											label.switch.actor
-												input(type='checkbox', ng-model="selectedJobs.actor", ng-checked="currentNode.jobs[0].name == 'ACTED_IN'", ng-change="filterByActor()")
+												input(type='checkbox', ng-model="selectedJobs.actor", ng-change="filterByActor()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Producer
 										.col-sm-6
 											label.switch.producer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'PRODUCED'", ng-model="selectedJobs.producer", ng-change="filterByProducer()")
+												input(type='checkbox', ng-model="selectedJobs.producer", ng-change="filterByProducer()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Director
 										.col-sm-6
 											label.switch.director
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DIRECTED'", ng-model="selectedJobs.director",  ng-change="filterByDirector()")
+												input(type='checkbox', ng-model="selectedJobs.director",  ng-change="filterByDirector()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Writer
 										.col-sm-6
 											label.switch.writer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'WROTE'", ng-model="selectedJobs.writer", ng-change="filterByWriter()")
+												input(type='checkbox', ng-model="selectedJobs.writer", ng-change="filterByWriter()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Editor
 										.col-sm-6
 											label.switch.editor
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'EDITED'", ng-model="selectedJobs.editor", ng-change="filterByEditor()")
+												input(type='checkbox', ng-model="selectedJobs.editor", ng-change="filterByEditor()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Director of photography
 										.col-sm-6
 											label.switch.dir-photography
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY'", ng-model="selectedJobs.dirphotography", ng-change="filterByDirPhotography()")
+												input(type='checkbox', ng-model="selectedJobs.dirphotography", ng-change="filterByDirPhotography()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Music Composer
 										.col-sm-6
 											label.switch.music-composer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'COMPOSED_MUSIC'", ng-model="selectedJobs.musiccomposer", ng-change="filterByMusicComposer()")
+												input(type='checkbox', ng-model="selectedJobs.musiccomposer", ng-change="filterByMusicComposer()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Costume designer
 										.col-sm-6
 											label.switch.cos-designer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DESIGNED_COSTUMES'", ng-model="selectedJobs.cosdesigner", ng-change="filterByCosDesigner()")
+												input(type='checkbox', ng-model="selectedJobs.cosdesigner", ng-change="filterByCosDesigner()")
 												span
 									.form-group
 										label.control-label.col-sm-6 Production designer
 										.col-sm-6
 											label.switch.prod-designer
-												input(type='checkbox', ng-checked="currentNode.jobs[0].name == 'DESIGNED_PRODUCTION'", ng-model="selectedJobs.proddesigner", ng-change="filterByProdDesigner()")
+												input(type='checkbox', ng-model="selectedJobs.proddesigner", ng-change="filterByProdDesigner()")
 												span
 							.panel-heading.b-b.b-dark
 								i.fa.fa-filter.m-r-xs

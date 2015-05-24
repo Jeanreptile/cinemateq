@@ -3,7 +3,7 @@ var http = require('http');
 var router = express.Router();
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 
-function pushNumberOfRelations(index, id, relTypes, callback) {
+function pushNumberOfRelations(index, id, relTypes, count, callback) {
 	dbLocal.relationships(id, "out", relTypes[index]["name"], function(err, relationships) {
 		if (err)
 			throw err;
@@ -11,15 +11,12 @@ function pushNumberOfRelations(index, id, relTypes, callback) {
 			var length = relationships.length;
 			relTypes[index]["number"] = length;
 		}
-		if (index == relTypes.length - 1) {
-			relTypes.sort(function(a,b) {
-				var x = a["number"], y = b["number"];
-				return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-			}).reverse();
+		count.val += 1;
+		if (count.val == relTypes.length) {
 			callback(relTypes);
 		}
 	});
-}
+};
 
 /* GET a node by id. */
 router.get('/:id', function(req, res) {
@@ -39,8 +36,13 @@ router.get('/:id', function(req, res) {
 				var relTypes = [{ "name": "PRODUCED", "number": 0 }, { "name": "ACTED_IN", "number": 0 }, { "name": "DIRECTED", "number": 0 },
 				{ "name": "COMPOSED_MUSIC", "number": 0 }, { "name": "WROTE", "number": 0 }, { "name": "DIRECTED_PHOTOGRAPHY", "number": 0 },
 				{ "name": "DESIGNED_COSTUMES", "number": 0 }, { "name": "EDITED", "number": 0 }, { "name": "DESIGNED_PRODUCTION", "number": 0}];
+				var count = { val: 0 };
 				for (var i = 0; i < relTypes.length; i++) {
-					pushNumberOfRelations(i, req.params.id, relTypes, function(relTypesResult) {
+					pushNumberOfRelations(i, req.params.id, relTypes, count, function(relTypesResult) {
+						relTypesResult.sort(function(a,b) {
+							var x = a["number"], y = b["number"];
+							return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+						}).reverse();
 						result[0].jobs = relTypesResult;
 						res.json(result[0]);
 					});

@@ -67,9 +67,9 @@ section.vbox
 								div.m-t-sm(ng-show="currentNode.type == 'Movie'")
 									img(src="images/inception.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
-									a(href="#", ng-show="currentNode.type == 'Person'")
+									a(href="#", ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
 										| {{currentNode.firstname}} {{currentNode.lastname}}
-									a(href="#", ng-show="currentNode.type == 'Movie'")
+									a(href="#", ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
 										| {{currentNode.title}} ({{currentNode.released}})
 								small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
 									| Actor
@@ -119,7 +119,7 @@ section.vbox
 											| Plot
 										p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
 											| {{currentNode.plot | limitTo: 300}}...
-											a.m-l-xs(href="#")
+											a.m-l-xs(href="#", ng-click="open('lg')")
 												| Read more...
 							nav.nav-primary.hidden-xs
 								ul.nav.nav-main(data-ride='collapse')
@@ -143,7 +143,7 @@ section.vbox
 									div.col-sm-12
 										h2.text-black
 											| Your cinegraphs
-											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(data-toggle="tooltip", data-placement="right", title="", data-original-title="Create a new cinegraph")
+											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(ng-click="openCreateCinegraphModal()")
 												i.fa.fa-plus
 								div(ng-repeat= "n in mycinegraphs")
 									section.row.m-md(ng-if="!(($index + 1) % 2)")

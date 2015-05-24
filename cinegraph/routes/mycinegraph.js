@@ -24,10 +24,10 @@ router.delete('/{id}', function(req, res) {
 
 /* CREATE a cinegraph */
 router.post('/', function(req, res) {
-	var cypher = "MATCH (u:User) WHERE id(u) = {userId} \
-								CREATE (c:MyCinegraph {title : \"{titleCinegraph}\")-[:BELONGS_TO]->(u) RETURN c"
-	dbLocal.query(cypher, { titleCinegraph : parseInt(req.body.titleCinegraph), userId: parseInt(req.body.idUser)}, function(err, result) {
-		if (err) throw err;
+	var cypher = "MATCH (u:User) WHERE id(u) = {userId} CREATE (c:MyCinegraph {title : {titleCinegraph} })-[:BELONGS_TO]->(u) RETURN c"
+	dbLocal.query(cypher, { titleCinegraph : req.body.titleCinegraph, userId: parseInt(req.body.idUser)}, function(err, result) {
+		if (err)
+			throw err;
 		res.json(result[0]);
 	});
 	// TODO: Handle errors

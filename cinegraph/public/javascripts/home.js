@@ -250,7 +250,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 	};
 });
 
-cinegraphApp.controller('ModalInstanceCtrl', function ($scope, $modalInstance, currentNode) {
+cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, currentNode) {
 
 	$scope.currentNode = currentNode;
 

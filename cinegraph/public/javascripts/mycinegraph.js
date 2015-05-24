@@ -1,4 +1,4 @@
-cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $location, AuthService, $routeParams) {
+cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $location, AuthService, $routeParams, $modal) {
 
 	$scope.cinegraphId = $routeParams.id;
 
@@ -18,6 +18,56 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 			}
 		});
 	}
+
+    $scope.open = function (size) {
+        var modalInstance = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/detailed-sheet',
+            controller: 'ModalInstanceCtrl',
+            size: size,
+            resolve: {
+                currentNode: function() {
+                    return $scope.currentNode;
+                }
+            }
+        });
+    };
+
+    $scope.openCreateCinegraphModal = function() {
+
+        var createCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/create-cinegraph',
+            controller: 'CreateCinegraphCtrl',
+            size: 'md',
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                }
+            }
+        });
+
+        createCinegraphModal.result.then(function (newCinegraph) {
+            $scope.mycinegraphs.push(newCinegraph);
+        }, function () {
+            console.log("Error");
+        });
+    };
+
+});
+
+cinegraphApp.controller('CreateCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, mycinegraphs) {
+
+    $scope.close = function () {
+        $modalInstance.dismiss("close");
+    };
+
+    $scope.createCinegraph = function() {
+        var currentUser = AuthService.currentUser();
+        $http.post('/api/mycinegraph/', { titleCinegraph: $scope.cinegraphTitle, idUser: currentUser.id }).success(function(res) {
+            $modalInstance.close(res);
+        });
+    };
 });
 
 cinegraphApp.directive("mycinegraph", [ '$http', function($http) {

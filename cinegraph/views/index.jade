@@ -102,10 +102,10 @@ section.vbox
 													li(ng-if="mycinegraphs == undefined")
 														a(href='/signin') You must be logged.
 													li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
-														a(href='#') {{cine.title}}
+														a(ng-click="addCurrentNodeToCinegraph(cine)") {{cine.title}}
 													li.divider(ng-if="mycinegraphs")
 													li(ng-if="mycinegraphs")
-														a(href='#') Create a myCINEGRAPH
+														a(href='#', ng-click="openCreateCinegraphModal()") Create a cinegraph
 											|  
 											button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-show="currentNode.type == 'Movie'")
 												i.fa.fa-eye.fa-lg

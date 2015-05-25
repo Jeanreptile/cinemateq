@@ -24,7 +24,7 @@ router.delete('/:id', function(req, res) {
 
 /* CREATE a cinegraph */
 router.post('/', function(req, res) {
-	var cypher = "MATCH (u:User) WHERE id(u) = {userId} CREATE (c:MyCinegraph {title : {titleCinegraph} })-[:BELONGS_TO]->(u) RETURN c"
+	var cypher = "MATCH (u:User) WHERE id(u) = {userId} CREATE (c:MyCinegraph {title : {titleCinegraph}, nodes: [] })-[:BELONGS_TO]->(u) RETURN c"
 	dbLocal.query(cypher, { titleCinegraph : req.body.titleCinegraph, userId: parseInt(req.body.idUser)}, function(err, result) {
 		if (err)
 			throw err;
@@ -35,8 +35,8 @@ router.post('/', function(req, res) {
 
 /* EDIT a cinegraph */
 router.put('/:id', function(req, res) {
-	var cypher = "MATCH (n:MyCinegraph) WHERE id(n) = {idCinegraph} SET n.title = {titleCinegraph} RETURN n";
-	dbLocal.query(cypher, { idCinegraph : parseInt(req.params.id), titleCinegraph : req.body.titleCinegraph }, function(err, result) {
+	var cypher = "MATCH (n:MyCinegraph) WHERE id(n) = {idCinegraph} SET n.title = {titleCinegraph}, n.nodes = {cinegraphNodes} RETURN n";
+	dbLocal.query(cypher, { idCinegraph : parseInt(req.params.id), titleCinegraph : req.body.titleCinegraph, cinegraphNodes: req.body.cinegraphNodes }, function(err, result) {
 		if (err) throw err;
 		res.json(result[0]);
 	});
@@ -48,6 +48,11 @@ router.get('/all/:idUser', function(req, res) {
 	var cypher = "MATCH (u:User) WHERE id(u) = {userId} MATCH (b:MyCinegraph)-[r:BELONGS_TO]->(u) RETURN b";
 	dbLocal.query(cypher, { userId : parseInt(req.params.idUser)}, function(err, result) {
 		if (err) throw err;
+		for (var i = result.length - 1; i >= 0; i--) {
+			if (result[i].nodes.length != 0) {
+				result[i].nodes = JSON.parse(result[i].nodes);
+			}
+		};
 		res.json(result);
 	});
 	// TODO: Handle errors

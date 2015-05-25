@@ -105,6 +105,16 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
         });
     };
 
+    $scope.addCurrentNodeToCinegraph = function(cinegraph) {
+
+        cinegraph.nodes.push({"id": $scope.currentNode.id});
+        $http.put('/api/mycinegraph/' + cinegraph.id,
+            { titleCinegraph: cinegraph.title, cinegraphNodes: JSON.stringify(cinegraph.nodes) }).success(function(res) {
+                $location.path('/mycinegraph');
+        });
+
+    };
+
 });
 
 cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, mycinegraphs, currentCinegraph) {
@@ -124,7 +134,7 @@ cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService
 
     $scope.editCinegraph = function() {
         var currentUser = AuthService.currentUser();
-        $http.put('/api/mycinegraph/' + currentCinegraph.id, { titleCinegraph: $scope.cinegraphTitle }).success(function(res) {
+        $http.put('/api/mycinegraph/' + currentCinegraph.id, { titleCinegraph: $scope.cinegraphTitle, cinegraphNodes: currentCinegraph.nodes }).success(function(res) {
             $modalInstance.close(res);
         });
     };

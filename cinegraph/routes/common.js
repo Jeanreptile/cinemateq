@@ -1,5 +1,6 @@
 var express = require('express');
 var http = require('http');
+var request = require('request');
 var router = express.Router();
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 
@@ -20,6 +21,7 @@ function pushNumberOfRelations(index, id, relTypes, callback) {
 		}
 	});
 }
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
 
 /* GET a node by id. */
 router.get('/:id', function(req, res) {
@@ -35,6 +37,26 @@ router.get('/:id', function(req, res) {
 				if (result[0].type == "Person" || result[0].type == "Movie")
 					setImg(result[0]);
 			}*/
+
+			if (result[0].img == undefined){
+				var parsedTitle = result[0].title.replace(" ", "+");
+				console.log("title is " + parsedTitle);
+
+				request('https://localhost/api/search/movie/poster?query=' + parsedTitle + '&year=' + result[0].released, function (error, response, body) {
+				  if (!error && response.statusCode == 200) {
+						console.log("recuperation done");
+						var cypher = "MATCH (m:Movie) WHERE id(m) = {movieId} \
+													SET m.img = true RETURN m"
+						dbLocal.query(cypher, { movieId: result[0].id }, function(err, result) {
+							if (err) throw err;
+						});
+				  }
+					else {
+						console.log(error);
+					}
+				})
+
+			}
 			if (result[0].type == "Person") {
 				var relTypes = [{ "name": "PRODUCED", "number": 0 }, { "name": "ACTED_IN", "number": 0 }, { "name": "DIRECTED", "number": 0 },
 				{ "name": "COMPOSED_MUSIC", "number": 0 }, { "name": "WROTE", "number": 0 }, { "name": "DIRECTED_PHOTOGRAPHY", "number": 0 },

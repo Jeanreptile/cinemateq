@@ -21,6 +21,7 @@
     "seraph": "^0.9.12",
     "serve-favicon": "~2.2.0",
     "jsonwebtoken": "^4.2.2",
-    "express-jwt": "^2.1.0"
+    "express-jwt": "^2.1.0",
+    "limiter": "^1.0.5"
   }
 }

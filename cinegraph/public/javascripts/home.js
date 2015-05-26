@@ -376,11 +376,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 spriteHover.texture = spriteHoverTexture;
                 scene.add(spriteHover);
 
-                // light
-                var light = new THREE.PointLight( 0xff0000, 1, 100 );
-                light.position.set( 0, 1, 0 );
-                scene.add( light );
-
                 // over sampling for antialiasing
                 var sampleRatio = 2;
                 var parameters = {
@@ -519,15 +514,29 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     continue;
                 var pos = toScreenPosition(sprite.position);
                 var distToCam = elt.distance;
-                var aspect = viewWidth / viewHeight;
-                var circleRadius = 510 / distToCam * viewHeight / 100;
-                var innerRadius = circleRadius * 7 / 8;
-
+                // calculating circle radius
+                var camDir = new THREE.Vector3();
+                var camDir2 = new THREE.Vector3(0,0,-1);
+                var crossProduct = new THREE.Vector3();
+                var posOffset = new THREE.Vector3();
+                camDir.copy(sprite.position).sub(camera.position).normalize();
+                camDir2.applyQuaternion(camera.quaternion).normalize();
+                if (camDir.equals(camDir2))
+                    camDir.x += 0.001;
+                crossProduct.crossVectors(camDir, camDir2).setLength(4);
+                posOffset.set(
+                    sprite.position.x + crossProduct.x,
+                    sprite.position.y + crossProduct.y,
+                    sprite.position.z + crossProduct.z
+                );
+                var circleRadius = toScreenPosition(posOffset).distanceTo(pos) + 0.5;
+                var innerRadius = circleRadius * 7 / 8 - 0.75;
+                // saving context
                 ctx.save();
+                // clipping to circle
                 ctx.beginPath();
                 ctx.arc(pos.x, pos.y, circleRadius, 0, 2 * Math.PI, false);
                 ctx.clip();
-
                 // getting lines related to node
                 var linesLength = linesScene.children.length;
                 for (var j = linesLength - 1; j >= 0; j--)
@@ -535,7 +544,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     var line = linesScene.children[j];
                     if (line.type != "Line" || sprite._id == undefined)
                         continue;
-
                     var startColor,endColor,startPos,endPos;
                     if (line.endNodeId == sprite._id){
                         startColor = line.geometry.colors[0];
@@ -562,10 +570,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     ctx.fillStyle = radgrad;
                     ctx.fillRect(0,0,canv.width,canv.height);
                 }
+                // clearing inner circle
                 ctx.beginPath();
                 ctx.arc(pos.x, pos.y, innerRadius, 0, 2 * Math.PI, false);
                 ctx.clip();
                 ctx.clearRect(0,0,canv.width,canv.height);
+                // restoring context
                 ctx.restore();
             }
             return canv;

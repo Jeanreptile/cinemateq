@@ -71,10 +71,9 @@ section.vbox
 										| {{currentNode.firstname}} {{currentNode.lastname}}
 									a(href="#", ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
 										| {{currentNode.title}} ({{currentNode.released}})
-								small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
-									| Actor
-									i.i.i-dot
-									| Producer
+								small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
+									| {{job.name | JobNameFormatter }}
+									i.i.i-dot(ng-hide="$last")
 								small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
 									| {{genre}}
 									i.i.i-dot(ng-hide="$last")

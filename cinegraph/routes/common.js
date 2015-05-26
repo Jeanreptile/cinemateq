@@ -31,31 +31,45 @@ router.get('/:id', function(req, res) {
 			throw err;
 		dbLocal.readLabels(result[0], function(err, labels) {
 			result[0].type = labels[0];
-			/*
-			if (result[0].img_url == undefined)
-			{
-				if (result[0].type == "Person" || result[0].type == "Movie")
-					setImg(result[0]);
-			}*/
 
-			if (result[0].img == undefined){
-				var parsedTitle = result[0].title.replace(" ", "+");
-				console.log("title is " + parsedTitle);
-
-				request('https://localhost/api/search/movie/poster?query=' + parsedTitle + '&year=' + result[0].released, function (error, response, body) {
-				  if (!error && response.statusCode == 200) {
-						console.log("recuperation done");
-						var cypher = "MATCH (m:Movie) WHERE id(m) = {movieId} \
-													SET m.img = true RETURN m"
-						dbLocal.query(cypher, { movieId: result[0].id }, function(err, result) {
-							if (err) throw err;
-						});
-				  }
-					else {
-						console.log(error);
-					}
+			if (result[0].img == undefined || result[0].img == false){
+				if (result[0].type == 'Person')
+				{
+					var parsedName = result[0].fullname.replace(" ", "+");
+					request('https://localhost/api/search/person/poster?query=' + parsedName , function (error, response, body) {
+						if (!error && response.statusCode == 200) {
+							console.log("recuperation done");
+							var cypher = "MATCH (p:Person) WHERE id(p) = {personId} \
+														SET p.img = true RETURN p"
+							dbLocal.query(cypher, { personId: result[0].id }, function(err, result) {
+								if (err) throw err;
+							});
+						}
+						else {
+							console.log(error);
+						}
 				})
 
+				}
+				else if (result[0].type == 'Movie')
+				{
+					var parsedTitle = result[0].title.replace(" ", "+");
+					request('https://localhost/api/search/movie/poster?query=' + parsedTitle + '&year=' + result[0].released, function (error, response, body) {
+						if (!error && response.statusCode == 200) {
+							console.log("recuperation done");
+							var cypher = "MATCH (m:Movie) WHERE id(m) = {movieId} \
+														SET m.img = true RETURN m"
+							dbLocal.query(cypher, { movieId: result[0].id }, function(err, result) {
+								if (err) throw err;
+							});
+						}
+						else {
+							console.log(error);
+						}
+					})
+				}
+				else {
+				}
 			}
 			if (result[0].type == "Person") {
 				var relTypes = [{ "name": "PRODUCED", "number": 0 }, { "name": "ACTED_IN", "number": 0 }, { "name": "DIRECTED", "number": 0 },

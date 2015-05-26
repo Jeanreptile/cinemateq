@@ -27,7 +27,6 @@ var getMoviePoster = function(name, year, callback){
   http.get("http://api.themoviedb.org/3/search/movie?api_key=c3c017954845b8a2c648fd4fafd6cda0&query=" + name + "&year=" + year, function(res)
   {
     var body = '';
-
     res.on('data', function(chunk) {
         body += chunk;
     });
@@ -38,30 +37,76 @@ var getMoviePoster = function(name, year, callback){
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
-            dir     = 'public/images/movies/'+ name + year + '/';
+            dir     = 'public/images/movies/'+ name + year + '/',
+            request2= require('request'),
+            fs2     = require('fs'),
+            url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir);
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
           fs.writeFile(dir + 'poster.jpg', body, 'binary', function (err) {});
         });
+        request2(url2, {encoding: 'binary'}, function(error, response, body) {
+          fs2.writeFile(dir + 'backdrop.jpg', body, 'binary', function (err) {});
+        });
         callback(resp.results[0]);
     });
   }).on('error', function(e) {
     console.log("Got error: " + e.message);
   });
-
 }
 
-router.get('/movie/poster', function(req, res) {
+
+var getPersonPicture = function(name, callback){
+  http.get("http://api.themoviedb.org/3/search/person?api_key=c3c017954845b8a2c648fd4fafd6cda0&query=" + name , function(res)
+  {
+    var body = '';
+
+    res.on('data', function(chunk) {
+        body += chunk;
+    });
+
+    res.on('end', function() {
+        var resp = JSON.parse(body)
+        console.log("Got response: ", resp.results[0].profile_path + "  :  " + name);
+        var request = require('request'),
+            fs      = require('fs'),
+            url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].profile_path,
+            dir     = 'public/images/persons/';
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
+        request(url, {encoding: 'binary'}, function(error, response, body) {
+          fs.writeFile(dir + name + '.jpg', body, 'binary', function (err) {});
+        });
+        callback(resp.results[0]);
+    });
+  }).on('error', function(e) {
+    console.log("Got error: " + e.message);
+  });
+}
+
+router.get('/:type/poster', function(req, res) {
   var RateLimiter = require('limiter').RateLimiter;
   var limiter = new RateLimiter(20, 10000);
 
   limiter.removeTokens(1, function() {
-    getMoviePoster(req.query.query, req.query.year, function (resp)
+    if (req.params.type == 'movie')
     {
-      res.json(resp);
-    });
+      getMoviePoster(req.query.query, req.query.year, function (resp)
+      {
+        res.json(resp);
+      });
+    }
+    else {
+      {
+        getPersonPicture(req.query.query, function (resp)
+        {
+          res.json(resp);
+        });
+      }
+    }
   });
 });
 

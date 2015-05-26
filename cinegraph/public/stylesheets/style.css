@@ -226,7 +226,7 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 }
 
 .filter-menu .switch.actor input:checked + span {
-  background-color: #222733;
+  background-color: #319ef1;
 }
 
 .filter-menu .switch.director input:checked + span {

@@ -279,7 +279,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var old = null;
             var current = null;
             var img = new Image();
-            img.src = 'images/leonardo_dicaprio.jpeg';
+            img.src = 'images/a0.png';
             var img2 = new Image();
             img2.src = 'images/inception.jpg';
             var defaultImg = new Image();
@@ -299,6 +299,16 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var currentDisplayedNodes = [];
             var orangeColor = '#ffa827';
             var blueColor = '#319ef1';
+            var colors = [];
+            colors['ACTED_IN'] = '#319ef1';
+            colors['PRODUCED'] = '#1AAE88';
+            colors['DIRECTED'] = '#177BBB';
+            colors['WROTE'] = '#FCC633';
+            colors['EDITED'] = '#E33244';
+            colors['DIRECTED_PHOTOGRAPHY'] = '#F9D269';
+            colors['COMPOSED_MUSIC'] = '#27D4A8';
+            colors['DESIGNED_COSTUMES'] = '#E56371';
+            colors['DESIGNED_PRODUCTION'] = '#3DDCDE';
             var composer, composerBackground, composerLines,
                 blendIntermediateComposer, blendComposer, gradientComposer, testComposer;
             var gradientBackground;
@@ -392,12 +402,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 composerBackground.addPass(renderBackgroundScene);
                 composerBackground.addPass(effectCopyBackground);
                 // lines
-                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth, viewHeight, parameters);
+                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * 1, viewHeight * 1, parameters);
                 var renderLinesScene = new THREE.RenderPass(linesScene, camera);
                 var lineShader = new THREE.ShaderPass(THREE.ThickLineShader);
-                lineShader.uniforms.totalWidth.value = viewWidth;
-                lineShader.uniforms.totalHeight.value = viewHeight;
-                lineShader.uniforms['edgeWidth'].value = 6;
+                lineShader.uniforms.totalWidth.value = viewWidth * 1;
+                lineShader.uniforms.totalHeight.value = viewHeight * 1;
+                lineShader.uniforms['edgeWidth'].value = 8 * 1;
                 composerLines = new THREE.EffectComposer(renderer, renderLinesTarget);
                 composerLines.addPass(renderLinesScene);
                 composerLines.addPass(lineShader);
@@ -482,9 +492,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             canv.width = viewWidth;
             canv.height = viewHeight;
             var ctx = canv.getContext('2d');
-            ctx.fillStyle = '#000000';
             ctx.clearRect(0,0,canv.width, canv.height);
-
             // ordering objects by distance from camera
             var orderedScene = [];
             var length = scene.children.length;
@@ -503,7 +511,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 orderedScene.push(elt);
             }
             orderedScene.sort(compare);
-
             // drawing gardient circle for each node
             var length = orderedScene.length;
             for (var i = 0; i < length; i++)
@@ -529,13 +536,15 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     sprite.position.y + crossProduct.y,
                     sprite.position.z + crossProduct.z
                 );
-                var circleRadius = toScreenPosition(posOffset).distanceTo(pos) + 0.5;
-                var innerRadius = circleRadius * 7 / 8 - 0.75;
+                var circleRadius = (toScreenPosition(posOffset).distanceTo(pos) + 0.5) * sprite.scale.x / 8;
+                var innerRadius = Math.abs(circleRadius * 7 / 8 - 0.75);
                 // saving context
                 ctx.save();
                 // clipping to circle
                 ctx.beginPath();
                 ctx.arc(pos.x, pos.y, circleRadius, 0, 2 * Math.PI, false);
+                ctx.fillStyle='rgba(255,255,255,0)';
+                ctx.fill();
                 ctx.clip();
                 // getting lines related to node
                 var linesLength = linesScene.children.length;
@@ -561,14 +570,21 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         continue;
                     // drawing radial gradient
                     var radgradPos = endPos.sub(startPos).setLength(circleRadius);
-                    var radgrad = ctx.createRadialGradient(
-                        startPos.x + radgradPos.x, startPos.y + radgradPos.y, 1,
-                        startPos.x + radgradPos.x, startPos.y + radgradPos.y, circleRadius * 3
+                    ctx.shadowOffsetX = 1000; // (default 0)
+                    ctx.shadowOffsetY = 1000; // (default 0)
+                    ctx.shadowBlur = 40; // (default 0)
+                    var r = startColor.r * 255;
+                    var g = startColor.g * 255;
+                    var b = startColor.b * 255;
+                    ctx.fillStyle = 'rgba('+r+','+g+','+b+',1)';
+                    ctx.shadowColor = 'rgba('+r+','+g+','+b+',1)';
+                    ctx.beginPath();
+                    ctx.arc(
+                        startPos.x + radgradPos.x - 1000,
+                        startPos.y + radgradPos.y - 1000,
+                        circleRadius * 1, 0, Math.PI * 2, true
                     );
-                    radgrad.addColorStop(0, '#' + startColor.getHexString());
-                    radgrad.addColorStop(1, 'rgba(0,0,0,0)');
-                    ctx.fillStyle = radgrad;
-                    ctx.fillRect(0,0,canv.width,canv.height);
+                    ctx.fill();
                 }
                 // clearing inner circle
                 ctx.beginPath();
@@ -609,6 +625,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
             // removing sprites
             length = scene.children.length;
+            toRemove = [];
             for (var i = length - 1; i >= 0; i--)
             {
                 var node = scene.children[i];
@@ -616,11 +633,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 if (node._id != excludedId && node._id != centerId && index !== -1)
                 {
                     array.splice(index, 1);
-                    var n = node;
-                    new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
+                    toRemove.push(node);
+                    new TWEEN.Tween(node.scale).to({x: 0, y:0, z:0}, 500)
                         .easing(TWEEN.Easing.Linear.None)
                         .onComplete(function (){
-                            scene.remove(n);
+                            scene.remove(toRemove[0]);
+                            toRemove.splice(0,1);
                         }).start();
                 }
             }
@@ -666,7 +684,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
             $http.get('/api/common/' + startNode.id + '/relationships/' + direction + '/' + type).success(function(relationships) {
                 if (relationships != null) {
-                    callback(startNodeSprite, relationships, index, limit);
+                    callback(startNodeSprite, relationships, index, limit, type);
                 }
             });
         }
@@ -679,7 +697,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
 
-        function drawNode(node, radius, segments, position, startNodeSprite) {
+        function drawNode(node, radius, segments, position, startNodeSprite, type) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var circleColor = node.name ? blueColor : orangeColor;
             var nodeImage;
@@ -725,10 +743,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 // animating scale
                 new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
                     .easing(TWEEN.Easing.Linear.None)
-                    .onUpdate(function (){
-                        //updateTexture(current.canvas, current.name, current.animationOpacity);
-                        //current.texture.needsUpdate = true;
-                    }).start();
+                    .start();
                 // animating position
                 if (startNodeSprite !== undefined) {
                     new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
@@ -737,8 +752,16 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             // drawing line
                             var lineGeom = new THREE.Geometry();
                             lineGeom.vertices.push(sprite.position, startNodeSprite.position);
-                            lineGeom.colors.push(new THREE.Color(sprite.circleColor));
-                            lineGeom.colors.push(new THREE.Color(sprite.circleColor == orangeColor ? blueColor : orangeColor));
+                            var startColor, endColor;
+                            if (node.name) {
+                                startColor = colors[type];
+                                endColor = orangeColor;
+                            } else {
+                                startColor = orangeColor;
+                                endColor = colors[type];
+                            }
+                            lineGeom.colors.push(new THREE.Color(startColor));
+                            lineGeom.colors.push(new THREE.Color(orangeColor));
                             var lineMat = new THREE.LineBasicMaterial({
                                 linewidth: 1,
                                 vertexColors: true
@@ -756,7 +779,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
 
-        function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
+        function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit, type) {
           var slice = 2 * Math.PI / 10;
             var relatedNodePosition = new THREE.Vector3();
             if (limit > relatedNodes.length) {
@@ -767,7 +790,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 relatedNodePosition.x = nodePosition.x + 18 * Math.cos(angle);
                 relatedNodePosition.y = nodePosition.y + 18 * Math.sin(angle);
                 //relatedNodePosition.z = nodePosition.z + 18 * Math.random();
-                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, startNodeSprite);
+                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, startNodeSprite, type);
                 var endNodePosition;
                 if (relatedNodeSprite.added == false) {
                     var obj = scene.getObjectByName(relatedNodes[j].name ?

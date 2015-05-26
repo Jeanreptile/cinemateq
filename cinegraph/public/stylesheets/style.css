@@ -263,6 +263,6 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 
 /* MYCINEGRAPH SINGLE VIEW */
 
-.myCinegraphSingle i.fa {
+.myCinegraphSingle .cinegraph-actions i.fa {
   margin-left: 10px;
 }

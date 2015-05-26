@@ -105,21 +105,41 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
         });
     };
 
-    $scope.addCurrentNodeToCinegraph = function(cinegraph) {
-
-        cinegraph.nodes.push({"id": $scope.currentNode.id});
-        $http.put('/api/mycinegraph/' + cinegraph.id,
-            { titleCinegraph: cinegraph.title, cinegraphNodes: JSON.stringify(cinegraph.nodes) }).success(function(res) {
-                $location.path('/mycinegraph');
+    $scope.openAddToCinegraphModal = function() {
+        var addToCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/add-node-to-cinegraph',
+            controller: 'CRUDCinegraphCtrl',
+            size: 'md',
+            scope: $scope,
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
+                }
+            }
         });
 
+        addToCinegraphModal.result.then(function() {
+            $location.path('/mycinegraph');
+        }, function () {
+            console.log("Error");
+        });
     };
+
 
 });
 
-cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, mycinegraphs, currentCinegraph) {
+cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, mycinegraphs, currentCinegraph, currentNode) {
 
+    $scope.mycinegraphs = mycinegraphs;
     $scope.currentCinegraph = currentCinegraph;
+    $scope.currentNode = currentNode;
 
     $scope.close = function () {
         $modalInstance.dismiss("close");
@@ -132,7 +152,18 @@ cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService
         });
     };
 
-    $scope.editCinegraph = function() {
+    $scope.createAndAddToCinegraph = function() {
+        var currentUser = AuthService.currentUser();
+        $http.post('/api/mycinegraph/', { titleCinegraph: $scope.cinegraphTitle, idUser: currentUser.id }).success(function(res) {
+            res.nodes.push({"id": $scope.currentNode.id});            
+            $http.put('/api/mycinegraph/' + res.id,
+                { titleCinegraph: res.title, cinegraphNodes: JSON.stringify(res.nodes) }).success(function(res) {
+                    $modalInstance.close();
+            });
+        });
+    };
+
+    $scope.editCinegraphTitle = function() {
         var currentUser = AuthService.currentUser();
         $http.put('/api/mycinegraph/' + currentCinegraph.id, { titleCinegraph: $scope.cinegraphTitle, cinegraphNodes: currentCinegraph.nodes }).success(function(res) {
             $modalInstance.close(res);
@@ -143,6 +174,23 @@ cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService
         $http.delete('/api/mycinegraph/' + currentCinegraph.id).success(function() {
             $modalInstance.close();
         });
+    };
+
+    $scope.addCurrentNodeToCinegraph = function() {
+        var found = false;
+        for (var i = $scope.selectedCinegraph.nodes.length - 1; i >= 0; i--) {
+            if ($scope.selectedCinegraph.nodes[i].id == $scope.currentNode.id) {
+                found = true;
+            }
+        };
+        if (!found) {
+            $scope.selectedCinegraph.nodes.push({"id": $scope.currentNode.id});            
+        }
+        $http.put('/api/mycinegraph/' + $scope.selectedCinegraph.id,
+            { titleCinegraph: $scope.selectedCinegraph.title, cinegraphNodes: JSON.stringify($scope.selectedCinegraph.nodes) }).success(function(res) {
+                $modalInstance.close();
+        });
+
     };
 });
 

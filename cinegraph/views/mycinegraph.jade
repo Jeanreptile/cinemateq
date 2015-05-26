@@ -96,16 +96,8 @@ section.vbox
 												i.fa.fa-heart.fa-lg
 											|  
 											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
-												button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
+												button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
 													i.fa.fa-plus.fa-lg
-												ul.dropdown-menu(role='menu')
-													li(ng-if="mycinegraphs == undefined")
-														a(href='/signin') You must be logged.
-													li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
-														a(ng-click="addCurrentNodeToCinegraph(cine)") {{cine.title}}
-													li.divider(ng-if="mycinegraphs")
-													li(ng-if="mycinegraphs")
-														a(href='#') Create a cinegraph
 											|  
 											button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
 												i.fa.fa-eye.fa-lg

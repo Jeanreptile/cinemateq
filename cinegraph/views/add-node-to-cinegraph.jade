@@ -3,15 +3,18 @@
 	h4.modal-title.font-bold Add node to a cinegraph
 .modal-body
 	p(ng-if="mycinegraphs == undefined")
-		You must be logged
-	form
+		| You must be logged
+	p(ng-if="mycinegraphs.length == 0")
+		| You have not created any cinegraph yet.
+	form(ng-if="mycinegraphs.length > 0")
 		.radio.i-checks(ng-repeat="cine in mycinegraphs")
 			label
 				input(type='radio', ng-model="$parent.selectedCinegraph", ng-value="cine", name="selectedCinegraph")
 				i
 				|  {{cine.title}}
 		input.btn.btn-success.pull-right(type="submit", ng-click="addCurrentNodeToCinegraph()", value="Add")
-	h5(style="clear:both;") Or create a new one:
+	h5(style="clear:both;", ng-if="mycinegraphs.length != 0") Or create a new one:
+	h5(style="clear:both;", ng-if="mycinegraphs.length == 0") Create a new one:
 	form
 		.form-group
 			label Name

@@ -136,6 +136,8 @@ section.vbox
 											| Your cinegraphs
 											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(ng-click="openCreateCinegraphModal()")
 												i.fa.fa-plus
+								div(ng-if="mycinegraphs.length == 0")
+									p You have not created any cinegraph yet. Click on the button above to create one.
 								div(ng-repeat= "n in mycinegraphs")
 									section.row.m-md(ng-if="!(($index + 1) % 2)")
 										section.col-sm-6
@@ -146,7 +148,6 @@ section.vbox
 										a.btn.btn-default.btn-block(href="/cinegraph/{{n.id}}")
 											h4.text-info
 												| {{n.title}}
-								p {{cineData}}
 			aside#sidebar.aside-md.bg-black.hide
 				section.vbox.animated.fadeInRight
 					section.scrollable

@@ -45,14 +45,14 @@ var getMoviePoster = function(name, year, callback){
             fs.mkdirSync(dir);
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
-          fs.writeFile(dir + 'poster.jpg', body, 'binary', function (err) {});
+          fs.writeFile(path.join(dir, 'poster.jpg'), body, 'binary', function (err) {});
         });
         if (resp.results[0].backdrop_path != null)
         {
           var request2= require('request'),
               fs2     = require('fs'),
               url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
-          request2(url2, {encoding: 'binary'}, function(error, response, body) {
+              request2(url2, {encoding: 'binary'}, function(error, response, body) {
             fs2.writeFile(path.join(dir, 'backdrop.jpg'), body, 'binary', function (err) {});
           });
         }

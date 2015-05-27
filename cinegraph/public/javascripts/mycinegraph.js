@@ -754,7 +754,6 @@ cinegraphApp.directive("mycinegraph", [ '$http', function($http) {
         */
 
         function drawNode(node, radius, segments, position, startNodeSprite, type) {
-            console.log("position:" + JSON.stringify(position));
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var circleColor = node.name ? blueColor : orangeColor;
             var nodeImage;

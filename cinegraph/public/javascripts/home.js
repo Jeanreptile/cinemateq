@@ -79,7 +79,6 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
 var cinegraphController = cinegraphApp.controller('restrictedController',
 	function($scope, $http, $window, $location, AuthService) {
 	$(document).ready(function(){
-	  console.log('alo ui le BG auuuth');
 	  var randombgs=["multipass", "gandalf", "matrix"];
 	  number = Math.floor(Math.random() * randombgs.length);
 	  $('#unauthorizedpage').css({'background-image': 'url(/images/' + randombgs[number] + '.jpg)'});
@@ -106,7 +105,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         $scope.currentNode = node;
         if ($scope.currentNode.type == "Person")
         {
-          $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
                                     { type: 'PRODUCED', limit: 2},
                                     { type: 'DIRECTED', limit: 2},
                                     { type: 'COMPOSED_MUSIC', limit: 1},
@@ -118,18 +117,28 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
         else
         {
-        $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4},
-                                { type: 'PRODUCED', limit: 1},
-                                { type: 'DIRECTED', limit: 1},
-                                { type: 'COMPOSED_MUSIC', limit: 1},
-                                { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                                { type: 'WROTE', limit: 1},
-                                { type: 'EDITED', limit: 1}];
-                                /*
-                                { type: 'DESIGNED_PRODUCTION', limit: 1},
-                                { type: 'DESIGNED_COSTUMES', limit: 1} ];*/
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4},
+                                    { type: 'PRODUCED', limit: 1},
+                                    { type: 'DIRECTED', limit: 1},
+                                    { type: 'COMPOSED_MUSIC', limit: 1},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
+                                    { type: 'WROTE', limit: 1},
+                                    { type: 'EDITED', limit: 1}];
+                                    /*
+                                    { type: 'DESIGNED_PRODUCTION', limit: 1},
+                                    { type: 'DESIGNED_COSTUMES', limit: 1} ];*/
         }
 
+        $scope.selectedJobs = {
+                actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
+                writer: $scope.currentNode.jobs[0].name == 'WROTE',
+                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
+                director: $scope.currentNode.jobs[0].name == 'DIRECTED',
+                editor: $scope.currentNode.jobs[0].name == 'EDITED',
+                dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
+                musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
+                cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
+                proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
     });
 
 
@@ -151,47 +160,77 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                 $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
         }
         else {
-            // remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "ACTED_IN") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
         }
     };
 
-	$scope.filterByDirector = function() {
-		if ($scope.selectedJobs.director) {
-			$scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
-				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-		}
-		else {
-			// remove
+    $scope.filterByDirector = function() {
+        if ($scope.selectedJobs.director) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "DIRECTED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
 	$scope.filterByProducer = function() {
-		if ($scope.selectedJobs.producer) {
-			$scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
-				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-		}
-		else {
-			// remove
-		}
-	};
+        if ($scope.selectedJobs.producer) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "PRODUCED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
+        }
+    };
 
-	$scope.filterByWriter = function() {
+    $scope.filterByWriter = function() {
 		if ($scope.selectedJobs.writer) {
 			$scope.getRelatedNodesForType($scope.currentNode, 'WROTE', $scope.findLimitForJob('WROTE'),
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "WROTE") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
 	$scope.filterByEditor = function() {
-		if ($scope.selectedJobs.writer) {
+		if ($scope.selectedJobs.editor) {
 			$scope.getRelatedNodesForType($scope.currentNode, 'EDITED', $scope.findLimitForJob('EDITED'),
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "EDITED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -201,7 +240,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "DIRECTED_PHOTOGRAPHY") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -211,7 +256,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "COMPOSED_MUSIC") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -221,7 +272,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "DESIGNED_COSTUMES") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -231,7 +288,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "WROTE") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -406,11 +469,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
                 getNode(scope.currentNode.id, nodePosition, draw);
 
-            // listeners
-            document.getElementById('graph').addEventListener('change', render, false);
-            $('#graph').mousedown(onMouseDown);
-            $('#graph').mouseup(onMouseUp);
-            document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
+                // listeners
+                document.getElementById('graph').addEventListener('change', render, false);
+                $('#graph').mousedown(onMouseDown);
+                $('#graph').mouseup(onMouseUp);
+                document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
         }
 
         // animation loop
@@ -430,6 +493,45 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             composer.render();
             blendComposer.render();
         }
+
+        function removeOneFromScene(array, idToRemove, excludedId) {
+            var length = linesScene.children.length;
+            for (var i = length - 1; i >= 0; i--)
+            {
+                var line = linesScene.children[i];
+                if (line.endNodeId == idToRemove) {
+                    linesScene.remove(line);
+                }
+            }
+
+            length = scene.children.length;
+            for (var i = length - 1; i >= 0; i--)
+            {
+                var node = scene.children[i];
+                var index = -1;
+                $.each(scope.currentDisplayedNodes, function(j, obj) {
+                    var endpoint = obj.start;
+                    if (scope.currentNode.type == "Person") {
+                        endpoint = obj.end;
+                    }
+                    if (node._id === idToRemove && endpoint == idToRemove) {
+                        index = j;
+                        return false;
+                    }
+                });
+                if (node._id != excludedId && index !== -1)
+                {
+                    array.splice(index, 1);
+                    var n = node;
+                    new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
+                        .easing(TWEEN.Easing.Linear.None)
+                        .onComplete(function (){
+                            scene.remove(n);
+                        }).start();
+                }
+            }
+        }
+        scope.removeOneFromScene = removeOneFromScene;
 
         function removeFromScene(array, excludedId)
         {
@@ -456,7 +558,17 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             for (var i = length - 1; i >= 0; i--)
             {
                 var node = scene.children[i];
-                var index = array.indexOf(node._id);
+                var index = -1;
+                $.each(scope.currentDisplayedNodes, function(j, obj) {
+                    var endpoint = obj.start;
+                    if (scope.currentNode.type == "Person") {
+                        endpoint = obj.end;
+                    }
+                    if (node._id === endpoint) {
+                        index = j;
+                        return false;
+                    }
+                });
                 if (node._id != excludedId && node._id != centerId && index !== -1)
                 {
                     array.splice(index, 1);
@@ -471,7 +583,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         function getNode(id, nodePostion, callback) {
-            removeFromScene(scope.currentDisplayedNodes, id);
+            if (id != scope.currentNode.id) {
+                removeFromScene(scope.currentDisplayedNodes, id);
+            }
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
             });
@@ -480,6 +594,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         /* callback called when getting a node from the API */
         function draw(node, nodePosition) {
             var nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition);
+            if (node.id == scope.currentNode.id && scope.currentNode.sprite == null) {
+                scope.currentNode.sprite = nodeSprite.sprite;
+            }
             getRelatedNodes(node, nodeSprite.sprite, scope.typesAndLimits, drawRelatedNodes);
         }
 
@@ -487,20 +604,48 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
                 var limit;
-                var type;
+                var job;
                 if (startNode.type == "Person") {
-                    type = startNode.jobs[0].name;
-                    limit = scope.findLimitForJob(type);
-                    getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback);
+                    job = startNode.jobs[0].name;
+                    limit = scope.findLimitForJob(job);
+                    getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
                 }
                 else {
                     for (var i = 0; i < typesAndLimits.length; i++) {
-                        type = typesAndLimits[i].type;
+                        job = typesAndLimits[i].type;
                         limit = typesAndLimits[i].limit;
-                        getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback);
+                        getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
                         index += limit;
                     }
                 }
+        }
+
+        function pushRelations(index, count, direction, relationships, rels, callback) {
+            var endpoint = relationships[index].start;
+            if (direction == "out") {
+                endpoint = relationships[index].end;
+            }
+            $http.get('/api/common/' + endpoint).success(function(node) {
+                var found = false;
+                $.each(scope.currentDisplayedNodes, function(j, obj) {
+                    var endpoint2 = obj.start;
+                    if (direction == "out") {
+                        endpoint2 = obj.end;
+                    }
+                    if (endpoint === endpoint2) {
+                        found = true;
+                        return false;
+                    }
+                });
+                if (!found) {
+                    rels.push(node);                    
+                    scope.currentDisplayedNodes.push(relationships[index]);
+                }
+                count.val++;
+                if (count.val == relationships.length) {
+                    callback(rels);
+                }
+            });
         }
 
         function getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback) {
@@ -508,10 +653,26 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             if (startNode.type == 'Person') {
                 direction = 'out';
             }
-            $http.get('/api/common/' + startNode.id + '/relationships/' + direction + '/' + type).success(function(relationships) {
-                if (relationships != null) {
-                    callback(startNodeSprite, relationships, index, limit);
-                }
+            $http.get('/api/common/' + startNode.id + '/relationshipsRaw/' + direction + '/' + type + '/' + limit)
+                .success(function(relationships) {
+                    if (relationships.length > 0) {
+                        var rels = [];
+                        var count = { val: 0 };
+                        for (var i = 0; i < relationships.length; i++) {
+                            var found = false;
+                            $.each(scope.currentDisplayedNodes, function(j, obj) {
+                                if (relationships[i].id === obj.id) {
+                                    found = true;
+                                    return false;
+                                }
+                            });
+                            if (found == false) {
+                                pushRelations(i, count, direction, relationships, rels, function(relsResult) {
+                                    callback(startNodeSprite, relsResult, index, limit);
+                                });
+                            }
+                        }
+                    }
             });
         }
         scope.getRelatedNodesForType = getRelatedNodesForType;
@@ -574,7 +735,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.scale.set(0, 0, 0);
 
             var added = false;
-            if ($.inArray(node.id, scope.currentDisplayedNodes) == -1) {
+
+            //if (isAlreadyDisplayed == false) {
                 scene.add(sprite);
                 // animating scale
                 new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
@@ -604,8 +766,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         }).start();
                 }
                 added = true;
-                scope.currentDisplayedNodes.push(node.id);
-            }
+                //scope.currentDisplayedNodes.push(node.id);
+            //}
             return {sprite: sprite, added: added};
         }
 
@@ -804,7 +966,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     y: targetY,
                     z: targetZ}, duration)
                   .easing(TWEEN.Easing.Linear.None)
-                  .onComplete(function(){
+                  .onComplete(function() {
                         // getting nodes
                         $http.get('/api/common/' + id).success(function(node) {
                             scope.currentNode = node;

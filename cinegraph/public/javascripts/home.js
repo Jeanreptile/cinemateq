@@ -1211,10 +1211,20 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         function updateBackground(node) {
             var crossFade = new Object();
-            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
             var backgroundImage;
-            if (node.img == undefined || node.img == false)
+            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
+            if (node.img == undefined || node.img == false) {
                 backgroundImage = defaultImg;
+                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, 25);
+                crossFade.percentage = 0;
+                var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
+                    .easing(TWEEN.Easing.Linear.None)
+                    .onUpdate(function (){
+                        crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
+                            crossFade.endCanvas, crossFade.percentage);
+                        background.bgTexture.needsUpdate = true;
+                    }).start();
+            }
             else {
                 backgroundImage = new Image();
                 if (node.title == undefined)

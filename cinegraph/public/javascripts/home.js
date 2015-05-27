@@ -76,10 +76,43 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
 	}
 }]);
 
+cinegraphApp.filter('JobNameFormatter', function() {
+    return function(input) {
+        var out = "";
+        if (input == "PRODUCED") {
+            out = "Producer";
+        }
+        else if (input == "DIRECTED") {
+            out = "Director"
+        }
+        else if (input == "ACTED_IN") {
+            out = "Actor"
+        }
+        else if (input == "DESIGNED_PRODUCTION") {
+            out = "Production Designer"
+        }
+        else if (input == "WROTE") {
+            out = "Writer"
+        }
+        else if (input == "DESIGNED_COSTUMES") {
+            out = "Costume Designer"
+        }
+        else if (input == "EDITED") {
+            out = "Editor"
+        }
+        else if (input == "COMPOSED_MUSIC") {
+            out = "Music Composer"
+        }
+        else {
+            out = input;
+        }
+        return out;
+    };
+});
+
 var cinegraphController = cinegraphApp.controller('restrictedController',
 	function($scope, $http, $window, $location, AuthService) {
 	$(document).ready(function(){
-	  console.log('alo ui le BG auuuth');
 	  var randombgs=["multipass", "gandalf", "matrix"];
 	  number = Math.floor(Math.random() * randombgs.length);
 	  $('#unauthorizedpage').css({'background-image': 'url(/images/' + randombgs[number] + '.jpg)'});
@@ -106,7 +139,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         $scope.currentNode = node;
         if ($scope.currentNode.type == "Person")
         {
-          $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
                                     { type: 'PRODUCED', limit: 2},
                                     { type: 'DIRECTED', limit: 2},
                                     { type: 'COMPOSED_MUSIC', limit: 1},
@@ -115,21 +148,32 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                                     { type: 'EDITED', limit: 3},
                                     { type: 'DESIGNED_PRODUCTION', limit: 3},
                                     { type: 'DESIGNED_COSTUMES', limit: 2} ];
+            $scope.selectedJobs = {
+                actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
+                writer: $scope.currentNode.jobs[0].name == 'WROTE',
+                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
+                director: $scope.currentNode.jobs[0].name == 'DIRECTED',
+                editor: $scope.currentNode.jobs[0].name == 'EDITED',
+                dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
+                musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
+                cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
+                proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
         }
         else
         {
-        $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4},
-                                { type: 'PRODUCED', limit: 1},
-                                { type: 'DIRECTED', limit: 1},
-                                { type: 'COMPOSED_MUSIC', limit: 1},
-                                { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                                { type: 'WROTE', limit: 1},
-                                { type: 'EDITED', limit: 1}];
-                                /*
-                                { type: 'DESIGNED_PRODUCTION', limit: 1},
-                                { type: 'DESIGNED_COSTUMES', limit: 1} ];*/
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4},
+                                    { type: 'PRODUCED', limit: 1},
+                                    { type: 'DIRECTED', limit: 1},
+                                    { type: 'COMPOSED_MUSIC', limit: 1},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
+                                    { type: 'WROTE', limit: 1},
+                                    { type: 'EDITED', limit: 1}];
+                                    /*
+                                    { type: 'DESIGNED_PRODUCTION', limit: 1},
+                                    { type: 'DESIGNED_COSTUMES', limit: 1} ];*/
         }
 
+        
     });
 
 
@@ -151,47 +195,77 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                 $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
         }
         else {
-            // remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "ACTED_IN") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
         }
     };
 
-	$scope.filterByDirector = function() {
-		if ($scope.selectedJobs.director) {
-			$scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
-				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-		}
-		else {
-			// remove
+    $scope.filterByDirector = function() {
+        if ($scope.selectedJobs.director) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "DIRECTED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
 	$scope.filterByProducer = function() {
-		if ($scope.selectedJobs.producer) {
-			$scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
-				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-		}
-		else {
-			// remove
-		}
-	};
+        if ($scope.selectedJobs.producer) {
+            $scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+        else {
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "PRODUCED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
+        }
+    };
 
-	$scope.filterByWriter = function() {
+    $scope.filterByWriter = function() {
 		if ($scope.selectedJobs.writer) {
 			$scope.getRelatedNodesForType($scope.currentNode, 'WROTE', $scope.findLimitForJob('WROTE'),
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "WROTE") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
 	$scope.filterByEditor = function() {
-		if ($scope.selectedJobs.writer) {
+		if ($scope.selectedJobs.editor) {
 			$scope.getRelatedNodesForType($scope.currentNode, 'EDITED', $scope.findLimitForJob('EDITED'),
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "EDITED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -201,7 +275,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "DIRECTED_PHOTOGRAPHY") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -211,7 +291,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "COMPOSED_MUSIC") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -221,7 +307,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "DESIGNED_COSTUMES") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -231,7 +323,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 				$scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
 		}
 		else {
-			// remove
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+    			var endpoint = obj.start;
+                if ($scope.currentNode.id === endpoint && obj.type == "WROTE") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                }
+            };
 		}
 	};
 
@@ -250,7 +348,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 	};
 });
 
-cinegraphApp.controller('ModalInstanceCtrl', function ($scope, $modalInstance, currentNode) {
+cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, currentNode) {
 
 	$scope.currentNode = currentNode;
 
@@ -264,7 +362,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 		link: function link(scope, element, attrs) {
 			// global vars
             var scene = new THREE.Scene();
-            var linesScene, linesCamera;
+            var linesScene = new THREE.Scene();
+            var linesCamera;
             var camera;
             var cameraControls;
             var bgScene, bgCam;
@@ -278,7 +377,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var old = null;
             var current = null;
             var img = new Image();
-            img.src = 'images/leonardo_dicaprio.jpeg';
+            img.src = 'images/a0.png';
             var img2 = new Image();
             img2.src = 'images/inception.jpg';
             var defaultImg = new Image();
@@ -298,8 +397,19 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var currentDisplayedNodes = [];
             var orangeColor = '#ffa827';
             var blueColor = '#319ef1';
+            var colors = [];
+            colors['ACTED_IN'] = '#319ef1';
+            colors['PRODUCED'] = '#1AAE88';
+            colors['DIRECTED'] = '#177BBB';
+            colors['WROTE'] = '#FCC633';
+            colors['EDITED'] = '#E33244';
+            colors['DIRECTED_PHOTOGRAPHY'] = '#F9D269';
+            colors['COMPOSED_MUSIC'] = '#27D4A8';
+            colors['DESIGNED_COSTUMES'] = '#E56371';
+            colors['DESIGNED_PRODUCTION'] = '#3DDCDE';
             var composer, composerBackground, composerLines,
-                blendIntermediateComposer, blendComposer;
+                blendIntermediateComposer, blendComposer, gradientComposer, testComposer;
+            var gradientBackground;
 
             function init() {
                 $('#graph').css('height','100%');
@@ -326,8 +436,24 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 bgScene.add(bgCam);
                 bgScene.add(background);
 
+                //gradient scene
+                var gradientCanvas = getGradientLayer();
+                var gradientTexture = new THREE.Texture(gradientCanvas);
+                gradientBackground = new THREE.Mesh(
+                    new THREE.PlaneBufferGeometry(2, 2, 0),
+                    new THREE.MeshBasicMaterial({map: gradientTexture})
+                );
+                gradientBackground.gradientCanvas = gradientCanvas;
+                gradientBackground.gradientTexture = gradientTexture;
+                gradientBackground.gradientTexture.needsUpdate = true;
+                gradientBackground.material.depthTest = false;
+                gradientBackground.material.depthWrite = false;
+                var gradientScene = new THREE.Scene();
+                var gradientCam = new THREE.Camera();
+                gradientScene.add(gradientCam);
+                gradientScene.add(gradientBackground);
+
                 // lines scene
-                linesScene = new THREE.Scene();
                 linesCamera = new THREE.Camera();
                 linesScene.add(camera);
 
@@ -374,12 +500,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 composerBackground.addPass(renderBackgroundScene);
                 composerBackground.addPass(effectCopyBackground);
                 // lines
-                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth, viewHeight, parameters);
+                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * 1, viewHeight * 1, parameters);
                 var renderLinesScene = new THREE.RenderPass(linesScene, camera);
                 var lineShader = new THREE.ShaderPass(THREE.ThickLineShader);
-                lineShader.uniforms.totalWidth.value = viewWidth;
-                lineShader.uniforms.totalHeight.value = viewHeight;
-                lineShader.uniforms['edgeWidth'].value = 6;
+                lineShader.uniforms.totalWidth.value = viewWidth * 1;
+                lineShader.uniforms.totalHeight.value = viewHeight * 1;
+                lineShader.uniforms['edgeWidth'].value = 8 * 1;
                 composerLines = new THREE.EffectComposer(renderer, renderLinesTarget);
                 composerLines.addPass(renderLinesScene);
                 composerLines.addPass(lineShader);
@@ -402,15 +528,31 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 blendPass.uniforms['tAdd'].value = composer.renderTarget1;
                 blendComposer = new THREE.EffectComposer(renderer);
                 blendComposer.addPass(blendPass);
-                blendPass.renderToScreen = true;
+                //blendPass.renderToScreen = true;
+
+                //gradient
+                var renderTargetGradient = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
+                var renderGradientScene = new THREE.RenderPass(gradientScene, gradientCam);
+                var effectCopyGradient = new THREE.ShaderPass(THREE.CopyShader);
+                gradientComposer = new THREE.EffectComposer(renderer, renderTargetGradient);
+                gradientComposer.addPass(renderGradientScene);
+                gradientComposer.addPass(effectCopyGradient);
+                //effectCopyGradient.renderToScreen = true;
+                // test
+                var testPass = new THREE.ShaderPass(THREE.TransparencyBlendShader);
+                testPass.uniforms['tBase'].value = blendComposer.renderTarget1;
+                testPass.uniforms['tAdd'].value = gradientComposer.renderTarget1;
+                testComposer = new THREE.EffectComposer(renderer);
+                testComposer.addPass(testPass);
+                testPass.renderToScreen = true;
 
                 getNode(scope.currentNode.id, nodePosition, draw);
 
-            // listeners
-            document.getElementById('graph').addEventListener('change', render, false);
-            $('#graph').mousedown(onMouseDown);
-            $('#graph').mouseup(onMouseUp);
-            document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
+                // listeners
+                document.getElementById('graph').addEventListener('change', render, false);
+                $('#graph').mousedown(onMouseDown);
+                $('#graph').mouseup(onMouseUp);
+                document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
         }
 
         // animation loop
@@ -429,7 +571,174 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             blendIntermediateComposer.render();
             composer.render();
             blendComposer.render();
+            updateGradientLayer();
+            gradientComposer.render();
+            testComposer.render();
         }
+
+        function compare(a,b) {
+          if (a.distance > b.distance)
+            return -1;
+          if (a.distance < b.distance)
+            return 1;
+          return 0;
+        }
+
+        function getGradientLayer() {
+            var canv = document.createElement('canvas');
+            canv = background.bgCanvas;
+            canv.width = viewWidth;
+            canv.height = viewHeight;
+            var ctx = canv.getContext('2d');
+            ctx.clearRect(0,0,canv.width, canv.height);
+            // ordering objects by distance from camera
+            var orderedScene = [];
+            var length = scene.children.length;
+            for (var i = length - 1; i >= 0; i--)
+            {
+                var sprite = scene.children[i];
+                if (sprite.type != "Sprite" || sprite._id == undefined)
+                    continue;
+                var dx = sprite.position.x - camera.position.x;
+                var dy = sprite.position.y - camera.position.y;
+                var dz = sprite.position.z - camera.position.z;
+                var distToCam = Math.sqrt(dx*dx+dy*dy+dz*dz);
+                var elt = new Object();
+                elt.index = i;
+                elt.distance = distToCam;
+                orderedScene.push(elt);
+            }
+            orderedScene.sort(compare);
+            // drawing gardient circle for each node
+            var length = orderedScene.length;
+            for (var i = 0; i < length; i++)
+            {
+                var elt = orderedScene[i];
+                var sprite = scene.children[elt.index];
+                if (sprite.type != 'Sprite')
+                    continue;
+                var pos = toScreenPosition(sprite.position);
+                var distToCam = elt.distance;
+                // calculating circle radius
+                var camDir = new THREE.Vector3();
+                var camDir2 = new THREE.Vector3(0,0,-1);
+                var crossProduct = new THREE.Vector3();
+                var posOffset = new THREE.Vector3();
+                camDir.copy(sprite.position).sub(camera.position).normalize();
+                camDir2.applyQuaternion(camera.quaternion).normalize();
+                if (camDir.equals(camDir2))
+                    camDir.x += 0.001;
+                crossProduct.crossVectors(camDir, camDir2).setLength(4);
+                posOffset.set(
+                    sprite.position.x + crossProduct.x,
+                    sprite.position.y + crossProduct.y,
+                    sprite.position.z + crossProduct.z
+                );
+                var circleRadius = (toScreenPosition(posOffset).distanceTo(pos) + 0.5) * sprite.scale.x / 8;
+                var innerRadius = Math.abs(circleRadius * 7 / 8 - 0.75);
+                // saving context
+                ctx.save();
+                // clipping to circle
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, circleRadius, 0, 2 * Math.PI, false);
+                ctx.fillStyle='rgba(255,255,255,0)';
+                ctx.fill();
+                ctx.clip();
+                // getting lines related to node
+                var linesLength = linesScene.children.length;
+                for (var j = linesLength - 1; j >= 0; j--)
+                {
+                    var line = linesScene.children[j];
+                    if (line.type != "Line" || sprite._id == undefined)
+                        continue;
+                    var startColor,endColor,startPos,endPos;
+                    if (line.endNodeId == sprite._id){
+                        startColor = line.geometry.colors[0];
+                        endColor = line.geometry.colors[1];
+                        startPos = toScreenPosition(line.geometry.vertices[0]);
+                        endPos = toScreenPosition(line.geometry.vertices[1]);
+                    }
+                    else if (line.startNodeId == sprite._id){
+                        startColor = line.geometry.colors[1];
+                        endColor = line.geometry.colors[0];
+                        startPos = toScreenPosition(line.geometry.vertices[1]);
+                        endPos = toScreenPosition(line.geometry.vertices[0]);
+                    }
+                    else
+                        continue;
+                    // drawing radial gradient
+                    var radgradPos = endPos.sub(startPos).setLength(circleRadius);
+                    ctx.shadowOffsetX = 1000; // (default 0)
+                    ctx.shadowOffsetY = 1000; // (default 0)
+                    ctx.shadowBlur = 40; // (default 0)
+                    var r = startColor.r * 255;
+                    var g = startColor.g * 255;
+                    var b = startColor.b * 255;
+                    ctx.fillStyle = 'rgba('+r+','+g+','+b+',1)';
+                    ctx.shadowColor = 'rgba('+r+','+g+','+b+',1)';
+                    ctx.beginPath();
+                    ctx.arc(
+                        startPos.x + radgradPos.x - 1000,
+                        startPos.y + radgradPos.y - 1000,
+                        circleRadius * 1, 0, Math.PI * 2, true
+                    );
+                    ctx.fill();
+                }
+                // clearing inner circle
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, innerRadius, 0, 2 * Math.PI, false);
+                ctx.clip();
+                ctx.clearRect(0,0,canv.width,canv.height);
+                // restoring context
+                ctx.restore();
+            }
+            return canv;
+        }
+
+        function updateGradientLayer() {
+            var ctx = gradientBackground.gradientCanvas.getContext('2d');
+            ctx.drawImage(getGradientLayer(),0,0);
+            gradientBackground.gradientTexture.needsUpdate = true;
+        }
+
+        function removeOneFromScene(array, idToRemove, excludedId) {
+            var length = linesScene.children.length;
+            for (var i = length - 1; i >= 0; i--)
+            {
+                var line = linesScene.children[i];
+                if (line.endNodeId == idToRemove) {
+                    linesScene.remove(line);
+                }
+            }
+
+            length = scene.children.length;
+            for (var i = length - 1; i >= 0; i--)
+            {
+                var node = scene.children[i];
+                var index = -1;
+                $.each(scope.currentDisplayedNodes, function(j, obj) {
+                    var endpoint = obj.start;
+                    if (scope.currentNode.type == "Person") {
+                        endpoint = obj.end;
+                    }
+                    if (node._id === idToRemove && endpoint == idToRemove) {
+                        index = j;
+                        return false;
+                    }
+                });
+                if (node._id != excludedId && index !== -1)
+                {
+                    array.splice(index, 1);
+                    var n = node;
+                    new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
+                        .easing(TWEEN.Easing.Linear.None)
+                        .onComplete(function (){
+                            scene.remove(n);
+                        }).start();
+                }
+            }
+        }
+        scope.removeOneFromScene = removeOneFromScene;
 
         function removeFromScene(array, excludedId)
         {
@@ -453,25 +762,39 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
             // removing sprites
             length = scene.children.length;
+            toRemove = [];
             for (var i = length - 1; i >= 0; i--)
             {
                 var node = scene.children[i];
-                var index = array.indexOf(node._id);
+                var index = -1;
+                $.each(scope.currentDisplayedNodes, function(j, obj) {
+                    var endpoint = obj.start;
+                    if (scope.currentNode.type == "Person") {
+                        endpoint = obj.end;
+                    }
+                    if (node._id === endpoint) {
+                        index = j;
+                        return false;
+                    }
+                });
                 if (node._id != excludedId && node._id != centerId && index !== -1)
                 {
                     array.splice(index, 1);
-                    var n = node;
-                    new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
+                    toRemove.push(node);
+                    new TWEEN.Tween(node.scale).to({x: 0, y:0, z:0}, 500)
                         .easing(TWEEN.Easing.Linear.None)
                         .onComplete(function (){
-                            scene.remove(n);
+                            scene.remove(toRemove[0]);
+                            toRemove.splice(0,1);
                         }).start();
                 }
             }
         }
 
         function getNode(id, nodePostion, callback) {
-            removeFromScene(scope.currentDisplayedNodes, id);
+            if (id != scope.currentNode.id) {
+                removeFromScene(scope.currentDisplayedNodes, id);
+            }
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
             });
@@ -480,6 +803,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         /* callback called when getting a node from the API */
         function draw(node, nodePosition) {
             var nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition);
+            if (node.id == scope.currentNode.id && scope.currentNode.sprite == null) {
+                scope.currentNode.sprite = nodeSprite.sprite;
+            }
             getRelatedNodes(node, nodeSprite.sprite, scope.typesAndLimits, drawRelatedNodes);
         }
 
@@ -487,20 +813,48 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
                 var limit;
-                var type;
+                var job;
                 if (startNode.type == "Person") {
-                    type = startNode.jobs[0].name;
-                    limit = scope.findLimitForJob(type);
-                    getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback);
+                    job = startNode.jobs[0].name;
+                    limit = scope.findLimitForJob(job);
+                    getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
                 }
                 else {
                     for (var i = 0; i < typesAndLimits.length; i++) {
-                        type = typesAndLimits[i].type;
+                        job = typesAndLimits[i].type;
                         limit = typesAndLimits[i].limit;
-                        getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback);
+                        getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
                         index += limit;
                     }
                 }
+        }
+
+        function pushRelations(index, count, direction, relationships, rels, callback) {
+            var endpoint = relationships[index].start;
+            if (direction == "out") {
+                endpoint = relationships[index].end;
+            }
+            $http.get('/api/common/' + endpoint).success(function(node) {
+                var found = false;
+                $.each(scope.currentDisplayedNodes, function(j, obj) {
+                    var endpoint2 = obj.start;
+                    if (direction == "out") {
+                        endpoint2 = obj.end;
+                    }
+                    if (endpoint === endpoint2) {
+                        found = true;
+                        return false;
+                    }
+                });
+                if (!found) {
+                    rels.push(node);                    
+                    scope.currentDisplayedNodes.push(relationships[index]);
+                }
+                count.val++;
+                if (count.val == relationships.length) {
+                    callback(rels);
+                }
+            });
         }
 
         function getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback) {
@@ -508,10 +862,26 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             if (startNode.type == 'Person') {
                 direction = 'out';
             }
-            $http.get('/api/common/' + startNode.id + '/relationships/' + direction + '/' + type).success(function(relationships) {
-                if (relationships != null) {
-                    callback(startNodeSprite, relationships, index, limit);
-                }
+            $http.get('/api/common/' + startNode.id + '/relationshipsRaw/' + direction + '/' + type + '/' + limit)
+                .success(function(relationships) {
+                    if (relationships.length > 0) {
+                        var rels = [];
+                        var count = { val: 0 };
+                        for (var i = 0; i < relationships.length; i++) {
+                            var found = false;
+                            $.each(scope.currentDisplayedNodes, function(j, obj) {
+                                if (relationships[i].id === obj.id) {
+                                    found = true;
+                                    return false;
+                                }
+                            });
+                            if (found == false) {
+                                pushRelations(i, count, direction, relationships, rels, function(relsResult) {
+                                    callback(startNodeSprite, relsResult, index, limit, type);
+                                });
+                            }
+                        }
+                    }
             });
         }
         scope.getRelatedNodesForType = getRelatedNodesForType;
@@ -523,7 +893,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
 
-        function drawNode(node, radius, segments, position, startNodeSprite) {
+        function drawNode(node, radius, segments, position, startNodeSprite, type) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var circleColor = node.name ? blueColor : orangeColor;
             var nodeImage;
@@ -540,7 +910,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                   nodeImage.src = 'images/movies/' + node.title + node.released + '/poster.jpg';
                 }
             }
-            var canvas = generateTexture(defaultImg, text, circleColor);
+            var canvas = generateTexture(defaultImg, text, circleColor, node.id);
             var texture = new THREE.Texture(canvas);
             THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
             texture.needsUpdate = true;
@@ -561,7 +931,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 };
                 nodeImage.onload = function () {
                     console.log("Node IMAGE is : " + nodeImage);
-                    updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor);
+                    updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor, sprite._id);
                     sprite.texture.needsUpdate = true;
                 };
             }
@@ -574,15 +944,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.scale.set(0, 0, 0);
 
             var added = false;
-            if ($.inArray(node.id, scope.currentDisplayedNodes) == -1) {
+
+            //if (isAlreadyDisplayed == false) {
                 scene.add(sprite);
                 // animating scale
                 new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
                     .easing(TWEEN.Easing.Linear.None)
-                    .onUpdate(function (){
-                        //updateTexture(current.canvas, current.name, current.animationOpacity);
-                        //current.texture.needsUpdate = true;
-                    }).start();
+                    .start();
                 // animating position
                 if (startNodeSprite !== undefined) {
                     new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
@@ -591,8 +959,16 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             // drawing line
                             var lineGeom = new THREE.Geometry();
                             lineGeom.vertices.push(sprite.position, startNodeSprite.position);
-                            lineGeom.colors.push(new THREE.Color(sprite.circleColor));
-                            lineGeom.colors.push(new THREE.Color(sprite.circleColor == orangeColor ? blueColor : orangeColor));
+                            var startColor, endColor;
+                            if (node.name) {
+                                startColor = colors[type];
+                                endColor = orangeColor;
+                            } else {
+                                startColor = orangeColor;
+                                endColor = colors[type];
+                            }
+                            lineGeom.colors.push(new THREE.Color(startColor));
+                            lineGeom.colors.push(new THREE.Color(orangeColor));
                             var lineMat = new THREE.LineBasicMaterial({
                                 linewidth: 1,
                                 vertexColors: true
@@ -604,13 +980,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         }).start();
                 }
                 added = true;
-                scope.currentDisplayedNodes.push(node.id);
-            }
+                //scope.currentDisplayedNodes.push(node.id);
+            //}
             return {sprite: sprite, added: added};
         }
 
 
-        function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit) {
+        function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit, type) {
           var slice = 2 * Math.PI / 10;
             var relatedNodePosition = new THREE.Vector3();
             if (limit > relatedNodes.length) {
@@ -621,7 +997,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 relatedNodePosition.x = nodePosition.x + 18 * Math.cos(angle);
                 relatedNodePosition.y = nodePosition.y + 18 * Math.sin(angle);
                 //relatedNodePosition.z = nodePosition.z + 18 * Math.random();
-                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, startNodeSprite);
+                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, startNodeSprite, type);
                 var endNodePosition;
                 if (relatedNodeSprite.added == false) {
                     var obj = scene.getObjectByName(relatedNodes[j].name ?
@@ -658,7 +1034,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.fillText(line, x, y);
         }
 
-        function generateTexture(img, text, circleColor) {
+        function generateTexture(img, text, circleColor, spriteId) {
         	var canvas = document.createElement('canvas');
             canvas.width = 1000;
             canvas.height = 1000;
@@ -666,14 +1042,17 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             return canvas;
         }
 
-        function updateTexture(img, canvas, text, opacity, circleColor) {
-            var borderThickness = canvas.width / 11;
-            drawCircle(canvas, borderThickness, circleColor);
+        function updateTexture(img, canvas, text, opacity, circleColor, spriteId) {
+            var borderThickness = canvas.width / 16;
+            drawCircle(canvas, borderThickness, circleColor, spriteId);
             var context = canvas.getContext('2d');
-            context.fillStyle = "#000";
-            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.beginPath();
+            context.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - borderThickness, 0, 2 * Math.PI);
+            context.clip();
+            context.fillStyle = '#000000';
+            context.fillRect(0,0,canvas.width, canvas.height);
             context.globalAlpha = opacity;
-            context.drawImage(img, borderThickness, borderThickness,
+            drawImageProp(context, img, borderThickness, borderThickness,
                 canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
             var a = (1 / (0.6 - 1));
             context.globalAlpha = a * (opacity - 1);
@@ -685,14 +1064,16 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.globalAlpha = 1;
         }
 
-        function drawCircle(canvas, thickness, color) {
+        function drawCircle(canvas, thickness, color, spriteId) {
             var ctx = canvas.getContext('2d');
+            ctx.save();
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - thickness, 0, 2 * Math.PI);
-            ctx.lineWidth = thickness;
-            ctx.strokeStyle = color;
-            ctx.stroke();
+            ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, 2 * Math.PI);
             ctx.clip();
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.restore();
         }
 
         function generateBackgroundCanvas(width, height, image, blur) {
@@ -704,6 +1085,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             stackBlurCanvasRGB(bgCanvas, 0, 0, bgCanvas.width, bgCanvas.height, blur);
             return bgCanvas;
         }
+
+        function toScreenPosition(v)
+        {
+            var vector = new THREE.Vector3();
+            vector.copy(v);
+            var widthHalf = 0.5 * renderer.context.canvas.width;
+            var heightHalf = 0.5 * renderer.context.canvas.height;
+            vector.project(camera);
+            vector.x = ( vector.x * widthHalf ) + widthHalf;
+            vector.y = - ( vector.y * heightHalf ) + heightHalf;
+            return new THREE.Vector3(vector.x,  vector.y, 0);
+        };
 
         function crossFadeBackgroundCanvas(canvas, startCanvas, endCanvas, percentage) {
             var bgContext = canvas.getContext('2d');
@@ -804,7 +1197,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     y: targetY,
                     z: targetZ}, duration)
                   .easing(TWEEN.Easing.Linear.None)
-                  .onComplete(function(){
+                  .onComplete(function() {
                         // getting nodes
                         $http.get('/api/common/' + id).success(function(node) {
                             scope.currentNode = node;
@@ -903,7 +1296,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 if (INTERSECTED._id !== undefined) {
                     // restoring node state when leaving it
                     if (current && (current._id != INTERSECTED._id)) {
-                        updateTexture(current.nodeImage, current.canvas, current.name, 0.6, current.circleColor);
+                        updateTexture(current.nodeImage, current.canvas, current.name, 0.6, current.circleColor, current._id);
                         current.texture.needsUpdate = true;
                         old = current;
                     }
@@ -916,7 +1309,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)
                     .onUpdate(function (){
-                        updateTexture(current.nodeImage, current.canvas, current.name, current.animationOpacity, current.circleColor);
+                        updateTexture(current.nodeImage, current.canvas, current.name, current.animationOpacity, current.circleColor, current._id);
                         current.texture.needsUpdate = true;
                     }).start();
                 }

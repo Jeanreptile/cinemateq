@@ -1,4 +1,4 @@
-cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $location, AuthService, $routeParams) {
+cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $location, AuthService, $routeParams, $modal) {
 
 	$scope.cinegraphId = $routeParams.id;
 
@@ -18,6 +18,189 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 			}
 		});
 	}
+
+    $scope.open = function (size) {
+        var modalInstance = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/detailed-sheet',
+            controller: 'ModalInstanceCtrl',
+            size: size,
+            resolve: {
+                currentNode: function() {
+                    return $scope.currentNode;
+                }
+            }
+        });
+    };
+
+    $scope.openCreateCinegraphModal = function() {
+
+        var createCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/create-cinegraph',
+            controller: 'CRUDCinegraphCtrl',
+            size: 'md',
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
+                }
+            }
+        });
+
+        createCinegraphModal.result.then(function(newCinegraph) {
+            $scope.mycinegraphs.push(newCinegraph);
+        }, function () {
+            console.log("Error");
+        });
+    };
+
+    $scope.openEditCinegraphTitleModal = function() {
+
+        var editCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/edit-cinegraph',
+            controller: 'CRUDCinegraphCtrl',
+            size: 'md',
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
+                }
+            }
+        });
+
+        editCinegraphModal.result.then(function(editedCinegraph) {
+            $scope.currentCinegraph = editedCinegraph;
+        }, function () {
+            console.log("Error");
+        });
+    };
+
+    $scope.openDeleteCinegraphModal = function() {
+
+        var deleteCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/delete-cinegraph',
+            controller: 'CRUDCinegraphCtrl',
+            size: 'sm',
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
+                }
+            }
+        });
+
+        deleteCinegraphModal.result.then(function() {
+            $location.path('/mycinegraph');
+        }, function () {
+            console.log("Error");
+        });
+    };
+
+    $scope.openAddToCinegraphModal = function() {
+        var addToCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/add-node-to-cinegraph',
+            controller: 'CRUDCinegraphCtrl',
+            size: 'md',
+            scope: $scope,
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
+                }
+            }
+        });
+
+        addToCinegraphModal.result.then(function() {
+            $location.path('/mycinegraph');
+        }, function () {
+            console.log("Error");
+        });
+    };
+
+
+});
+
+cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, mycinegraphs, currentCinegraph, currentNode) {
+
+    $scope.mycinegraphs = mycinegraphs;
+    $scope.currentCinegraph = currentCinegraph;
+    $scope.currentNode = currentNode;
+
+    $scope.close = function () {
+        $modalInstance.dismiss("close");
+    };
+
+    $scope.createCinegraph = function() {
+        var currentUser = AuthService.currentUser();
+        $http.post('/api/mycinegraph/', { titleCinegraph: $scope.cinegraphTitle, idUser: currentUser.id }).success(function(res) {
+            $modalInstance.close(res);
+        });
+    };
+
+    $scope.createAndAddToCinegraph = function() {
+        var currentUser = AuthService.currentUser();
+        $http.post('/api/mycinegraph/', { titleCinegraph: $scope.cinegraphTitle, idUser: currentUser.id }).success(function(res) {
+            res.nodes.push({"id": $scope.currentNode.id});            
+            $http.put('/api/mycinegraph/' + res.id,
+                { titleCinegraph: res.title, cinegraphNodes: JSON.stringify(res.nodes) }).success(function(res) {
+                    $modalInstance.close();
+            });
+        });
+    };
+
+    $scope.editCinegraphTitle = function() {
+        var currentUser = AuthService.currentUser();
+        $http.put('/api/mycinegraph/' + currentCinegraph.id, { titleCinegraph: $scope.cinegraphTitle, cinegraphNodes: currentCinegraph.nodes }).success(function(res) {
+            $modalInstance.close(res);
+        });
+    };
+
+    $scope.deleteCinegraph = function() {
+        $http.delete('/api/mycinegraph/' + currentCinegraph.id).success(function() {
+            $modalInstance.close();
+        });
+    };
+
+    $scope.addCurrentNodeToCinegraph = function() {
+        var found = false;
+        for (var i = $scope.selectedCinegraph.nodes.length - 1; i >= 0; i--) {
+            if ($scope.selectedCinegraph.nodes[i].id == $scope.currentNode.id) {
+                found = true;
+            }
+        };
+        if (!found) {
+            $scope.selectedCinegraph.nodes.push({"id": $scope.currentNode.id});            
+        }
+        $http.put('/api/mycinegraph/' + $scope.selectedCinegraph.id,
+            { titleCinegraph: $scope.selectedCinegraph.title, cinegraphNodes: JSON.stringify($scope.selectedCinegraph.nodes) }).success(function(res) {
+                $modalInstance.close();
+        });
+
+    };
 });
 
 cinegraphApp.directive("mycinegraph", [ '$http', function($http) {
@@ -164,6 +347,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', function($http) {
                 blendPass.renderToScreen = true;
 
                 $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
+                    scope.currentCinegraph = cinegraph;
 					var cinegraphNodes = JSON.parse(cinegraph.nodes);
 					var slice = 2 * Math.PI / cinegraphNodes.length;
 

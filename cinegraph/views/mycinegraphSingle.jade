@@ -1,4 +1,4 @@
-section.vbox
+section.vbox.myCinegraphSingle
 	header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 		.navbar-header.aside-md.dk
 			a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
@@ -56,6 +56,13 @@ section.vbox
 												div(ng-if='currentUser == undefined')
 													strong.font-bold.text-lt Invité
 													span.text-muted.text-xs.block Novice
+								.row.m-t-sm.hidden-nav-xs.cinegraph-actions
+									.col-sm-12.text-center
+										h4 {{ currentCinegraph.title }}
+											a(ng-click="openEditCinegraphTitleModal()")
+												i.fa.fa-edit
+											a(ng-click="openDeleteCinegraphModal()")
+												i.fa.fa-trash-o
 								.row.m-t-sm.hidden-nav-xs
 									.col-sm-12.text-center
 										a.btn.btn-s-md.btn-info.btn-sm(href='/')
@@ -71,10 +78,9 @@ section.vbox
 										| {{currentNode.firstname}} {{currentNode.lastname}}
 									a(href="#", ng-show="currentNode.type == 'Movie'")
 										| {{currentNode.title}} ({{currentNode.released}})
-								small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
-									| Actor
-									i.i.i-dot
-									| Producer
+								small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
+									| {{job.name | JobNameFormatter }}
+									i.i.i-dot(ng-hide="$last")
 								small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
 									| {{genre}}
 									i.i.i-dot(ng-hide="$last")

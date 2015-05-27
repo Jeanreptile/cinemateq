@@ -1242,9 +1242,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             else {
                 backgroundImage = new Image();
                 if (node.title == undefined)
-                    backgroundImage.src = 'images/persons/' + node.fullname + '.jpg';
+                    backgroundImage.src = 'images/persons/' + sanitizeFileName(node.fullname) + '.jpg';
                 else
-                    backgroundImage.src = 'images/movies/' + node.title + node.released + '/backdrop.jpg';
+                    backgroundImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/backdrop.jpg';
                 backgroundImage.onerror = function () {
                     this.src = 'images/default.jpg';
                 };

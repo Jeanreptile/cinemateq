@@ -3,6 +3,7 @@ var http = require('http');
 var router = express.Router();
 var path = require('path');
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
+var path = require("path");
 
 /* GET movies listing. */
 router.get('/movie', function(req, res) {
@@ -24,6 +25,19 @@ router.get('/movie', function(req, res) {
 });
 
 
+var sanitizeFileName = function(filename)
+{
+	// The replaceChar should be either a space
+	// or an underscore.
+	var replaceChar = "_";
+	var regEx = new RegExp('[,/\:*?""<>|]', 'g');
+	var Filename = filename.replace(regEx, replaceChar);
+
+	// Show me the new file name.
+  return Filename;
+}
+
+
 var getMoviePoster = function(name, year, callback){
   http.get("http://api.themoviedb.org/3/search/movie?api_key=c3c017954845b8a2c648fd4fafd6cda0&query=" + name + "&year=" + year, function(res)
   {
@@ -40,19 +54,19 @@ var getMoviePoster = function(name, year, callback){
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
-            dir     = path.join('public','images','movies', name + year);
+            dir     = path.join('public','images','movies', sanitizeFileName(name + year));
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir);
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
-          fs.writeFile(dir + 'poster.jpg', body, 'binary', function (err) {});
+          fs.writeFile(path.join(dir, 'poster.jpg'), body, 'binary', function (err) {});
         });
         if (resp.results[0].backdrop_path != null)
         {
           var request2= require('request'),
               fs2     = require('fs'),
               url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
-          request2(url2, {encoding: 'binary'}, function(error, response, body) {
+              request2(url2, {encoding: 'binary'}, function(error, response, body) {
             fs2.writeFile(path.join(dir, 'backdrop.jpg'), body, 'binary', function (err) {});
           });
         }
@@ -78,7 +92,6 @@ var getPersonPicture = function(name, callback){
     });
 
     res.on('end', function() {
-        console.log("end of API Poster");
         var resp = JSON.parse(body);
         if (resp.total_results != 0 && resp.results[0] && resp.results[0].profile_path != null)
         {
@@ -91,7 +104,7 @@ var getPersonPicture = function(name, callback){
             fs.mkdirSync(dir);
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
-          fs.writeFile(path.join(dir, name + '.jpg'), body, 'binary', function (err) {});
+          fs.writeFile(path.join(dir, sanitizeFileName(name) + '.jpg'), body, 'binary', function (err) {});
           callback(resp.results[0]);
         });
         }

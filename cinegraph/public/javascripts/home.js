@@ -376,10 +376,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var spriteHover;
             var old = null;
             var current = null;
-            var img = new Image();
-            img.src = 'images/a0.png';
-            var img2 = new Image();
-            img2.src = 'images/inception.jpg';
             var defaultImg = new Image();
             defaultImg.src = 'images/default.jpg';
             var radius = 50;
@@ -420,7 +416,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 document.getElementById('graph').appendChild(renderer.domElement);
 
                 // background scene
-                var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
+                var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, defaultImg, 60);
                 var bgTexture = new THREE.Texture(bgCanvas);
                 background = new THREE.Mesh(
                     new THREE.PlaneBufferGeometry(2, 2, 0),
@@ -547,6 +543,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 testPass.renderToScreen = true;
 
                 getNode(scope.currentNode.id, nodePosition, draw);
+                updateBackground(scope.currentNode);
 
                 // listeners
                 document.getElementById('graph').addEventListener('change', render, false);
@@ -928,7 +925,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             if (node.img != undefined && node.img == true)
             {
                 nodeImage.onerror = function () {
-                  this.src = 'images/default.jpg'; // place your error.png image instead
+                    this.src = 'images/default.jpg';
                 };
                 nodeImage.onload = function () {
                     console.log("Node IMAGE is : " + nodeImage);
@@ -1204,27 +1201,41 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             scope.currentNode = node;
                             scope.currentNode.sprite = intersection.object;
                             // updating background
-                            var crossFade = new Object();
-                            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
-                            if (Math.random() < 0.5)
-                                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img, 60);
-                            else
-                                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, img2, 60);
-                            crossFade.percentage = 0;
-                            var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
-                                .easing(TWEEN.Easing.Linear.None)
-                                .onUpdate(function (){
-                                    crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
-                                        crossFade.endCanvas, crossFade.percentage);
-                                    background.bgTexture.needsUpdate = true;
-                                }).start();
+                            updateBackground(node);
                         });
                         nodePosition = intersection.object.position;
-
-
                         getNode(id, nodePosition, draw);
                   })
                   .start();
+            }
+        }
+
+        function updateBackground(node) {
+            var crossFade = new Object();
+            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
+            var backgroundImage;
+            if (node.img == undefined || node.img == false)
+                backgroundImage = defaultImg;
+            else {
+                backgroundImage = new Image();
+                if (node.title == undefined)
+                    backgroundImage.src = 'images/persons/' + node.fullname + '.jpg';
+                else
+                    backgroundImage.src = 'images/movies/' + node.title + node.released + '/backdrop.jpg';
+                backgroundImage.onerror = function () {
+                    this.src = 'images/default.jpg';
+                };
+                backgroundImage.onload = function () {
+                    crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, 25);
+                    crossFade.percentage = 0;
+                    var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
+                        .easing(TWEEN.Easing.Linear.None)
+                        .onUpdate(function (){
+                            crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
+                                crossFade.endCanvas, crossFade.percentage);
+                            background.bgTexture.needsUpdate = true;
+                        }).start();
+                };
             }
         }
 
@@ -1317,7 +1328,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
         }
 
-        img.onload = function () {
+        defaultImg.onload = function () {
             init();
             animate();
         }

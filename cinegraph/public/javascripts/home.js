@@ -896,6 +896,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function drawNode(node, radius, segments, position, startNodeSprite, type) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var circleColor = node.name ? blueColor : orangeColor;
+            var sanitize = require("sanitize-filename");
             var nodeImage;
 
             if (node.img == undefined || node.img == false)
@@ -904,10 +905,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 nodeImage = new Image();
                 if (node.title == undefined)
                 {
-                  nodeImage.src = 'images/persons/' + node.fullname + '.jpg';
+                  nodeImage.src = 'images/persons/' + sanitize(node.fullname) + '.jpg';
                 }
                 else {
-                  nodeImage.src = 'images/movies/' + encodeURIComponent(node.title + node.released) + '/poster.jpg';
+                  nodeImage.src = 'images/movies/' + sanitize(node.title + node.released) + '/poster.jpg';
                 }
             }
             var canvas = generateTexture(defaultImg, text, circleColor, node.id);

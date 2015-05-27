@@ -968,7 +968,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                                 endColor = colors[type];
                             }
                             lineGeom.colors.push(new THREE.Color(startColor));
-                            lineGeom.colors.push(new THREE.Color(orangeColor));
+                            lineGeom.colors.push(new THREE.Color(endColor));
                             var lineMat = new THREE.LineBasicMaterial({
                                 linewidth: 1,
                                 vertexColors: true

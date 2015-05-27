@@ -789,8 +789,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         function getNode(id, nodePosition, callback) {
-
+            if (id != scope.currentNode.id) {
                 removeFromScene(scope.currentDisplayedNodes, id);
+            }
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
             });
@@ -825,7 +826,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 }
         }
 
-        function pushRelations(index, count, total, direction, relationships, rels, callback) {
+        function pushRelations(index, count, direction, relationships, rels, callback) {
             var endpoint = relationships[index].start;
             if (direction == "out") {
                 endpoint = relationships[index].end;
@@ -847,7 +848,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     scope.currentDisplayedNodes.push(relationships[index]);
                 }
                 count.val++;
-                if (count.val == total) {
+                if (count.val == relationships.length) {
                     callback(rels);
                 }
             });
@@ -861,7 +862,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             $http.get('/api/common/' + startNode.id + '/relationshipsRaw/' + direction + '/' + type + '/' + limit)
                 .success(function(relationships) {
                     if (relationships.length > 0) {
-                        var total = relationships.length;
                         var rels = [];
                         var count = { val: 0 };
                         for (var i = 0; i < relationships.length; i++) {
@@ -869,12 +869,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             $.each(scope.currentDisplayedNodes, function(j, obj) {
                                 if (relationships[i].id === obj.id) {
                                     found = true;
-                                    total--;
                                     return false;
                                 }
                             });
                             if (found == false) {
-                                pushRelations(i, count, total, direction, relationships, rels, function(relsResult) {
+                                pushRelations(i, count, direction, relationships, rels, function(relsResult) {
                                     callback(startNodeSprite, relsResult, index, limit, type);
                                 });
                             }
@@ -942,6 +941,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                   this.src = 'images/default.jpg'; // place your error.png image instead
                 };
                 nodeImage.onload = function () {
+                    console.log("Node IMAGE is : " + nodeImage);
                     updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor, sprite._id);
                     sprite.texture.needsUpdate = true;
                 };

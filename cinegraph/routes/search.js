@@ -2,7 +2,7 @@ var express = require('express');
 var http = require('http');
 var router = express.Router();
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
-var path = require('path');
+var path = require("path");
 
 /* GET movies listing. */
 router.get('/movie', function(req, res) {

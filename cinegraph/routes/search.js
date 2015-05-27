@@ -79,8 +79,8 @@ var getPersonPicture = function(name, callback){
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
           fs.writeFile(dir + name + '.jpg', body, 'binary', function (err) {});
+          callback(resp.results[0]);
         });
-        callback(resp.results[0]);
     });
   }).on('error', function(e) {
     console.log("Got error: " + e.message);

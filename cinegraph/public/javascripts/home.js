@@ -528,11 +528,17 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var circleColor = node.name ? blueColor : orangeColor;
             var nodeImage;
 
-            if (node.imgUrl == undefined)
+            if (node.img == undefined || node.img == false)
                 nodeImage = defaultImg;
             else {
                 nodeImage = new Image();
-                nodeImage.src = node.imgUrl;
+                if (node.title == undefined)
+                {
+                  nodeImage.src = 'images/persons/' + node.fullname + '.jpg';
+                }
+                else {
+                  nodeImage.src = 'images/movies/' + node.title + node.released + '/poster.jpg';
+                }
             }
             var canvas = generateTexture(defaultImg, text, circleColor);
             var texture = new THREE.Texture(canvas);
@@ -548,9 +554,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.texture = texture;
             sprite.nodeImage = nodeImage;
 
-            if (node.imgUrl != undefined)
+            if (node.img != undefined && node.img == true)
             {
+                nodeImage.onerror = function () {
+                  this.src = 'images/default.png'; // place your error.png image instead
+                };
                 nodeImage.onload = function () {
+                    console.log("Node IMAGE is : " + nodeImage);
                     updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor);
                     sprite.texture.needsUpdate = true;
                 };

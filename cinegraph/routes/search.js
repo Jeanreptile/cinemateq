@@ -39,9 +39,9 @@ var getMoviePoster = function(name, year, callback){
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
-            dir     = 'public/images/movies/'+ name + year + '/';
+            dir     = path.join('public','images','movies', name + year);
         if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
+            fs.mkdirSync(dir);§
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
           fs.writeFile(dir + 'poster.jpg', body, 'binary', function (err) {});
@@ -52,7 +52,7 @@ var getMoviePoster = function(name, year, callback){
               fs2     = require('fs'),
               url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
           request2(url2, {encoding: 'binary'}, function(error, response, body) {
-            fs2.writeFile(dir + 'backdrop.jpg', body, 'binary', function (err) {});
+            fs2.writeFile(path.join(dir, 'backdrop.jpg'), body, 'binary', function (err) {});
           });
         }
         callback(resp.results[0]);
@@ -77,6 +77,7 @@ var getPersonPicture = function(name, callback){
     });
 
     res.on('end', function() {
+        console.log("end of API Poster");
         var resp = JSON.parse(body);
         if (resp.total_results != 0 && resp.results[0] && resp.results[0].profile_path != null)
         {
@@ -84,12 +85,12 @@ var getPersonPicture = function(name, callback){
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].profile_path,
-            dir     = 'public/images/persons/';
+            dir     = path.join('public','images','persons');
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir);
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
-          fs.writeFile(dir + name + '.jpg', body, 'binary', function (err) {});
+          fs.writeFile(path.join(dir, name + '.jpg'), body, 'binary', function (err) {});
           callback(resp.results[0]);
         });
         }

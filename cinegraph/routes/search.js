@@ -40,7 +40,7 @@ var getMoviePoster = function(name, year, callback){
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
-            dir     = path.join('public','images','movies', name + year);
+            dir     = path.join('public','images','movies', encodeURIComponent(name + year));
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir);
         }

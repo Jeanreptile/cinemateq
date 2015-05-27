@@ -173,7 +173,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                                     { type: 'DESIGNED_COSTUMES', limit: 1} ];*/
         }
 
-        
+
     });
 
 
@@ -847,7 +847,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     }
                 });
                 if (!found) {
-                    rels.push(node);                    
+                    rels.push(node);
                     scope.currentDisplayedNodes.push(relationships[index]);
                 }
                 count.val++;
@@ -907,7 +907,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                   nodeImage.src = 'images/persons/' + node.fullname + '.jpg';
                 }
                 else {
-                  nodeImage.src = 'images/movies/' + node.title + node.released + '/poster.jpg';
+                  nodeImage.src = 'images/movies/' + encodeURIComponent(node.title + node.released) + '/poster.jpg';
                 }
             }
             var canvas = generateTexture(defaultImg, text, circleColor, node.id);
@@ -927,7 +927,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             if (node.img != undefined && node.img == true)
             {
                 nodeImage.onerror = function () {
-                  this.src = 'images/default.png'; // place your error.png image instead
+                  this.src = 'images/default.jpg'; // place your error.png image instead
                 };
                 nodeImage.onload = function () {
                     console.log("Node IMAGE is : " + nodeImage);

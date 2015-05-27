@@ -789,9 +789,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         function getNode(id, nodePosition, callback) {
-            if (id != scope.currentNode.id) {
+
                 removeFromScene(scope.currentDisplayedNodes, id);
-            }
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
             });

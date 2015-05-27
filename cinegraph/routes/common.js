@@ -30,7 +30,7 @@ router.get('/:id', function(req, res) {
 		dbLocal.readLabels(result[0], function(err, labels) {
 			result[0].type = labels[0];
 
-			if (result[0].img == undefined || result[0].img == false){
+			if (result[0].img == undefined){
 				if (result[0].type == 'Person')
 				{
 					var parsedName = result[0].fullname.replace(" ", "+");

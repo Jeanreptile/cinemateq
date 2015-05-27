@@ -33,25 +33,34 @@ var getMoviePoster = function(name, year, callback){
 
     res.on('end', function() {
         var resp = JSON.parse(body)
-        console.log("Got response: ", resp.results[0].poster_path);
+        if (resp.total_results != 0 && resp.results[0] && resp.results[0].poster_path != null)
+        {
+        console.log("Got response: ", resp);
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
-            dir     = 'public/images/movies/'+ name + year + '/',
-            request2= require('request'),
-            fs2     = require('fs'),
-            url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
+            dir     = 'public/images/movies/'+ name + year + '/';
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir);
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
           fs.writeFile(dir + 'poster.jpg', body, 'binary', function (err) {});
         });
-        request2(url2, {encoding: 'binary'}, function(error, response, body) {
-          fs2.writeFile(dir + 'backdrop.jpg', body, 'binary', function (err) {});
-        });
+        if (resp.results[0].backdrop_path != null)
+        {
+          var request2= require('request'),
+              fs2     = require('fs'),
+              url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
+          request2(url2, {encoding: 'binary'}, function(error, response, body) {
+            fs2.writeFile(dir + 'backdrop.jpg', body, 'binary', function (err) {});
+          });
+        }
         callback(resp.results[0]);
-    });
+        }
+        else {
+          callback(null);
+        }
+        });
   }).on('error', function(e) {
     console.log("Got error: " + e.message);
   });
@@ -68,7 +77,9 @@ var getPersonPicture = function(name, callback){
     });
 
     res.on('end', function() {
-        var resp = JSON.parse(body)
+        var resp = JSON.parse(body);
+        if (resp.total_results != 0 && resp.results[0] && resp.results[0].profile_path != null)
+        {
         console.log("Got response: ", resp.results[0].profile_path + "  :  " + name);
         var request = require('request'),
             fs      = require('fs'),
@@ -81,6 +92,10 @@ var getPersonPicture = function(name, callback){
           fs.writeFile(dir + name + '.jpg', body, 'binary', function (err) {});
           callback(resp.results[0]);
         });
+        }
+        else {
+          callback(null);
+        }
     });
   }).on('error', function(e) {
     console.log("Got error: " + e.message);
@@ -96,14 +111,27 @@ router.get('/:type/poster', function(req, res) {
     {
       getMoviePoster(req.query.query, req.query.year, function (resp)
       {
-        res.json(resp);
+        if (resp == null)
+        {
+          res.status(302).json({ error: 'image not found' })
+        }
+        else {
+          res.json(resp);
+        }
+
       });
     }
     else {
       {
         getPersonPicture(req.query.query, function (resp)
         {
-          res.json(resp);
+          if (resp == null)
+          {
+            res.status(302).json({ error: 'image not found' })
+          }
+          else {
+            res.json(resp);
+          }
         });
       }
     }

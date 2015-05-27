@@ -76,6 +76,40 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
 	}
 }]);
 
+cinegraphApp.filter('JobNameFormatter', function() {
+    return function(input) {
+        var out = "";
+        if (input == "PRODUCED") {
+            out = "Producer";
+        }
+        else if (input == "DIRECTED") {
+            out = "Director"
+        }
+        else if (input == "ACTED_IN") {
+            out = "Actor"
+        }
+        else if (input == "DESIGNED_PRODUCTION") {
+            out = "Production Designer"
+        }
+        else if (input == "WROTE") {
+            out = "Writer"
+        }
+        else if (input == "DESIGNED_COSTUMES") {
+            out = "Costume Designer"
+        }
+        else if (input == "EDITED") {
+            out = "Editor"
+        }
+        else if (input == "COMPOSED_MUSIC") {
+            out = "Music Composer"
+        }
+        else {
+            out = input;
+        }
+        return out;
+    };
+});
+
 var cinegraphController = cinegraphApp.controller('restrictedController',
 	function($scope, $http, $window, $location, AuthService) {
 	$(document).ready(function(){
@@ -313,7 +347,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 	};
 });
 
-cinegraphApp.controller('ModalInstanceCtrl', function ($scope, $modalInstance, currentNode) {
+cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, currentNode) {
 
 	$scope.currentNode = currentNode;
 

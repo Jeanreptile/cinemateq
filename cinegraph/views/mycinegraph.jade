@@ -67,14 +67,13 @@ section.vbox
 								div.m-t-sm(ng-show="currentNode.type == 'Movie'")
 									img(src="images/inception.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
-									a(href="#", ng-show="currentNode.type == 'Person'")
+									a(href="#", ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
 										| {{currentNode.firstname}} {{currentNode.lastname}}
-									a(href="#", ng-show="currentNode.type == 'Movie'")
+									a(href="#", ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
 										| {{currentNode.title}} ({{currentNode.released}})
-								small.text-muted.m-b(ng-show="currentNode.type == 'Person'")
-									| Actor
-									i.i.i-dot
-									| Producer
+								small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
+									| {{job.name | JobNameFormatter }}
+									i.i.i-dot(ng-hide="$last")
 								small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
 									| {{genre}}
 									i.i.i-dot(ng-hide="$last")
@@ -96,16 +95,8 @@ section.vbox
 												i.fa.fa-heart.fa-lg
 											|  
 											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
-												button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
+												button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
 													i.fa.fa-plus.fa-lg
-												ul.dropdown-menu(role='menu')
-													li(ng-if="mycinegraphs == undefined")
-														a(href='/signin') You must be logged.
-													li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
-														a(href='#') {{cine.title}}
-													li.divider(ng-if="mycinegraphs")
-													li(ng-if="mycinegraphs")
-														a(href='#') Create a myCINEGRAPH
 											|  
 											button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
 												i.fa.fa-eye.fa-lg
@@ -119,7 +110,7 @@ section.vbox
 											| Plot
 										p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
 											| {{currentNode.plot | limitTo: 300}}...
-											a.m-l-xs(href="#")
+											a.m-l-xs(href="#", ng-click="open('lg')")
 												| Read more...
 							nav.nav-primary.hidden-xs
 								ul.nav.nav-main(data-ride='collapse')
@@ -143,7 +134,7 @@ section.vbox
 									div.col-sm-12
 										h2.text-black
 											| Your cinegraphs
-											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(data-toggle="tooltip", data-placement="right", title="", data-original-title="Create a new cinegraph")
+											a.btn.btn-sm.btn-info.btn-rounded.btn-icon.m-l-sm(ng-click="openCreateCinegraphModal()")
 												i.fa.fa-plus
 								div(ng-repeat= "n in mycinegraphs")
 									section.row.m-md(ng-if="!(($index + 1) % 2)")

@@ -890,6 +890,20 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         param position : THREE.Vector3 object for the position of the node
         */
 
+
+        var sanitizeFileName = function(filename)
+        {
+        	// The replaceChar should be either a space
+        	// or an underscore.
+        	var replaceChar = "_";
+        	var regEx = new RegExp('[,/\:*?""<>|]', 'g');
+        	var Filename = filename.replace(regEx, replaceChar);
+
+        	// Show me the new file name.
+          return Filename;
+        }
+
+
         function drawNode(node, radius, segments, position, startNodeSprite, type) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
             var circleColor = node.name ? blueColor : orangeColor;
@@ -901,10 +915,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 nodeImage = new Image();
                 if (node.title == undefined)
                 {
-                  nodeImage.src = 'images/persons/' + node.fullname + '.jpg';
+                  nodeImage.src = 'images/persons/' + sanitizeFileName(node.fullname) + '.jpg';
                 }
                 else {
-                  nodeImage.src = 'images/movies/' + encodeURIComponent(node.title + node.released) + '/poster.jpg';
+                  nodeImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/poster.jpg';
                 }
             }
             var canvas = generateTexture(defaultImg, text, circleColor, node.id);

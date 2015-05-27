@@ -33,7 +33,9 @@ var getMoviePoster = function(name, year, callback){
 
     res.on('end', function() {
         var resp = JSON.parse(body)
-        console.log("Got response: ", resp.results[0].poster_path);
+        if (resp.total_results != 0 && resp.profile_path != null)
+        {
+        console.log("Got response: ", resp);
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
@@ -51,7 +53,11 @@ var getMoviePoster = function(name, year, callback){
           fs2.writeFile(dir + 'backdrop.jpg', body, 'binary', function (err) {});
         });
         callback(resp.results[0]);
-    });
+        }
+        else {
+          callback(null);
+        }
+        });
   }).on('error', function(e) {
     console.log("Got error: " + e.message);
   });
@@ -69,6 +75,8 @@ var getPersonPicture = function(name, callback){
 
     res.on('end', function() {
         var resp = JSON.parse(body)
+        if (resp.total_results != 0 && resp.profile_path != null)
+        {
         console.log("Got response: ", resp.results[0].profile_path + "  :  " + name);
         var request = require('request'),
             fs      = require('fs'),
@@ -81,6 +89,10 @@ var getPersonPicture = function(name, callback){
           fs.writeFile(dir + name + '.jpg', body, 'binary', function (err) {});
           callback(resp.results[0]);
         });
+        }
+        else {
+          callback(null);
+        }
     });
   }).on('error', function(e) {
     console.log("Got error: " + e.message);
@@ -96,14 +108,27 @@ router.get('/:type/poster', function(req, res) {
     {
       getMoviePoster(req.query.query, req.query.year, function (resp)
       {
-        res.json(resp);
+        if (resp == null)
+        {
+          res.status(302).json({ error: 'image not found' })
+        }
+        else {
+          res.json(resp);
+        }
+
       });
     }
     else {
       {
         getPersonPicture(req.query.query, function (resp)
         {
-          res.json(resp);
+          if (resp == null)
+          {
+            res.status(302).json({ error: 'image not found' })
+          }
+          else {
+            res.json(resp);
+          }
         });
       }
     }

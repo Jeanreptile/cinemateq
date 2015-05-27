@@ -46,6 +46,9 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
                 },
                 currentCinegraph: function() {
                     return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
                 }
             }
         });
@@ -70,6 +73,9 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
                 },
                 currentCinegraph: function() {
                     return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
                 }
             }
         });
@@ -94,6 +100,9 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
                 },
                 currentCinegraph: function() {
                     return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
                 }
             }
         });

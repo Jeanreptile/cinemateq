@@ -791,7 +791,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
         }
 
-        function getNode(id, nodePostion, callback) {
+        function getNode(id, nodePosition, callback) {
             if (id != scope.currentNode.id) {
                 removeFromScene(scope.currentDisplayedNodes, id);
             }
@@ -927,7 +927,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             if (node.img != undefined && node.img == true)
             {
                 nodeImage.onerror = function () {
-                  this.src = 'images/default.png'; // place your error.png image instead
+                  this.src = 'images/default.jpg'; // place your error.png image instead
                 };
                 nodeImage.onload = function () {
                     console.log("Node IMAGE is : " + nodeImage);

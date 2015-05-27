@@ -1,6 +1,7 @@
 var express = require('express');
 var http = require('http');
 var router = express.Router();
+var path = require('path');
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 
 /* GET movies listing. */
@@ -41,7 +42,7 @@ var getMoviePoster = function(name, year, callback){
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
             dir     = path.join('public','images','movies', name + year);
         if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);§
+            fs.mkdirSync(dir);
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
           fs.writeFile(dir + 'poster.jpg', body, 'binary', function (err) {});

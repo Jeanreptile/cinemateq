@@ -36,7 +36,6 @@ router.get('/:id', function(req, res) {
 					var parsedName = result[0].fullname.replace(" ", "+");
 					request('https://localhost/api/search/person/poster?query=' + parsedName , function (error, response, body) {
 						if (!error && response.statusCode == 200) {
-							console.log("recuperation done");
 							var cypher = "MATCH (p:Person) WHERE id(p) = {personId} \
 														SET p.img = true RETURN p"
 							dbLocal.query(cypher, { personId: result[0].id }, function(err, result) {
@@ -54,7 +53,6 @@ router.get('/:id', function(req, res) {
 					var parsedTitle = result[0].title.replace(" ", "+");
 					request('https://localhost/api/search/movie/poster?query=' + parsedTitle + '&year=' + result[0].released, function (error, response, body) {
 						if (!error && response.statusCode == 200) {
-							console.log("recuperation done");
 							var cypher = "MATCH (m:Movie) WHERE id(m) = {movieId} \
 														SET m.img = true RETURN m"
 							dbLocal.query(cypher, { movieId: result[0].id }, function(err, result) {
@@ -140,9 +138,22 @@ router.get('/:id/relationshipsRaw/:direction/:type', function(req, res) {
 });
 
 router.get('/:id/relationshipsRaw/:direction/:type/:limit', function(req, res) {
-	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
-		res.json(relationships.slice(0, req.params.limit));
-	});
+	
+	if (req.params.type == "ACTED_IN")
+	{
+		if (req.params.direction == "in")
+			var cypher = "MATCH (m:Movie) WHERE id(m) = " + req.params.id + "  MATCH (m)-[r:ACTED_IN]-(p:Person) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+		else
+			var cypher = "MATCH (p:Person) WHERE id(p) = " + req.params.id + "  MATCH (p)-[r:ACTED_IN]-(m:Movie) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+		dbLocal.query(cypher, function(err, relationships) {
+			res.json(relationships.slice(0, req.params.limit));
+		});
+	}
+	else {
+		dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
+			res.json(relationships.slice(0, req.params.limit));
+		});
+	}
 });
 
 router.get('/:id/relationships/:direction/:type', function(req, res) {

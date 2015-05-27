@@ -107,8 +107,6 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
   return {
     request: function (config) {
       config.headers = config.headers || {};
-      console.log("Authorization Bearer ----")
-      console.log($window.localStorage.token);
       if ($window.localStorage.token) {
         config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
       }

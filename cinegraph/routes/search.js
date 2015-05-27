@@ -50,7 +50,6 @@ var getMoviePoster = function(name, year, callback){
         var resp = JSON.parse(body)
         if (resp.total_results != 0 && resp.results[0] && resp.results[0].poster_path != null)
         {
-        console.log("Got response: ", resp);
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
@@ -95,7 +94,6 @@ var getPersonPicture = function(name, callback){
         var resp = JSON.parse(body);
         if (resp.total_results != 0 && resp.results[0] && resp.results[0].profile_path != null)
         {
-        console.log("Got response: ", resp.results[0].profile_path + "  :  " + name);
         var request = require('request'),
             fs      = require('fs'),
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].profile_path,

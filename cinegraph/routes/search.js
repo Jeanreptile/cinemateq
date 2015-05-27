@@ -2,6 +2,7 @@ var express = require('express');
 var http = require('http');
 var router = express.Router();
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
+var path = require('path');
 
 /* GET movies listing. */
 router.get('/movie', function(req, res) {
@@ -41,7 +42,7 @@ var getMoviePoster = function(name, year, callback){
             url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
             dir     = path.join('public','images','movies', name + year);
         if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);§
+            fs.mkdirSync(dir);
         }
         request(url, {encoding: 'binary'}, function(error, response, body) {
           fs.writeFile(dir + 'poster.jpg', body, 'binary', function (err) {});
@@ -77,7 +78,6 @@ var getPersonPicture = function(name, callback){
     });
 
     res.on('end', function() {
-        console.log("end of API Poster");
         var resp = JSON.parse(body);
         if (resp.total_results != 0 && resp.results[0] && resp.results[0].profile_path != null)
         {

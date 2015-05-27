@@ -1,0 +1,8 @@
+.modal-header
+	button.close(type="button", ng-click="close()") ×
+	h4.modal-title.font-bold Delete cinegraph
+.modal-body
+	p
+		| Are you sure you want to delete {{currentCinegraph.title}}? Everything will be lost!
+	button.btn.btn-success.pull-right(ng-click='deleteCinegraph()') Yes
+	button.btn(ng-click='close()') Cancel

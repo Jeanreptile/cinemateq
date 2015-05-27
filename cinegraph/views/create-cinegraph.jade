@@ -1,0 +1,10 @@
+.modal-header
+	button.close(type="button", ng-click="close()") ×
+	h4.modal-title.font-bold Create a cinegraph
+.modal-body
+	form
+		.form-group
+			label Name
+			input.form-control(type='text', placeholder='"Cinegraph Sci-Fi" or "Cinegraph Thriller"', ng-model="cinegraphTitle")
+		input.btn.btn-success.pull-right(type="submit", ng-click="createCinegraph()", value="Create")
+		button.btn(ng-click='close()') Cancel

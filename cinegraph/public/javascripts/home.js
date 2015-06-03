@@ -407,6 +407,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 blendIntermediateComposer, blendComposer, gradientComposer, testComposer;
             var gradientBackground;
 
+            var rendererStats	= new THREEx.RendererStats()
+          	rendererStats.domElement.style.position	= 'absolute'
+          	rendererStats.domElement.style.left	= '0px'
+          	rendererStats.domElement.style.bottom	= '0px'
+          	document.body.appendChild( rendererStats.domElement )
+
             function init() {
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
@@ -555,6 +561,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         // animation loop
         function animate() {
             requestAnimationFrame(animate);
+		        rendererStats.update(renderer);
             TWEEN.update();
             cameraControls.update();
             render();
@@ -781,6 +788,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     new TWEEN.Tween(node.scale).to({x: 0, y:0, z:0}, 500)
                         .easing(TWEEN.Easing.Linear.None)
                         .onComplete(function (){
+                            toRemove[0].geometry.dispose();
+                            toRemove[0].material.dispose();
                             scene.remove(toRemove[0]);
                             toRemove.splice(0,1);
                         }).start();

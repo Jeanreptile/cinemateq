@@ -764,12 +764,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             {
                 var node = scene.children[i];
                 var index = -1;
-                $.each(scope.currentDisplayedNodes, function(j, obj) {
-                    var endpoint = obj.start;
-                    if (scope.currentNode.type == "Person") {
-                        endpoint = obj.end;
-                    }
-                    if (node._id === endpoint) {
+                $.each(array, function(j, obj) {
+                    if (node._id == obj.start || node._id == obj.end) {
                         index = j;
                         return false;
                     }

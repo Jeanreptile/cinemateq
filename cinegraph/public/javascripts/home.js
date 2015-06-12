@@ -874,6 +874,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             $.each(scope.currentDisplayedNodes, function(j, obj) {
                                 if (relationships[i].id === obj.id) {
                                     found = true;
+                                    count.val++;
                                     return false;
                                 }
                             });
@@ -946,7 +947,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                   this.src = 'images/default.jpg'; // place your error.png image instead
                 };
                 nodeImage.onload = function () {
-                    console.log("Node IMAGE is : " + nodeImage);
                     updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor, sprite._id);
                     sprite.texture.needsUpdate = true;
                 };

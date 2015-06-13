@@ -137,6 +137,11 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     }
     $http.get('/api/common/' + selectedNodeId).success(function(node) {
         $scope.currentNode = node;
+        $scope.updateTypesAndLimits();
+        $scope.updateSelectedJobs();
+    });
+
+    $scope.updateTypesAndLimits = function() {
         if ($scope.currentNode.type == "Person")
         {
             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
@@ -148,34 +153,47 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                                     { type: 'EDITED', limit: 3},
                                     { type: 'DESIGNED_PRODUCTION', limit: 3},
                                     { type: 'DESIGNED_COSTUMES', limit: 2} ];
-            $scope.selectedJobs = {
-                actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
-                writer: $scope.currentNode.jobs[0].name == 'WROTE',
-                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
-                director: $scope.currentNode.jobs[0].name == 'DIRECTED',
-                editor: $scope.currentNode.jobs[0].name == 'EDITED',
-                dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
-                musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
-                cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
-                proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
         }
         else
         {
             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4},
-                                    { type: 'PRODUCED', limit: 1},
                                     { type: 'DIRECTED', limit: 1},
+                                    { type: 'PRODUCED', limit: 1},
                                     { type: 'COMPOSED_MUSIC', limit: 1},
                                     { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
                                     { type: 'WROTE', limit: 1},
-                                    { type: 'EDITED', limit: 1}];
-                                    /*
+                                    { type: 'EDITED', limit: 1},
                                     { type: 'DESIGNED_PRODUCTION', limit: 1},
-                                    { type: 'DESIGNED_COSTUMES', limit: 1} ];*/
+                                    { type: 'DESIGNED_COSTUMES', limit: 1} ];
         }
+    };
 
-
-    });
-
+    $scope.updateSelectedJobs = function() {
+        if ($scope.currentNode.type == 'Person') {
+            $scope.selectedJobs = {
+                    actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
+                    writer: $scope.currentNode.jobs[0].name == 'WROTE',
+                    producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
+                    director: $scope.currentNode.jobs[0].name == 'DIRECTED',
+                    editor: $scope.currentNode.jobs[0].name == 'EDITED',
+                    dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
+                    musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
+                    cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
+                    proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
+        }
+        else {
+            $scope.selectedJobs = {
+                    actor: true,
+                    writer: false,
+                    producer: false,
+                    director: true,
+                    editor: false,
+                    dirphotography: false,
+                    musiccomposer: false,
+                    cosdesigner: false,
+                    proddesigner: false };
+        }
+    };
 
     $scope.currentNode.id = selectedNodeId;
 
@@ -197,9 +215,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-                var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "ACTED_IN") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "ACTED_IN") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
         }
@@ -213,9 +236,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-                var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "DIRECTED") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "DIRECTED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
 		}
@@ -229,9 +257,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-                var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "PRODUCED") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "PRODUCED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
         }
@@ -245,9 +278,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 		else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-                var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "WROTE") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+                var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "WROTE") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
 		}
@@ -261,9 +299,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 		else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-    			var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "EDITED") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+    			var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "EDITED") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
 		}
@@ -277,9 +320,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 		else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-    			var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "DIRECTED_PHOTOGRAPHY") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+    			var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "DIRECTED_PHOTOGRAPHY") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
 		}
@@ -293,9 +341,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 		else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-    			var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "COMPOSED_MUSIC") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+    			var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "COMPOSED_MUSIC") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
 		}
@@ -309,9 +362,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 		else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-    			var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "DESIGNED_COSTUMES") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+    			var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "DESIGNED_COSTUMES") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
 		}
@@ -325,9 +383,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 		else {
             for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
                 var obj = $scope.currentDisplayedNodes[i];
-    			var endpoint = obj.start;
-                if ($scope.currentNode.id === endpoint && obj.type == "WROTE") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, obj.end, $scope.currentNode.id);
+    			var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == "WROTE") {
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
 		}
@@ -811,7 +874,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
                 }
                 else {
-                    for (var i = 0; i < typesAndLimits.length; i++) {
+                    for (var i = 0; i < 2; i++) {
                         job = typesAndLimits[i].type;
                         limit = typesAndLimits[i].limit;
                         getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
@@ -1185,6 +1248,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         $http.get('/api/common/' + id).success(function(node) {
                             scope.currentNode = node;
                             scope.currentNode.sprite = intersection.object;
+                            scope.updateTypesAndLimits();
+                            scope.updateSelectedJobs();
                             // updating background
                             updateBackground(node);
                         });

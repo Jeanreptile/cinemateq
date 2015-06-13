@@ -8,6 +8,7 @@ angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $htt
     AuthService.logout();
   }
 
+if ($('#bg').length) {
   var vague = $('#bg').Vague({
     intensity:      0,      // Blur Intensity
     forceSVGUrl:    true,   // Force absolute path to the SVG filter,
@@ -18,14 +19,15 @@ angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $htt
     }
   });
 
-var blurDone = false;
+  var blurDone = false;
 
-$("#searchFormControl").on("click", function () {
-  if (!blurDone) {
-    vague.animate(20);
-  }
-    blurDone = true;
-  });
+  $("#searchFormControl").on("click", function () {
+    if (!blurDone) {
+      vague.animate(20);
+    }
+      blurDone = true;
+    });
+}
 
 $scope.selectedItem = "movie";
 

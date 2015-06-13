@@ -8,13 +8,32 @@ section.vbox.myCinegraphSingle
 				// span.hidden-nav-xs Cinemateq
 			a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
 				i.fa.fa-cog
-		form.navbar-form.navbar-left.input-s-lg.m-t.m-l-n-xs.hidden-xs(role='search')
+		form.navbar-form.navbar-left.m-t.m-l-n-xs.hidden-xs(role='search', ng-controller='TypeaheadCtrl', action="/", method='GET')
 			.form-group
 				.input-group
 					span.input-group-btn
 						button.btn.btn-sm.bg-white.b-white.btn-icon(type='submit')
 							span.glyphicon.glyphicon-search
-					input.form-control.input-sm.no-border(type='text', placeholder='Search for a movie...')
+					input(type='hidden', name='id', value="{{asyncSelected.thisId}}")
+					.input-group-btn
+						button.btn.bg-white.b-white.btn-sm.dropdown-toggle(type='button', data-toggle='dropdown')
+							span.dropdown-label
+								| Movies
+							span.caret
+						ul.dropdown-menu.dropdown-select.dropdownSearch
+							li.active(ng-click="OnItemClick('movie')")
+								a(href='#')
+									input(type='radio', name='type', checked='')
+									| Movies
+							li(ng-click="OnItemClick('person')")
+								a(href='#')
+									input(type='radio', name='type')
+									| Persons
+					input.form-control.no-border.input-sm.search-top-menu(type='text', placeholder='Search for a {{selectedItem}}...',		autocomplete='off', ng-model='asyncSelected',
+						typeahead='query as query.name for query in getLocation($viewValue)',
+						typeahead-wait-ms=350,
+						typeahead-loading='loadingLocations',
+						typeahead-min-length=2)
 		a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(href='#nav, #sidebar', data-toggle='class:nav-xs, show')
 			i.fa.fa-bars
 		ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user

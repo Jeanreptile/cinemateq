@@ -148,16 +148,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                                     { type: 'EDITED', limit: 3},
                                     { type: 'DESIGNED_PRODUCTION', limit: 3},
                                     { type: 'DESIGNED_COSTUMES', limit: 2} ];
-            $scope.selectedJobs = {
-                actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
-                writer: $scope.currentNode.jobs[0].name == 'WROTE',
-                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
-                director: $scope.currentNode.jobs[0].name == 'DIRECTED',
-                editor: $scope.currentNode.jobs[0].name == 'EDITED',
-                dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
-                musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
-                cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
-                proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
+            $scope.updateSelectedJobs();
         }
         else
         {
@@ -176,6 +167,18 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     });
 
+    $scope.updateSelectedJobs = function() {
+        $scope.selectedJobs = {
+                actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
+                writer: $scope.currentNode.jobs[0].name == 'WROTE',
+                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
+                director: $scope.currentNode.jobs[0].name == 'DIRECTED',
+                editor: $scope.currentNode.jobs[0].name == 'EDITED',
+                dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
+                musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
+                cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
+                proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
+    };
 
     $scope.currentNode.id = selectedNodeId;
 
@@ -1218,6 +1221,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         $http.get('/api/common/' + id).success(function(node) {
                             scope.currentNode = node;
                             scope.currentNode.sprite = intersection.object;
+                            scope.updateSelectedJobs();
                             // updating background
                             updateBackground(node);
                         });

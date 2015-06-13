@@ -1,1 +1,4 @@
 *.~
+cinegraph/public/images/movies/*
+cinegraph/public/images/persons/*
+cinegraph/node_modules

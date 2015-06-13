@@ -758,12 +758,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             {
                 var node = scene.children[i];
                 var index = -1;
-                $.each(scope.currentDisplayedNodes, function(j, obj) {
-                    var endpoint = obj.start;
-                    if (scope.currentNode.type == "Person") {
-                        endpoint = obj.end;
-                    }
-                    if (node._id === endpoint) {
+                $.each(array, function(j, obj) {
+                    if (node._id == obj.start || node._id == obj.end) {
                         index = j;
                         return false;
                     }
@@ -867,6 +863,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             $.each(scope.currentDisplayedNodes, function(j, obj) {
                                 if (relationships[i].id === obj.id) {
                                     found = true;
+                                    count.val++;
                                     return false;
                                 }
                             });
@@ -892,7 +889,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         	// Show me the new file name.
           return Filename;
         }
-
 
         function drawNode(node, radius, segments, position, startNodeSprite, type) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
@@ -928,10 +924,9 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             if (node.img != undefined && node.img == true)
             {
                 nodeImage.onerror = function () {
-                  this.src = 'images/default.jpg'; // place your error.png image instead
+                  this.src = 'images/default.jpg';
                 };
                 nodeImage.onload = function () {
-                    //console.log("Node IMAGE is : " + nodeImage);
                     updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor, sprite._id);
                     sprite.texture.needsUpdate = true;
                 };

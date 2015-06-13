@@ -162,7 +162,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                                     { type: 'COMPOSED_MUSIC', limit: 1},
                                     { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
                                     { type: 'WROTE', limit: 1},
-                                    { type: 'EDITED', limit: 1}];
+                                    { type: 'EDITED', limit: 1},
                                     { type: 'DESIGNED_PRODUCTION', limit: 1},
                                     { type: 'DESIGNED_COSTUMES', limit: 1} ];
         }

@@ -169,15 +169,15 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     $scope.updateSelectedJobs = function() {
         $scope.selectedJobs = {
-                actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
-                writer: $scope.currentNode.jobs[0].name == 'WROTE',
-                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
-                director: $scope.currentNode.jobs[0].name == 'DIRECTED',
-                editor: $scope.currentNode.jobs[0].name == 'EDITED',
-                dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
-                musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
-                cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
-                proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
+                actor: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'ACTED_IN' : false,
+                writer: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'WROTE' : false,
+                producer: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'PRODUCED' : false,
+                director: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'DIRECTED' : false,
+                editor: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'EDITED' : false,
+                dirphotography: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY' : false,
+                musiccomposer: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC' : false,
+                cosdesigner: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES' : false,
+                proddesigner: $scope.currentNode.jobs ? $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' : false };
     };
 
     $scope.currentNode.id = selectedNodeId;

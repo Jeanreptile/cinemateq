@@ -610,10 +610,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             // drawing gradient circle for each node
             for (var i = 0; i < orderedScene.length; i++)
             {
-                var elt = orderedScene[i];
-                var sprite = scene.children[elt.index];
-                if (sprite.type != 'Sprite')
-                    continue;
+                var sprite = scene.children[orderedScene[i].index];
                 // calculating circle radius
                 var pos = toScreenPosition(sprite.position);
                 var circleRadius = getSpriteRadius(sprite.position, sprite.scale.x);
@@ -630,23 +627,22 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 for (var j = linesScene.children.length - 1; j >= 0; j--)
                 {
                     var line = linesScene.children[j];
-                    if (line.type != "Line" || sprite._id == undefined)
+                    if (line.type != "Line")
                         continue;
-                    var startColor, endColor, startPos, endPos, startIndex, endIndex;
+                    var startIndex;
                     if (line.endNodeId == sprite._id)
                         startIndex = 0;
                     else if (line.startNodeId == sprite._id)
                         startIndex = 1;
                     else
                         continue;
-                    endIndex = startIndex == 0 ? 1 : 0;
-                    startColor = line.geometry.colors[startIndex];
-                    endColor = line.geometry.colors[endIndex];
-                    startPos = toScreenPosition(line.geometry.vertices[startIndex]);
-                    endPos = toScreenPosition(line.geometry.vertices[endIndex]);
+                    var endIndex = startIndex == 0 ? 1 : 0;
+                    var color = line.geometry.colors[startIndex];
+                    var startPos = toScreenPosition(line.geometry.vertices[startIndex]);
+                    var endPos = toScreenPosition(line.geometry.vertices[endIndex]);
                     // drawing radial gradient
                     var radgradPos = endPos.sub(startPos).setLength(circleRadius);
-                    var c = 'rgba('+startColor.r*255+','+startColor.g*255+','+startColor.b*255+',1)';
+                    var c = 'rgba(' + color.r * 255 + ',' + color.g * 255 + ',' + color.b * 255 +',1)';
                     ctx.fillStyle = c;
                     ctx.shadowColor = c;
                     ctx.beginPath();
@@ -1235,7 +1231,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
             // getting intersected object
-            if (intersects.length > 0 && intersects[0].object != INTERSECTED){
+            if (intersects.length > 0 && intersects[0].object != current){
                 var INTERSECTED = intersects[0].object;
                 if (INTERSECTED._id !== undefined) {
                     // restoring node state when leaving it

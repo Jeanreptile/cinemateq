@@ -834,7 +834,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     new TWEEN.Tween(node.scale).to({x: 0, y:0, z:0}, 500)
                         .easing(TWEEN.Easing.Linear.None)
                         .onComplete(function (){
-                            //console.log(toRemove[0]);
                             toRemove[0].geometry.dispose();
                             toRemove[0].material.dispose();
                             toRemove[0].texture.dispose();
@@ -856,11 +855,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         /* callback called when getting a node from the API */
         function draw(node, nodePosition) {
-            var nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition);
-            if (node.id == scope.currentNode.id && scope.currentNode.sprite == null) {
-                scope.currentNode.sprite = nodeSprite.sprite;
+            var nodeSprite;
+            if (node.id == scope.currentNode.id) {
+                if (scope.currentNode.sprite == null) {
+                    nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition).sprite;
+                    scope.currentNode.sprite = nodeSprite;
+                }
+                nodeSprite = scope.currentNode.sprite;
             }
-            getRelatedNodes(node, nodeSprite.sprite, scope.typesAndLimits, drawRelatedNodes);
+            else {
+                nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition).sprite;
+            }
+            getRelatedNodes(node, nodeSprite, scope.typesAndLimits, drawRelatedNodes);
         }
 
 
@@ -1002,46 +1008,40 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.circleColor = circleColor;
             sprite.scale.set(0, 0, 0);
 
-            var added = false;
-
-            //if (isAlreadyDisplayed == false) {
-                scene.add(sprite);
-                // animating scale
-                new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
+            scene.add(sprite);
+            // animating scale
+            new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
+                .easing(TWEEN.Easing.Linear.None)
+                .start();
+            // animating position
+            if (startNodeSprite !== undefined) {
+                new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
                     .easing(TWEEN.Easing.Linear.None)
-                    .start();
-                // animating position
-                if (startNodeSprite !== undefined) {
-                    new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
-                        .easing(TWEEN.Easing.Linear.None)
-                        .onComplete(function (){
-                            // drawing line
-                            var lineGeom = new THREE.Geometry();
-                            lineGeom.vertices.push(sprite.position, startNodeSprite.position);
-                            var startColor, endColor;
-                            if (node.name) {
-                                startColor = colors[type];
-                                endColor = orangeColor;
-                            } else {
-                                startColor = orangeColor;
-                                endColor = colors[type];
-                            }
-                            lineGeom.colors.push(new THREE.Color(startColor));
-                            lineGeom.colors.push(new THREE.Color(endColor));
-                            var lineMat = new THREE.LineBasicMaterial({
-                                linewidth: 1,
-                                vertexColors: true
-                            });
-                            line = new THREE.Line(lineGeom, lineMat);
-                            line.endNodeId = sprite._id;
-                            line.startNodeId = startNodeSprite._id;
-                            linesScene.add(line);
-                        }).start();
-                }
-                added = true;
-                //scope.currentDisplayedNodes.push(node.id);
-            //}
-            return {sprite: sprite, added: added};
+                    .onComplete(function (){
+                        // drawing line
+                        var lineGeom = new THREE.Geometry();
+                        lineGeom.vertices.push(sprite.position, startNodeSprite.position);
+                        var startColor, endColor;
+                        if (node.name) {
+                            startColor = colors[type];
+                            endColor = orangeColor;
+                        } else {
+                            startColor = orangeColor;
+                            endColor = colors[type];
+                        }
+                        lineGeom.colors.push(new THREE.Color(startColor));
+                        lineGeom.colors.push(new THREE.Color(endColor));
+                        var lineMat = new THREE.LineBasicMaterial({
+                            linewidth: 1,
+                            vertexColors: true
+                        });
+                        line = new THREE.Line(lineGeom, lineMat);
+                        line.endNodeId = sprite._id;
+                        line.startNodeId = startNodeSprite._id;
+                        linesScene.add(line);
+                    }).start();
+            }
+            return {sprite: sprite};
         }
 
 

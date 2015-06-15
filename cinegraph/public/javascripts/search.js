@@ -49,7 +49,7 @@ $scope.OnItemClick = function(event) {
           }
           else
           {
-            return {'name': item.name, 'thisId': item.id};
+            return {'name': item.firstname + " " + item.lastname, 'thisId': item.id};
           }
         });
     });

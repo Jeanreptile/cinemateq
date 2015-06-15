@@ -5,8 +5,12 @@
 .modal-body
 	.row
 		div.col-sm-4.text-center
-			img.col-sm-12(src="images/inception.jpg", ng-show="currentNode.type == 'Movie'")
-			img.img-circle.col-sm-12(src="images/leonardo_dicaprio.jpeg", ng-show="currentNode.type == 'Person'")
+			div.m-t-sm(ng-show="currentNode.img != true")
+				img.col-sm-12(src="images/default.jpg")
+			div.m-t-sm(ng-show="currentNode.type == 'Person' && currentNode.img == true")
+				img.col-sm-12(src="images/persons/{{currentNode.fullname}}.jpg")
+			div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
+				img.col-sm-12(src="images/movies/{{currentNode.title}}{{currentNode.released}}/poster.jpg")
 			div.col-xs-12.m-t-sm
 				i.fa.fa-star.m-l-xs.fa-lg
 				i.fa.fa-star.m-l-xs.fa-lg

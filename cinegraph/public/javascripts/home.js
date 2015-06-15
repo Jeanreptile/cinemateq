@@ -404,6 +404,21 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             stats.domElement.style.bottom = '0px';
             document.body.appendChild( stats.domElement );
 
+            var idAnimationFrame = 0;
+
+
+            // Clean everything
+            scope.$on('$destroy', function(){
+                cancelAnimationFrame(idAnimationFrame);
+                scene = null;
+                linesScene = null;
+                cameraControls = null;
+                renderer = null;
+                raycaster = null;
+                mouse = null;
+                alert('Directive is destroyed !' + idAnimationFrame);
+            })
+
             function init() {
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
@@ -542,7 +557,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         // animation loop
         function animate() {
-            requestAnimationFrame(animate);
+            idAnimationFrame = requestAnimationFrame(animate);
             stats.begin();
             rendererStats.update(renderer);
             TWEEN.update();

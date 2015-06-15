@@ -426,36 +426,20 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 			// global vars
             var scene = new THREE.Scene();
             var linesScene = new THREE.Scene();
-            var linesCamera;
-            var camera;
-            var cameraControls;
-            var bgScene, bgCam;
+            var linesCamera, camera, cameraControls, bgScene, bgCam, viewWidth, viewHeight, background, gradientBackground;
             var renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, autoClear: false });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
             var mouseClickStart = new THREE.Vector2();
             var mouseIsDown = false;
-            var INTERSECTED = null;
-            var spriteHover;
             var old = null;
             var current = null;
             var defaultImg = new Image();
             defaultImg.src = 'images/default.jpg';
-            var radius = 50;
-            var theta = 0;
-            var nodeRadius = 100, nodeSegments = 64;
             var nodePosition = new THREE.Vector3(0, 0, 0);
-            var nodeScale = new THREE.Vector3(2, 2, 1);
             var randomVector = new THREE.Vector3(Math.random() * 60 - 20, Math.random() * 60 - 20, Math.random() * 60 - 20);
-            var viewWidth, viewHeight;
-            var movieImageWidth = 990;
-            var movieHeightWidth = 1485;
-            var movieImageOffsetX = 20;
-            var movieImageOffsetY = -450;
-            var background;
             var currentDisplayedNodes = [];
             var orangeColor = '#ffa827';
-            var blueColor = '#319ef1';
             var colors = [];
             colors['ACTED_IN'] = '#319ef1';
             colors['PRODUCED'] = '#1AAE88';
@@ -467,7 +451,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             colors['DESIGNED_COSTUMES'] = '#E56371';
             colors['DESIGNED_PRODUCTION'] = '#3DDCDE';
             var composerBackground, composerLines, composer, gradientComposer, blendComposer;
-            var gradientBackground;
+            var PI2 = 2 * Math.PI;
+            var blurAmount = 25;
 
             // monitoring
             var rendererStats = new THREEx.RendererStats();
@@ -491,7 +476,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 document.getElementById('graph').appendChild(renderer.domElement);
 
                 // background scene
-                var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, defaultImg, 60);
+                var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, defaultImg, blurAmount);
                 var bgTexture = new THREE.Texture(bgCanvas);
                 background = new THREE.Mesh(
                     new THREE.PlaneBufferGeometry(2, 2, 0),
@@ -531,7 +516,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 // camera
                 camera.position.x = 0;
                 camera.position.y = 0;
-                camera.position.z = 50;
+                camera.position.z = 55;
                 cameraControls = new THREE.TrackballControls(camera, document.getElementById('graph'));
                 cameraControls.rotateSpeed = 2.0;
                 cameraControls.zoomSpeed = 1.2;
@@ -542,18 +527,20 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 cameraControls.dynamicDampingFactor = 0.3;
                 cameraControls.keys = [ 65, 83, 68 ];
 
-                // hover text init
-                var spriteHoverCanvas = generateHoverText();
-                var spriteHoverTexture = new THREE.Texture(spriteHoverCanvas);
-                var material = new THREE.SpriteMaterial({ map: spriteHoverTexture });
-                spriteHover = new THREE.Sprite(material);
-                spriteHoverTexture.needsUpdate = true;
-                spriteHover.position.set(0, 0, 0);
-                spriteHover.scale.set(12, 12, 12);
-                spriteHover.ignoreClick = true;
-                spriteHover.canvas = spriteHoverCanvas;
-                spriteHover.texture = spriteHoverTexture;
-                scene.add(spriteHover);
+                // label text init
+                label = $(
+                    '<div id="canvasNodeLabel" style="text-align:center;"> \
+                        <div class="labelText"></div>       \
+                        <button type="button" onclick="alert(\'coucou\');" class="add-cinegraph-btn btn btn-rounded \
+                                                                                  btn-sm btn-icon btn-dark"> \
+                            <i class="fa fa-plus fa-lg"></i> \
+                        </button> \
+                    </div>');
+                label.css({ 'position': 'absolute','z-index': '1','background-color': '#aaaaaa',
+                    'color': 'white','padding':'10px','left':'-1000'
+                });
+                $('#graph').parent().css('position','relative');
+                $('#graph').after(label);
 
                 // over sampling for antialiasing
                 var sampleRatio = 2;
@@ -564,7 +551,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     stencilBuffer: false
                 };
                 // background
-                var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * 1, viewHeight * 1, parameters);
+                var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * 0.5, viewHeight * 0.5, parameters);
                 var renderBackgroundScene = new THREE.RenderPass(bgScene, bgCam);
                 var effectCopyBackground = new THREE.ShaderPass(THREE.CopyShader);
                 composerBackground = new THREE.EffectComposer(renderer, renderTargetBackground);
@@ -632,6 +619,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             renderer.clear();
             composerBackground.render();
             composerLines.render();
+            updateHoverLabelPosition();
             composer.render();
             updateGradientLayer();
             gradientComposer.render();
@@ -646,13 +634,28 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
           return 0;
         }
 
+        function getSpriteRadius(spritePosition, spriteScale) {
+            var camDir = new THREE.Vector3();
+            var camDir2 = new THREE.Vector3(0, 0, -1);
+            var crossProduct = new THREE.Vector3();
+            var posOffset = new THREE.Vector3();
+            camDir.copy(spritePosition).sub(camera.position);
+            camDir2.applyQuaternion(camera.quaternion);
+            if (camDir.angleTo(camDir2) == 0)
+                camDir.x += 0.00001;
+            crossProduct.crossVectors(camDir, camDir2).setLength(4);
+            posOffset.copy(spritePosition).add(crossProduct);
+            return (toScreenPosition(posOffset).distanceTo(toScreenPosition(spritePosition)) - 0.5) * spriteScale / 8;
+        }
+
         function getGradientLayer() {
             var canv = document.createElement('canvas');
-            canv = background.bgCanvas;
             canv.width = viewWidth;
             canv.height = viewHeight;
             var ctx = canv.getContext('2d');
-            ctx.clearRect(0, 0, canv.width, canv.height);
+            ctx.shadowOffsetX = 1000;
+            ctx.shadowOffsetY = 1000;
+            ctx.shadowBlur = 40;
             // ordering objects by distance from camera
             var orderedScene = [];
             for (var i = scene.children.length - 1; i >= 0; i--)
@@ -666,79 +669,58 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 orderedScene.push(elt);
             }
             orderedScene.sort(compare);
+
             // drawing gradient circle for each node
             for (var i = 0; i < orderedScene.length; i++)
             {
-                var elt = orderedScene[i];
-                var sprite = scene.children[elt.index];
-                if (sprite.type != 'Sprite')
-                    continue;
+                var sprite = scene.children[orderedScene[i].index];
                 // calculating circle radius
                 var pos = toScreenPosition(sprite.position);
-                var camDir = new THREE.Vector3();
-                var camDir2 = new THREE.Vector3(0,0,-1);
-                var crossProduct = new THREE.Vector3();
-                var posOffset = new THREE.Vector3();
-                camDir.copy(sprite.position).sub(camera.position);
-                camDir2.applyQuaternion(camera.quaternion);
-                if (camDir.angleTo(camDir2) == 0)
-                    camDir.x += 0.00001;
-                crossProduct.crossVectors(camDir, camDir2).setLength(4);
-                posOffset.copy(sprite.position).add(crossProduct);
-                var circleRadius = (toScreenPosition(posOffset).distanceTo(pos) + 0.5) * sprite.scale.x / 8;
+                var circleRadius = getSpriteRadius(sprite.position, sprite.scale.x);
                 var innerRadius = Math.abs(circleRadius * 7 / 8 - 0.75);
                 // saving context
                 ctx.save();
                 // clipping to circle
                 ctx.beginPath();
-                ctx.arc(pos.x, pos.y, circleRadius, 0, 2 * Math.PI, false);
+                ctx.arc(pos.x, pos.y, circleRadius, 0, PI2, false);
+                ctx.clip();
                 ctx.fillStyle='rgba(255,255,255,0.1)';
                 ctx.fill();
-                ctx.clip();
                 // getting lines related to node
                 for (var j = linesScene.children.length - 1; j >= 0; j--)
                 {
                     var line = linesScene.children[j];
-                    if (line.type != "Line" || sprite._id == undefined)
+                    if (line.type != "Line")
                         continue;
-                    var startColor,endColor,startPos,endPos;
-                    if (line.endNodeId == sprite._id){
-                        startColor = line.geometry.colors[0];
-                        endColor = line.geometry.colors[1];
-                        startPos = toScreenPosition(line.geometry.vertices[0]);
-                        endPos = toScreenPosition(line.geometry.vertices[1]);
-                    }
-                    else if (line.startNodeId == sprite._id){
-                        startColor = line.geometry.colors[1];
-                        endColor = line.geometry.colors[0];
-                        startPos = toScreenPosition(line.geometry.vertices[1]);
-                        endPos = toScreenPosition(line.geometry.vertices[0]);
-                    }
+                    var startIndex;
+                    if (line.endNodeId == sprite._id)
+                        startIndex = 0;
+                    else if (line.startNodeId == sprite._id)
+                        startIndex = 1;
                     else
                         continue;
+                    var endIndex = startIndex == 0 ? 1 : 0;
+                    var color = line.geometry.colors[startIndex];
+                    var startPos = toScreenPosition(line.geometry.vertices[startIndex]);
+                    var endPos = toScreenPosition(line.geometry.vertices[endIndex]);
                     // drawing radial gradient
                     var radgradPos = endPos.sub(startPos).setLength(circleRadius);
-                    ctx.shadowOffsetX = 1000; // (default 0)
-                    ctx.shadowOffsetY = 1000; // (default 0)
-                    ctx.shadowBlur = 40; // (default 0)
-                    var r = startColor.r * 255;
-                    var g = startColor.g * 255;
-                    var b = startColor.b * 255;
-                    ctx.fillStyle = 'rgba('+r+','+g+','+b+',1)';
-                    ctx.shadowColor = 'rgba('+r+','+g+','+b+',1)';
+                    var c = 'rgba(' + color.r * 255 + ',' + color.g * 255 + ',' + color.b * 255 +',1)';
+                    ctx.fillStyle = c;
+                    ctx.shadowColor = c;
                     ctx.beginPath();
                     ctx.arc(
-                        startPos.x + radgradPos.x - 1000,
-                        startPos.y + radgradPos.y - 1000,
-                        circleRadius * 1, 0, Math.PI * 2, true
+                        startPos.x + radgradPos.x - ctx.shadowOffsetX,
+                        startPos.y + radgradPos.y - ctx.shadowOffsetY,
+                        circleRadius, 0, PI2, true
                     );
                     ctx.fill();
                 }
                 // clearing inner circle
                 ctx.beginPath();
-                ctx.arc(pos.x, pos.y, innerRadius, 0, 2 * Math.PI, false);
+                ctx.arc(pos.x, pos.y, innerRadius, 0, PI2, false);
                 ctx.clip();
-                ctx.clearRect(0,0,canv.width,canv.height);
+                ctx.clearRect(pos.x - innerRadius, pos.y - innerRadius, innerRadius * 2, innerRadius * 2);
                 // restoring context
                 ctx.restore();
             }
@@ -747,8 +729,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         function updateGradientLayer() {
             var ctx = gradientBackground.gradientCanvas.getContext('2d');
-            ctx.clearRect(0,0,gradientBackground.gradientCanvas.width, gradientBackground.gradientCanvas.height);
-            ctx.drawImage(getGradientLayer(),0,0);
+            ctx.clearRect(0, 0, gradientBackground.gradientCanvas.width, gradientBackground.gradientCanvas.height);
+            ctx.drawImage(getGradientLayer(), 0, 0);
             gradientBackground.gradientTexture.needsUpdate = true;
         }
 
@@ -791,24 +773,24 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
         scope.removeOneFromScene = removeOneFromScene;
 
-        function removeFromScene(array, excludedId)
+        function clearScene(array, targetId)
         {
             // getting id of center node to keep
-            var centerId;
+            var originId;
             for (var i = 0; i < linesScene.children.length; i++)
             {
                 var line = linesScene.children[i];
-                if (line.startNodeId == excludedId)
-                    centerId = line.endNodeId;
-                else if (line.endNodeId == excludedId)
-                    centerId = line.startNodeId;
+                if (line.startNodeId == targetId)
+                    originId = line.endNodeId;
+                else if (line.endNodeId == targetId)
+                    originId = line.startNodeId;
             }
             // removing lines
             var length = linesScene.children.length;
             for (var i = length - 1; i >= 0; i--)
             {
                 var line = linesScene.children[i];
-                if (line.type == "Line" && line.startNodeId != excludedId && line.endNodeId != excludedId){
+                if (line.type == "Line" && line.startNodeId != targetId && line.endNodeId != targetId){
                     line.geometry.dispose();
                     line.material.dispose();
                     linesScene.remove(line);
@@ -827,7 +809,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         return false;
                     }
                 });
-                if (node._id != excludedId && node._id != centerId && index !== -1)
+                if (node._id != targetId && node._id != originId && index !== -1)
                 {
                     array.splice(index, 1);
                     toRemove.push(node);
@@ -847,7 +829,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         function getNode(id, nodePosition, callback) {
             if (id != scope.currentNode.id) {
-                removeFromScene(scope.currentDisplayedNodes, id);
+                clearScene(scope.currentDisplayedNodes, id);
             }
             $http.get('/api/common/' + id).success(function(node) {
                 callback(node, nodePosition);
@@ -856,13 +838,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
 
         /* callback called when getting a node from the API */
         function draw(node, nodePosition) {
-            var nodeSprite = drawNode(node, nodeRadius, nodeSegments, nodePosition);
+            var nodeSprite = drawNode(node, nodePosition);
             if (node.id == scope.currentNode.id && scope.currentNode.sprite == null) {
                 scope.currentNode.sprite = nodeSprite.sprite;
             }
             getRelatedNodes(node, nodeSprite.sprite, scope.typesAndLimits, drawRelatedNodes);
         }
-
 
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
@@ -953,72 +934,53 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
           return Filename;
         }
 
-        function drawNode(node, radius, segments, position, startNodeSprite, type) {
-            var text = node.name ? (node.firstname + " " + node.lastname) : node.title;
-            var circleColor = node.name ? blueColor : orangeColor;
+        function drawNode(node, position, startNodeSprite, type) {
+            var text = node.name ? (node.firstname + " " + node.lastname) : node.title
+            var canvas = generateTexture(defaultImg, text);
+            var texture = new THREE.Texture(canvas);
+            THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
+            texture.needsUpdate = true;
+            var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
+            sprite._id = node.id;
+            sprite.name = text;
+            sprite.canvas = canvas;
+            sprite.texture = texture;
+            // image loading
             var nodeImage;
-
             if (node.img == undefined || node.img == false)
                 nodeImage = defaultImg;
             else {
                 nodeImage = new Image();
                 if (node.title == undefined)
-                {
-                  nodeImage.src = 'images/persons/' + sanitizeFileName(node.fullname) + '.jpg';
-                }
-                else {
-                  nodeImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/poster.jpg';
-                }
-            }
-            var canvas = generateTexture(defaultImg, text, circleColor, node.id);
-            var texture = new THREE.Texture(canvas);
-            THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
-            texture.needsUpdate = true;
-            var spriteMaterial = new THREE.SpriteMaterial({ map: texture });
-            var sprite = new THREE.Sprite(spriteMaterial);
-
-            sprite._id = node.id;
-            sprite.name = node.name ? (node.firstname + " " + node.lastname) : node.title;
-            sprite.canvas = canvas;
-            sprite.context = canvas.getContext('2d');
-            sprite.texture = texture;
-            sprite.nodeImage = nodeImage;
-
-            if (node.img != undefined && node.img == true)
-            {
-                nodeImage.onerror = function () {
-                  this.src = 'images/default.jpg';
-                };
+                    nodeImage.src = 'images/persons/' + sanitizeFileName(node.fullname) + '.jpg';
+                else
+                    nodeImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/poster.jpg';
+                nodeImage.onerror = function () { this.src = 'images/default.jpg'; };
                 nodeImage.onload = function () {
-                    updateTexture(nodeImage, sprite.canvas, text, 0.6, circleColor, sprite._id);
+                    updateTexture(nodeImage, sprite.canvas, sprite.name, 0.6);
                     sprite.texture.needsUpdate = true;
                 };
             }
-
-            if (startNodeSprite !== undefined)
-                sprite.position.set(startNodeSprite.position.x, startNodeSprite.position.y, startNodeSprite.position.z);
-            else
-                sprite.position.set(position.x, position.y, position.z);
-            sprite.circleColor = circleColor;
-            sprite.scale.set(0, 0, 0);
+            sprite.nodeImage = nodeImage;
 
             var added = false;
-
             //if (isAlreadyDisplayed == false) {
+                if (startNodeSprite !== undefined)
+                    sprite.position.set(startNodeSprite.position.x, startNodeSprite.position.y, startNodeSprite.position.z);
+                else
+                    sprite.position.set(position.x, position.y, position.z);
+                sprite.scale.set(0, 0, 0);
                 scene.add(sprite);
                 // animating scale
-                new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500)
-                    .easing(TWEEN.Easing.Linear.None)
-                    .start();
+                new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500).easing(TWEEN.Easing.Linear.None).start();
                 // animating position
                 if (startNodeSprite !== undefined) {
                     new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
-                        .easing(TWEEN.Easing.Linear.None)
-                        .onComplete(function (){
+                        .easing(TWEEN.Easing.Linear.None).onComplete(function (){
                             // drawing line
                             var lineGeom = new THREE.Geometry();
-                            lineGeom.vertices.push(sprite.position, startNodeSprite.position);
                             var startColor, endColor;
+                            lineGeom.vertices.push(sprite.position, startNodeSprite.position);
                             if (node.name) {
                                 startColor = colors[type];
                                 endColor = orangeColor;
@@ -1028,11 +990,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             }
                             lineGeom.colors.push(new THREE.Color(startColor));
                             lineGeom.colors.push(new THREE.Color(endColor));
-                            var lineMat = new THREE.LineBasicMaterial({
-                                linewidth: 1,
-                                vertexColors: true
-                            });
-                            line = new THREE.Line(lineGeom, lineMat);
+                            line = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true }));
                             line.endNodeId = sprite._id;
                             line.startNodeId = startNodeSprite._id;
                             linesScene.add(line);
@@ -1044,9 +1002,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             return {sprite: sprite, added: added};
         }
 
-
         function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit, type) {
-          var slice = 2 * Math.PI / 10;
+          var slice = PI2 / 10;
             var relatedNodePosition = new THREE.Vector3();
             if (limit > relatedNodes.length) {
                 limit = relatedNodes.length;
@@ -1056,7 +1013,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 relatedNodePosition.x = nodePosition.x + 18 * Math.cos(angle);
                 relatedNodePosition.y = nodePosition.y + 18 * Math.sin(angle);
                 //relatedNodePosition.z = nodePosition.z + 18 * Math.random();
-                var relatedNodeSprite = drawNode(relatedNodes[j], nodeRadius, nodeSegments, relatedNodePosition, startNodeSprite, type);
+                var relatedNodeSprite = drawNode(relatedNodes[j], relatedNodePosition, startNodeSprite, type);
                 var endNodePosition;
                 if (relatedNodeSprite.added == false) {
                     var obj = scene.getObjectByName(relatedNodes[j].name ?
@@ -1070,9 +1027,37 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
         scope.drawRelatedNodes = drawRelatedNodes;
 
+        function generateTexture(img, text) {
+        	var canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            updateTexture(img, canvas, text, 0.6);
+            return canvas;
+        }
+
+        function updateTexture(img, canvas, text, opacity) {
+            var borderThickness = canvas.width / 16;
+            var halfWidth = canvas.width / 2;
+            var halfHeight = canvas.height / 2;
+            var context = canvas.getContext('2d');
+            context.beginPath();
+            context.arc(halfWidth, halfHeight, halfWidth - borderThickness, 0, PI2);
+            context.clip();
+            context.fillStyle = '#000000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.globalAlpha = opacity;
+            drawImageProp(context, img, borderThickness, borderThickness, canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
+            context.fillStyle = "#ffffff";
+            context.font = canvas.width / 9 + "px Moon Bold";
+            context.textAlign = "center";
+            context.globalAlpha = (1 / (0.6 - 1)) * (opacity - 1);
+            wrapText(context, text, halfWidth, canvas.height / 2.5, canvas.width -  4 * borderThickness, canvas.height / 6);
+            context.globalAlpha = 1;
+        }
+
         function wrapText(context, text, x, y, maxWidth, lineHeight) {
             if (text.indexOf(' ') == -1) {
-                context.fillText(text, x, y);
+                context.fillText(text, x, y, maxWidth);
                 return;
             }
             var words = text.split(' ');
@@ -1082,44 +1067,14 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 var metrics = context.measureText(testLine);
                 var testWidth = metrics.width;
                 if (testWidth > maxWidth && n > 0) {
-                    context.fillText(line, x, y);
+                    context.fillText(line, x, y, maxWidth);
                     line = words[n] + ' ';
                     y += lineHeight;
                 }
-                else {
+                else
                     line = testLine;
-                }
             }
-            context.fillText(line, x, y);
-        }
-
-        function generateTexture(img, text, circleColor, spriteId) {
-        	var canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            updateTexture(img, canvas, text, 0.6, circleColor);
-            return canvas;
-        }
-
-        function updateTexture(img, canvas, text, opacity, circleColor, spriteId) {
-            var borderThickness = canvas.width / 16;
-            var context = canvas.getContext('2d');
-            var halfWidth = canvas.width / 2;
-            var halfHeight = canvas.height / 2;
-            // cliping and drawing image
-            context.beginPath();
-            context.arc(halfWidth, halfHeight, halfWidth - borderThickness, 0, 2 * Math.PI);
-            context.clip();
-            context.fillStyle = '#000000';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            context.globalAlpha = opacity;
-            drawImageProp(context, img, borderThickness, borderThickness, canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
-            context.globalAlpha = (1 / (0.6 - 1)) * (opacity - 1);
-            context.fillStyle = "#ffffff";
-            context.font = canvas.width / 9 + "px Moon Bold";
-            context.textAlign = "center";
-            wrapText(context, text, halfWidth, canvas.height / 2.4, canvas.width -  3 * borderThickness, canvas.height / 4.5);
-            context.globalAlpha = 1;
+            context.fillText(line, x, y, maxWidth);
         }
 
         function generateBackgroundCanvas(width, height, image, blur) {
@@ -1139,14 +1094,14 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var widthHalf = 0.5 * renderer.context.canvas.width;
             var heightHalf = 0.5 * renderer.context.canvas.height;
             vector.project(camera);
-            vector.x = ( vector.x * widthHalf ) + widthHalf;
-            vector.y = - ( vector.y * heightHalf ) + heightHalf;
+            vector.x = (vector.x * widthHalf) + widthHalf;
+            vector.y = - (vector.y * heightHalf) + heightHalf;
             return new THREE.Vector3(vector.x,  vector.y, 0);
         };
 
         function crossFadeBackgroundCanvas(canvas, startCanvas, endCanvas, percentage) {
             var bgContext = canvas.getContext('2d');
-            bgContext.fillStyle = "#000";
+            bgContext.fillStyle = "#000000";
             bgContext.fillRect(0, 0, canvas.width, canvas.height);
             bgContext.globalAlpha = 1 - (percentage / 100);
             bgContext.drawImage(startCanvas, 0, 0, canvas.width, canvas.height);
@@ -1164,23 +1119,26 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             return newCanvas;
         }
 
-        function generateHoverText() {
-            var canvas = document.createElement('canvas');
-            canvas.width = 1500;
-            canvas.height = 1500;
-            return canvas;
+        function updateHoverLabel(text)
+        {
+            $('#canvasNodeLabel .labelText').text(text);
+            updateHoverLabelPosition();
         }
 
-        function updateHoverText(canvas, text)
+        function updateHoverLabelPosition()
         {
-            var context = canvas.getContext('2d');
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            context.fillStyle = "#aaaaaa";
-            context.fillRect(0, 0, canvas.width, 300);
-            context.fillStyle = "#000";
-            context.font = "110px Moon Bold";
-            context.textAlign = "center";
-            wrapText(context, text, canvas.width / 2, 300 / 2.4, canvas.width, 110);
+            if (current != null)
+            {
+                var v = toScreenPosition(current.position);
+                var spriteRadius = getSpriteRadius(current.position, current.scale.x);
+                var y = v.y - spriteRadius - $('#canvasNodeLabel').outerHeight();
+                if (y < 0)
+                    y = v.y + spriteRadius;
+                $('#canvasNodeLabel').css({
+                    top: y,
+                    left: v.x - $('#canvasNodeLabel').outerWidth() / 2
+                });
+            }
         }
 
         function setMousePosition(event)
@@ -1211,23 +1169,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             mouseIsDown = false;
             if (mouse.x != mouseClickStart.x || mouse.y != mouseClickStart.y)
                 return;
-
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
-            // removing unwanted objects
-            while (intersects.length > 0 && intersects[0].object.ignoreClick == true)
-                intersects = intersects.slice(1);
             var intersection = intersects[0];
-            if (intersection == undefined) {
+            if (intersection == undefined)
                 return;
-            }
             var id = intersection.object._id;
             if (id != null) {
 
                 // animating camera
                 var moveX = intersection.object.position.x;
                 var moveY = intersection.object.position.y;
-                var moveZ = intersection.object.position.z + 50;
+                var moveZ = intersection.object.position.z + 55;
                 var targetX = intersection.object.position.x;
                 var targetY = intersection.object.position.y;
                 var targetZ = intersection.object.position.z;
@@ -1266,7 +1219,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             crossFade.startCanvas = cloneCanvas(background.bgCanvas);
             if (node.img == undefined || node.img == false) {
                 backgroundImage = defaultImg;
-                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, 25);
+                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, blurAmount);
                 crossFade.percentage = 0;
                 var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
                     .easing(TWEEN.Easing.Linear.None)
@@ -1286,7 +1239,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     this.src = 'images/default.jpg';
                 };
                 backgroundImage.onload = function () {
-                    crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, 25);
+                    crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, blurAmount);
                     crossFade.percentage = 0;
                     var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
                         .easing(TWEEN.Easing.Linear.None)
@@ -1297,23 +1250,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         }).start();
                 };
             }
-        }
-
-        // function for drawing rounded rectangles
-        function roundRect(ctx, x, y, w, h, r) {
-        	ctx.beginPath();
-        	ctx.moveTo(x + r, y);
-        	ctx.lineTo(x + w - r, y);
-        	ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        	ctx.lineTo(x + w, y + h - r);
-        	ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        	ctx.lineTo(x + r, y + h);
-        	ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        	ctx.lineTo(x, y + r);
-        	ctx.quadraticCurveTo(x, y, x + r, y);
-        	ctx.closePath();
-        	ctx.fill();
-        	ctx.stroke();
         }
 
         // draw an image proportionally to fit inside a container
@@ -1359,29 +1295,24 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function updateIntersection() {
             raycaster.setFromCamera(mouse, camera);
             var intersects = raycaster.intersectObjects(scene.children);
-            // removing unwanted objects
-            while (intersects.length > 0 && intersects[0].object.ignoreClick == true)
-                intersects = intersects.slice(1);
             // getting intersected object
-            if (intersects.length > 0 && intersects[0].object != INTERSECTED){
-                INTERSECTED = intersects[0].object;
+            if (intersects.length > 0 && intersects[0].object != current){
+                var INTERSECTED = intersects[0].object;
                 if (INTERSECTED._id !== undefined) {
                     // restoring node state when leaving it
                     if (current && (current._id != INTERSECTED._id)) {
-                        updateTexture(current.nodeImage, current.canvas, current.name, 0.6, current.circleColor, current._id);
+                        updateTexture(current.nodeImage, current.canvas, current.name, 0.6);
                         current.texture.needsUpdate = true;
                         old = current;
                     }
                     // updating intersected node and animating opacity
                     current = INTERSECTED;
-                    updateHoverText(spriteHover.canvas, current.name);
-                    spriteHover.texture.needsUpdate = true;
-                    spriteHover.position.set(current.position.x, current.position.y, current.position.z);
+                    updateHoverLabel(current.name);
                     current.animationOpacity = 0.6;
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)
                     .onUpdate(function (){
-                        updateTexture(current.nodeImage, current.canvas, current.name, current.animationOpacity, current.circleColor, current._id);
+                        updateTexture(current.nodeImage, current.canvas, current.name, current.animationOpacity);
                         current.texture.needsUpdate = true;
                     }).start();
                 }

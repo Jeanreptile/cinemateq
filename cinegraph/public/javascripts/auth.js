@@ -113,7 +113,7 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
       }
       else
       {
-        console.log("MAIIIIS");
+        //console.log("MAIIIIS");
         config.headers.Authorization = '';
       }
       return config;

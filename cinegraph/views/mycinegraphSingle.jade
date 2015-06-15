@@ -69,10 +69,12 @@ section.vbox.myCinegraphSingle
 											|Go to Discovery mode
 											i.i.i-arrow-right.m-l-xs
 							div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
-								div.m-t-sm(ng-show="currentNode.type == 'Person'")
-									img.img-circle(src="images/leonardo_dicaprio.jpeg")
-								div.m-t-sm(ng-show="currentNode.type == 'Movie'")
-									img(src="images/inception.jpg")
+								div.m-t-sm(ng-show="currentNode.img != true")
+									img(src="images/default.jpg")
+								div.m-t-sm(ng-show="currentNode.type == 'Person' && currentNode.img == true")
+									img(src="images/persons/{{currentNode.fullname}}.jpg")
+								div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
+									img(src="images/movies/{{currentNode.title}}{{currentNode.released}}/poster.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
 									a(href="#", ng-show="currentNode.type == 'Person'")
 										| {{currentNode.firstname}} {{currentNode.lastname}}

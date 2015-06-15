@@ -407,6 +407,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 blendIntermediateComposer, blendComposer, gradientComposer, testComposer;
             var gradientBackground;
 
+            scope.$on('$destroy', function(){
+                alert('Directive is destroyed !')
+            })
+
             var rendererStats	= new THREEx.RendererStats()
           	rendererStats.domElement.style.position	= 'absolute'
           	rendererStats.domElement.style.left	= '0px'
@@ -788,9 +792,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     new TWEEN.Tween(node.scale).to({x: 0, y:0, z:0}, 500)
                         .easing(TWEEN.Easing.Linear.None)
                         .onComplete(function (){
-                            toRemove[0].geometry.dispose();
-                            toRemove[0].material.dispose();
                             scene.remove(toRemove[0]);
+                            toRemove[0].geometry.dispose();
+                            toRemove[0].geometry = undefined;
+                            toRemove[0].material.dispose();
+                            toRemove[0].material = undefined;
+                            toRemove[0] = undefined;
+
                             toRemove.splice(0,1);
                         }).start();
                 }

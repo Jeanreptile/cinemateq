@@ -2,6 +2,7 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
   $scope.message = '';
   $scope.message2 = '';
 
+
   $scope.signin = function () {
     $http
       .post('/users/login', $scope.user)

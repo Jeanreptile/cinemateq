@@ -415,6 +415,22 @@ cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, cu
 
 	$scope.currentNode = currentNode;
 
+    var sanitizeFileName = function(filename)
+    {
+        if (filename == undefined) {
+            return filename;
+        }
+        // The replaceChar should be either a space
+        // or an underscore.
+        var replaceChar = "_";
+        var regEx = new RegExp('[,/\:*?""<>|]', 'g');
+        var Filename = filename.replace(regEx, replaceChar);
+
+        // Show me the new file name.
+      return Filename;
+    }
+    $scope.sanitizeFileName = sanitizeFileName;
+
 	$scope.close = function () {
 		$modalInstance.dismiss("close");
 	};

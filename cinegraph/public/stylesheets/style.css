@@ -21,6 +21,14 @@ body {
 	border-bottom: 2px solid black;
 }
 
+.navbar-form .input-group > .form-control.search-top-menu {
+  width: 300px;
+}
+
+.navbar-form .input-group > ul.dropdown-menu a {
+  white-space: normal;
+}
+
 /* LEFT PANEL */
 
 .node-details img {

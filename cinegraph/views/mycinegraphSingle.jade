@@ -8,13 +8,32 @@ section.vbox.myCinegraphSingle
 				// span.hidden-nav-xs Cinemateq
 			a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
 				i.fa.fa-cog
-		form.navbar-form.navbar-left.input-s-lg.m-t.m-l-n-xs.hidden-xs(role='search')
+		form.navbar-form.navbar-left.m-t.m-l-n-xs.hidden-xs(role='search', ng-controller='TypeaheadCtrl', action="/", method='GET')
 			.form-group
 				.input-group
 					span.input-group-btn
 						button.btn.btn-sm.bg-white.b-white.btn-icon(type='submit')
 							span.glyphicon.glyphicon-search
-					input.form-control.input-sm.no-border(type='text', placeholder='Search for a movie...')
+					input(type='hidden', name='id', value="{{asyncSelected.thisId}}")
+					.input-group-btn
+						button.btn.bg-white.b-white.btn-sm.dropdown-toggle(type='button', data-toggle='dropdown')
+							span.dropdown-label
+								| Movies
+							span.caret
+						ul.dropdown-menu.dropdown-select.dropdownSearch
+							li.active(ng-click="OnItemClick('movie')")
+								a(href='#')
+									input(type='radio', name='type', checked='')
+									| Movies
+							li(ng-click="OnItemClick('person')")
+								a(href='#')
+									input(type='radio', name='type')
+									| Persons
+					input.form-control.no-border.input-sm.search-top-menu(type='text', placeholder='Search for a {{selectedItem}}...',		autocomplete='off', ng-model='asyncSelected',
+						typeahead='query as query.name for query in getLocation($viewValue)',
+						typeahead-wait-ms=350,
+						typeahead-loading='loadingLocations',
+						typeahead-min-length=2)
 		a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(href='#nav, #sidebar', data-toggle='class:nav-xs, show')
 			i.fa.fa-bars
 		ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
@@ -76,10 +95,10 @@ section.vbox.myCinegraphSingle
 								div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
 									img(src="images/movies/{{currentNode.title}}{{currentNode.released}}/poster.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
-									a(href="#", ng-show="currentNode.type == 'Person'")
-										| {{currentNode.firstname}} {{currentNode.lastname}}
-									a(href="#", ng-show="currentNode.type == 'Movie'")
-										| {{currentNode.title}} ({{currentNode.released}})
+									a(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
+										{{currentNode.firstname}} {{currentNode.lastname}}
+									a(href='#', ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
+										{{currentNode.title}}
 								small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
 									| {{job.name | JobNameFormatter }}
 									i.i.i-dot(ng-hide="$last")
@@ -102,10 +121,9 @@ section.vbox.myCinegraphSingle
 									div.col-xs-12.m-t-sm
 											button.btn.btn-rounded.btn-sm.btn-icon.btn-default.btn-dark.dropdown-toggle(type='button')
 												i.fa.fa-heart.fa-lg
-											|  
-											.btn-group(dropdown='')
-												button.btn.btn-rounded.btn-sm.btn-icon.btn-dark.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
-													i.fa.fa-plus.fa-lg
+											.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
+											button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
+												i.fa.fa-plus.fa-lg
 												ul.dropdown-menu(role='menu')
 													li(ng-if="mycinegraphs == undefined")
 														a(href='/signin') You must be logged.

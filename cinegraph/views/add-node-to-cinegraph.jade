@@ -9,7 +9,7 @@
 	form(ng-if="mycinegraphs.length > 0")
 		.radio.i-checks(ng-repeat="cine in mycinegraphs")
 			label
-				input(type='radio', ng-model="$parent.selectedCinegraph", ng-value="cine", name="selectedCinegraph")
+				input(type='radio', ng-model="selectedCinegraph.c", ng-value="cine", name="selectedCinegraph")
 				i
 				|  {{cine.title}}
 		input.btn.btn-success.pull-right(type="submit", ng-click="addCurrentNodeToCinegraph()", value="Add")

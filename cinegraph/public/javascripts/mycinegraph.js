@@ -164,7 +164,7 @@ cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService
     $scope.createAndAddToCinegraph = function() {
         var currentUser = AuthService.currentUser();
         $http.post('/api/mycinegraph/', { titleCinegraph: $scope.cinegraphTitle, idUser: currentUser.id }).success(function(res) {
-            res.nodes.push({"id": $scope.currentNode.id});            
+            res.nodes.push({"id": $scope.currentNode.id});
             $http.put('/api/mycinegraph/' + res.id,
                 { titleCinegraph: res.title, cinegraphNodes: JSON.stringify(res.nodes) }).success(function(res) {
                     $modalInstance.close();
@@ -193,7 +193,7 @@ cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService
             }
         };
         if (!found) {
-            $scope.selectedCinegraph.nodes.push({"id": $scope.currentNode.id});            
+            $scope.selectedCinegraph.nodes.push({"id": $scope.currentNode.id});
         }
         $http.put('/api/mycinegraph/' + $scope.selectedCinegraph.id,
             { titleCinegraph: $scope.selectedCinegraph.title, cinegraphNodes: JSON.stringify($scope.selectedCinegraph.nodes) }).success(function(res) {
@@ -304,6 +304,20 @@ cinegraphApp.directive("mycinegraph", [ '$http', function($http) {
                 // lines scene
                 linesCamera = new THREE.Camera();
                 linesScene.add(camera);
+
+
+								var idAnimationFrame = 0;
+
+								scope.$on('$destroy', function(){
+		                cancelAnimationFrame(idAnimationFrame);
+		                scene = null;
+		                linesScene = null;
+		                cameraControls = null;
+		                renderer = null;
+		                raycaster = null;
+		                mouse = null;
+		                alert('Directive is destroyed !' + idAnimationFrame);
+		            })
 
                 // camera
                 camera.position.x = 0;
@@ -417,6 +431,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', function($http) {
 
         // animation loop
         function animate() {
+						idAnimationFrame = requestAnimationFrame(animate);
             requestAnimationFrame(animate);
             TWEEN.update();
             cameraControls.update();
@@ -707,7 +722,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', function($http) {
                     }
                 });
                 if (!found) {
-                    rels.push(node);                    
+                    rels.push(node);
                     scope.currentDisplayedNodes.push(relationships[index]);
                 }
                 count.val++;

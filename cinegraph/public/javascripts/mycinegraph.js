@@ -460,11 +460,11 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
                 $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
                     scope.currentCinegraph = cinegraph;
                     var cinegraphNodes = JSON.parse(cinegraph.nodes);
-                    
+
                     var spriteArray = [];
 
                     displayCinegraphNodes(cinegraphNodes, 0, spriteArray);
-                    
+
                 });
 
                 // listeners
@@ -610,7 +610,6 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
         // animation loop
         function animate() {
 						idAnimationFrame = requestAnimationFrame(animate);
-            requestAnimationFrame(animate);
             TWEEN.update();
             cameraControls.update();
             render();
@@ -905,7 +904,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
                     }
                 });
                 if (!found) {
-                    rels.push(node);                    
+                    rels.push(node);
                     scope.suggestedNodes.push(relationships[index]);
                 }
                 count.val++;

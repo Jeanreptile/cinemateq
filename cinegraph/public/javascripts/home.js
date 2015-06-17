@@ -495,6 +495,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 renderer = null;
                 raycaster = null;
                 mouse = null;
+                document.body.removeChild(stats.domElement);
+                document.body.removeChild(rendererStats.domElement)
+                stats = null;
+                rendererStats = null;
                 alert('Directive is destroyed !' + idAnimationFrame);
             })
 

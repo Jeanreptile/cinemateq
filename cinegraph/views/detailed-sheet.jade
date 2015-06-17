@@ -8,9 +8,9 @@
 			div.m-t-sm(ng-show="currentNode.img != true")
 				img.col-sm-12(src="images/default.jpg")
 			div.m-t-sm(ng-show="currentNode.type == 'Person' && currentNode.img == true")
-				img.col-sm-12(src="images/persons/{{currentNode.fullname}}.jpg")
+				img.col-sm-12(ng-src="images/persons/{{sanitizeFileName(currentNode.fullname)}}.jpg")
 			div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
-				img.col-sm-12(src="images/movies/{{currentNode.title}}{{currentNode.released}}/poster.jpg")
+				img.col-sm-12(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
 			div.col-xs-12.m-t-sm
 				i.fa.fa-star.m-l-xs.fa-lg
 				i.fa.fa-star.m-l-xs.fa-lg

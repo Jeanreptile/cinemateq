@@ -91,9 +91,9 @@ section.vbox.myCinegraphSingle
 								div.m-t-sm(ng-show="currentNode.img != true")
 									img(src="images/default.jpg")
 								div.m-t-sm(ng-show="currentNode.type == 'Person' && currentNode.img == true")
-									img(src="images/persons/{{currentNode.fullname}}.jpg")
+									img(ng-src="images/persons/{{sanitizeFileName(currentNode.fullname)}}.jpg")
 								div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
-									img(src="images/movies/{{currentNode.title}}{{currentNode.released}}/poster.jpg")
+									img(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
 								div.h4.m-t.m-b-xs.font-bold.text-lt
 									a(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
 										{{currentNode.firstname}} {{currentNode.lastname}}

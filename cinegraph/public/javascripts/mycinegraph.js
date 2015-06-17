@@ -950,6 +950,9 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
 
         var sanitizeFileName = function(filename)
         {
+            if (filename == undefined) {
+                return filename;
+            }
             // The replaceChar should be either a space
             // or an underscore.
             var replaceChar = "_";
@@ -959,6 +962,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
             // Show me the new file name.
           return Filename;
         }
+        scope.sanitizeFileName = sanitizeFileName;
 
         /* draws a node
         param node : JSON object returned from request to DB

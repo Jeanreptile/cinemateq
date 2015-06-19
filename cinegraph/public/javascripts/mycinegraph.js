@@ -308,6 +308,19 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
                 blendIntermediateComposer, blendComposer, gradientComposer, testComposer;
             var gradientBackground;
 
+						var idAnimationFrame = 0;
+
+						scope.$on('$destroy', function(){
+								cancelAnimationFrame(idAnimationFrame);
+								scene = null;
+								linesScene = null;
+								cameraControls = null;
+								renderer = null;
+								raycaster = null;
+								mouse = null;
+								//alert('Directive is destroyed ' + idAnimationFrame + ' !');
+						})
+
             function init() {
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
@@ -355,18 +368,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
                 linesScene.add(camera);
 
 
-								var idAnimationFrame = 0;
 
-								scope.$on('$destroy', function(){
-		                cancelAnimationFrame(idAnimationFrame);
-		                scene = null;
-		                linesScene = null;
-		                cameraControls = null;
-		                renderer = null;
-		                raycaster = null;
-		                mouse = null;
-		                alert('Directive is destroyed !' + idAnimationFrame);
-		            })
 
                 // camera
                 camera.position.x = 0;
@@ -460,11 +462,11 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
                 $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
                     scope.currentCinegraph = cinegraph;
                     var cinegraphNodes = JSON.parse(cinegraph.nodes);
-                    
+
                     var spriteArray = [];
 
                     displayCinegraphNodes(cinegraphNodes, 0, spriteArray);
-                    
+
                 });
 
                 // listeners
@@ -493,6 +495,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
                     }
                 });
                 getNode(nodeToDraw, relatedNodePosition, draw, false);
+								nextCinegraph(cinegraphNodes, i+1, spriteArray);
             }
             // relationship
             else {
@@ -610,7 +613,6 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
         // animation loop
         function animate() {
 						idAnimationFrame = requestAnimationFrame(animate);
-            requestAnimationFrame(animate);
             TWEEN.update();
             cameraControls.update();
             render();
@@ -905,7 +907,7 @@ cinegraphApp.directive("mycinegraph", [ '$http', '$location', function($http, $l
                     }
                 });
                 if (!found) {
-                    rels.push(node);                    
+                    rels.push(node);
                     scope.suggestedNodes.push(relationships[index]);
                 }
                 count.val++;

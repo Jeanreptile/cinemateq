@@ -19,7 +19,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
               templateUrl: '/partials/restricted'
             })
             .when('/mycinegraph', {
-              templateUrl: '/partials/mycinegraph', controller: 'cinegraphController',
+              templateUrl: '/partials/mycinegraph', controller: 'MyCinegraphCtrl',
               access: { requiredAuthentication: true }
             })
             .when('/cinegraph/:id', {
@@ -497,7 +497,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 renderer = null;
                 raycaster = null;
                 mouse = null;
-                alert('Directive is destroyed !' + idAnimationFrame);
+                document.body.removeChild(stats.domElement);
+                document.body.removeChild(rendererStats.domElement)
+                stats = null;
+                rendererStats = null;
+                //alert('Directive is destroyed ' + idAnimationFrame + ' !');
             })
 
             function init() {

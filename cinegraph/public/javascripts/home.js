@@ -467,8 +467,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             colors['DESIGNED_COSTUMES'] = '#E56371';
             colors['DESIGNED_PRODUCTION'] = '#3DDCDE';
             var composerBackground, composerLines, composer, gradientComposer, blendComposer;
-            var PI2 = 2 * Math.PI;
-            var blurAmount = 25;
+            const PI2 = 2 * Math.PI;
+            const blurAmount = 25;
+            var gradients = [];
+            var blackCircle;
 
             // monitoring
             var rendererStats = new THREEx.RendererStats();
@@ -539,6 +541,14 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 var gradientCam = new THREE.Camera();
                 gradientScene.add(gradientCam);
                 gradientScene.add(gradientBackground);
+                blackCircle = document.createElement('canvas');
+                blackCircle.width = 256;
+                blackCircle.height = 256;
+                var blackCircleCtx = blackCircle.getContext('2d');
+                blackCircleCtx.beginPath();
+                blackCircleCtx.arc(128, 128, 128, 0, PI2, false);
+                blackCircleCtx.fillStyle = 'black';
+                blackCircleCtx.fill();
 
                 // lines scene
                 linesCamera = new THREE.Camera();
@@ -592,9 +602,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * 1, viewHeight * 1, parameters);
                 var renderLinesScene = new THREE.RenderPass(linesScene, camera);
                 var lineShader = new THREE.ShaderPass(THREE.ThickLineShader);
+                var lineThickness = 8;
                 lineShader.uniforms.totalWidth.value = viewWidth * 1;
                 lineShader.uniforms.totalHeight.value = viewHeight * 1;
-                lineShader.uniforms['edgeWidth'].value = 8 * 1;
+                lineShader.uniforms['edgeWidth'].value = lineThickness * 1;
                 composerLines = new THREE.EffectComposer(renderer, renderLinesTarget);
                 composerLines.addPass(renderLinesScene);
                 composerLines.addPass(lineShader);
@@ -607,7 +618,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 composer.addPass(effectCopy);
                 //effectCopy.renderToScreen = true;
                 //gradient
-                var renderTargetGradient = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
+                var renderTargetGradient = new THREE.WebGLRenderTarget(viewWidth, viewHeight, parameters);
                 var renderGradientScene = new THREE.RenderPass(gradientScene, gradientCam);
                 var effectCopyGradient = new THREE.ShaderPass(THREE.CopyShader);
                 gradientComposer = new THREE.EffectComposer(renderer, renderTargetGradient);
@@ -676,7 +687,29 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 camDir.x += 0.00001;
             crossProduct.crossVectors(camDir, camDir2).setLength(4);
             posOffset.copy(spritePosition).add(crossProduct);
-            return (toScreenPosition(posOffset).distanceTo(toScreenPosition(spritePosition)) - 0.5) * spriteScale / 8;
+            return (toScreenPosition(posOffset).distanceTo(toScreenPosition(spritePosition))) * spriteScale / 8;
+        }
+
+        function generateGradient(c) {
+            var gradientCanv = document.createElement('canvas');
+            gradientCanv.width = 64;
+            gradientCanv.height = 64;
+            var hw = gradientCanv.width / 2;
+            var gradientCtx = gradientCanv.getContext('2d');
+            gradientCtx.shadowOffsetX = 1000;
+            gradientCtx.shadowOffsetY = 1000;
+            gradientCtx.shadowBlur = hw / 3.2;
+            gradientCtx.fillStyle = c;
+            gradientCtx.shadowColor = c;
+            gradientCtx.beginPath();
+            gradientCtx.arc(
+                hw - gradientCtx.shadowOffsetX,
+                hw - gradientCtx.shadowOffsetY,
+                hw - gradientCtx.shadowBlur * 2,
+                0, PI2, true
+            );
+            gradientCtx.fill();
+            gradients[c] = gradientCanv;
         }
 
         function getGradientLayer() {
@@ -684,9 +717,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             canv.width = viewWidth;
             canv.height = viewHeight;
             var ctx = canv.getContext('2d');
-            ctx.shadowOffsetX = 1000;
-            ctx.shadowOffsetY = 1000;
-            ctx.shadowBlur = 40;
             // ordering objects by distance from camera
             var orderedScene = [];
             for (var i = scene.children.length - 1; i >= 0; i--)
@@ -708,15 +738,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 // calculating circle radius
                 var pos = toScreenPosition(sprite.position);
                 var circleRadius = getSpriteRadius(sprite.position, sprite.scale.x);
-                var innerRadius = Math.abs(circleRadius * 7 / 8 - 0.75);
-                // saving context
-                ctx.save();
-                // clipping to circle
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, circleRadius, 0, PI2, false);
-                ctx.clip();
-                ctx.fillStyle='rgba(255,255,255,0.1)';
-                ctx.fill();
+                if (circleRadius <= 2)
+                    continue;
+                var innerRadius = Math.abs(circleRadius * 7 / 8);
+                var spriteCanv = document.createElement('canvas');
+                spriteCanv.width = circleRadius * 2 + 1;
+                spriteCanv.height = spriteCanv.width;
+                var spriteCtx = spriteCanv.getContext('2d');
+                // outer circle
+                spriteCtx.beginPath();
+                spriteCtx.arc(circleRadius, circleRadius, circleRadius, 0, PI2, false);
+                spriteCtx.fillStyle='rgba(255,255,255,1)';
+                spriteCtx.fill();
                 // getting lines related to node
                 for (var j = linesScene.children.length - 1; j >= 0; j--)
                 {
@@ -737,23 +770,22 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     // drawing radial gradient
                     var radgradPos = endPos.sub(startPos).setLength(circleRadius);
                     var c = 'rgba(' + color.r * 255 + ',' + color.g * 255 + ',' + color.b * 255 +',1)';
-                    ctx.fillStyle = c;
-                    ctx.shadowColor = c;
-                    ctx.beginPath();
-                    ctx.arc(
-                        startPos.x + radgradPos.x - ctx.shadowOffsetX,
-                        startPos.y + radgradPos.y - ctx.shadowOffsetY,
-                        circleRadius, 0, PI2, true
+                    if (gradients[c] == undefined)
+                        generateGradient(c);
+                    spriteCtx.globalCompositeOperation = 'source-atop';
+                    var r = circleRadius * 4.5;
+                    spriteCtx.drawImage(
+                        gradients[c],
+                        circleRadius + radgradPos.x - r / 2,
+                        circleRadius + radgradPos.y - r / 2,
+                        r, r
                     );
-                    ctx.fill();
                 }
-                // clearing inner circle
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, innerRadius, 0, PI2, false);
-                ctx.clip();
-                ctx.clearRect(pos.x - innerRadius, pos.y - innerRadius, innerRadius * 2, innerRadius * 2);
-                // restoring context
-                ctx.restore();
+                // inner circle mask
+                var r = innerRadius - 1.5;
+                var r2 = r * 2;
+                spriteCtx.drawImage(blackCircle, circleRadius - r, circleRadius - r, r2, r2);
+                ctx.drawImage(spriteCanv, pos.x - circleRadius, pos.y - circleRadius, spriteCanv.width, spriteCanv.height);
             }
             return canv;
         }

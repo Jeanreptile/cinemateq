@@ -59,6 +59,9 @@ THREE.BlendShader = {
             "vec4 t2 = texture2D( tAdd, vUv );",
             "vec4 t3 = texture2D( tAdd2, vUv );",
             "vec4 t4 = texture2D( tAdd3, vUv );",
+            "float f = 0.76;",
+            "if (t4.a == 1.0 && (t4.r + t4.g + t4.b) <= f)",
+            "    t4.a = (t4.r + t4.g + t4.b) / 3.0;",
             "gl_FragColor = ((t1 * (1.0 - t2.a) + t2 * t2.a) * (1.0 - t3.a) + t3 * t3.a) * (1.0 - t4.a) + t4 * t4.a;",
         "}"
     ].join("\n")

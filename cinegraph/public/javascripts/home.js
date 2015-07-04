@@ -1060,11 +1060,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             sprite.scale.set(0, 0, 0);
             scene.add(sprite);
             // animating scale
-            new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 500).easing(TWEEN.Easing.Linear.None).start();
+            new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 200).delay(800).easing(TWEEN.Easing.Linear.None).start();
             // animating position
             if (startNodeSprite !== undefined) {
-                new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 500)
-                    .easing(TWEEN.Easing.Linear.None)
+                new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 2000)
+                    .easing(TWEEN.Easing.Elastic.InOut)
                     .onComplete(function (){
                         // drawing line
                         var lineGeom = new THREE.Geometry();

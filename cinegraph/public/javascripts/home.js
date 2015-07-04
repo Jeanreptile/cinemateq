@@ -1138,10 +1138,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             context.globalAlpha = opacity;
             drawImageProp(context, img, borderThickness, borderThickness, canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
             context.fillStyle = "#ffffff";
-            context.font = canvas.width / 9 + "px Moon Bold";
+            context.font = "bold " + (canvas.width / 9) + "px Arial";
             context.textAlign = "center";
             context.globalAlpha = (1 / (0.6 - 1)) * (opacity - 1);
-            wrapText(context, text, halfWidth, canvas.height / 2.5, canvas.width -  4 * borderThickness, canvas.height / 6);
+            wrapText(context, text.toUpperCase(), halfWidth, canvas.height / 2.5, canvas.width -  5 * borderThickness, canvas.height / 6);
             context.globalAlpha = 1;
         }
 
@@ -1152,11 +1152,18 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
             var words = text.split(' ');
             var line = '';
+            var lineCount = 0;
             for (var n = 0; n < words.length; n++) {
                 var testLine = line + words[n] + ' ';
                 var metrics = context.measureText(testLine);
                 var testWidth = metrics.width;
                 if (testWidth > maxWidth && n > 0) {
+                    lineCount++;
+                    if (lineCount == 3)
+                    {
+                        context.fillText(line.slice(0, -1) + "...", x, y, maxWidth);
+                        return;
+                    }
                     context.fillText(line, x, y, maxWidth);
                     line = words[n] + ' ';
                     y += lineHeight;

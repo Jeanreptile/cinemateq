@@ -546,11 +546,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 gradientScene.add(gradientCam);
                 gradientScene.add(gradientBackground);
                 blackCircle = document.createElement('canvas');
-                blackCircle.width = 256;
-                blackCircle.height = 256;
+                blackCircle.width = 128;
+                blackCircle.height = blackCircle.width;
+                var blackCircleHalf = blackCircle.width / 2;
                 var blackCircleCtx = blackCircle.getContext('2d');
                 blackCircleCtx.beginPath();
-                blackCircleCtx.arc(128, 128, 128, 0, PI2, false);
+                blackCircleCtx.arc(blackCircleHalf, blackCircleHalf, blackCircleHalf, 0, PI2, false);
                 blackCircleCtx.fillStyle = 'black';
                 blackCircleCtx.fill();
 
@@ -647,7 +648,11 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 $('#graph').mousedown(onMouseDown);
                 $('#graph').mouseup(onMouseUp);
                 document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
+                cameraControls.addEventListener('change', function() {renderNeedsUpdate = true;});
         }
+
+        var renderNeedsUpdate = false;
+        var tweenCount = 0;
 
         // animation loop
         function animate() {
@@ -656,7 +661,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             rendererStats.update(renderer);
             TWEEN.update();
             cameraControls.update();
-            render();
+            var oldTweenCount = tweenCount;
+            tweenCount = TWEEN.getAll().length;
+            if (renderNeedsUpdate || tweenCount > 0 || oldTweenCount > 0 && tweenCount == 0)
+            {
+                render();
+                renderNeedsUpdate = false;
+            }
             stats.end();
         }
 
@@ -749,11 +760,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 spriteCanv.width = circleRadius * 2 + 1;
                 spriteCanv.height = spriteCanv.width;
                 var spriteCtx = spriteCanv.getContext('2d');
-                // outer circle
-                spriteCtx.beginPath();
-                spriteCtx.arc(circleRadius, circleRadius, circleRadius, 0, PI2, false);
-                spriteCtx.fillStyle='rgba(255,255,255,1)';
-                spriteCtx.fill();
+                spriteCtx.fillStyle='rgba(255,255,255,0.1)';
+                spriteCtx.fillRect(0,0,spriteCanv.width,spriteCanv.height);
                 // getting lines related to node
                 for (var j = linesScene.children.length - 1; j >= 0; j--)
                 {
@@ -776,7 +784,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     var c = 'rgba(' + color.r * 255 + ',' + color.g * 255 + ',' + color.b * 255 +',1)';
                     if (gradients[c] == undefined)
                         generateGradient(c);
-                    spriteCtx.globalCompositeOperation = 'source-atop';
                     var r = circleRadius * 4.5;
                     spriteCtx.drawImage(
                         gradients[c],
@@ -785,11 +792,17 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         r, r
                     );
                 }
-                // inner circle mask
-                var r = innerRadius - 1.5;
-                var r2 = r * 2;
-                spriteCtx.drawImage(blackCircle, circleRadius - r, circleRadius - r, r2, r2);
+                // outer circle mask
+                spriteCtx.globalCompositeOperation = 'destination-in';
+                spriteCtx.drawImage(blackCircle, 0, 0, circleRadius * 2, circleRadius * 2);
+                // drawing sprite
+                ctx.globalCompositeOperation = 'source-over';
                 ctx.drawImage(spriteCanv, pos.x - circleRadius, pos.y - circleRadius, spriteCanv.width, spriteCanv.height);
+                // inner circle mask
+                var r = innerRadius - 0.75;
+                var r2 = r * 2;
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.drawImage(blackCircle, pos.x - r, pos.y - r, r2, r2);
             }
             return canv;
         }

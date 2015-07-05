@@ -129,7 +129,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $scope.logout = function(){
       AuthService.logout();
     }
-    //ModelDataService.getData().async().then(function(d) { $scope.persons = d.data; });
+
     $scope.currentNode = {};
     var selectedNodeId = getParameterByName('id');
     if (selectedNodeId == undefined) {
@@ -436,7 +436,7 @@ cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, cu
 	};
 });
 
-cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(ModelDataService, $http) {
+cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $location) {
 	return {
 		link: function link(scope, element, attrs) {
 			// global vars
@@ -640,8 +640,19 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 blendComposer.addPass(blendPass);
                 blendPass.renderToScreen = true;
 
-                getNode(scope.currentNode.id, nodePosition, draw);
-                updateBackground(scope.currentNode);
+                if (scope.cinegraphId != undefined) {
+                    $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
+                        scope.currentCinegraph = cinegraph;
+                        var cinegraphNodes = JSON.parse(cinegraph.nodes);
+                        var spriteArray = [];
+                        displayCinegraphNodes(cinegraphNodes, 0, spriteArray);
+                    });
+                }
+                else {
+                    getNode(scope.currentNode.id, nodePosition, draw);
+                    updateBackground(scope.currentNode);
+                }
+
 
                 // listeners
                 document.getElementById('graph').addEventListener('change', render, false);
@@ -649,6 +660,128 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 $('#graph').mouseup(onMouseUp);
                 document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
                 cameraControls.addEventListener('change', function() {renderNeedsUpdate = true;});
+        }
+
+        function displayCinegraphNodes(cinegraphNodes, i, spriteArray) {
+            var slice = 2 * Math.PI / cinegraphNodes.length;
+            var currentCinegraphNodes = cinegraphNodes[i];
+            var angle = slice * i;
+            var relatedNodePosition = new THREE.Vector3();
+            relatedNodePosition.x = nodePosition.x + 12 * Math.cos(angle);
+            relatedNodePosition.y = nodePosition.y + 12 * Math.sin(angle);
+            var firstNode;
+            // node alone (without relationships)
+            if (cinegraphNodes[i].id == null) {
+                var nodeToDraw = cinegraphNodes[i].start ? cinegraphNodes[i].start : cinegraphNodes[i].end;
+                $http.get('/api/common/' + nodeToDraw).success(function(node) {
+                    if (i == 0) {
+                        scope.currentNode = node;
+                        updateBackground(scope.currentNode);
+                        scope.updateTypesAndLimits();
+                        scope.updateSelectedJobs();
+                    }
+                });
+                getNodeCinegraphMode(nodeToDraw, relatedNodePosition, drawCinegraphMode, false);
+                                nextCinegraph(cinegraphNodes, i+1, spriteArray);
+            }
+            // relationship
+            else {
+                var spriteStart;
+                var spriteStartFound = false;
+                var count = { val: 0 };
+                $.each(spriteArray, function(j, obj) {
+                    if (currentCinegraphNodes.start == obj.nodeId) {
+                        spriteStartFound = true;
+                        spriteStart = obj.sprite;
+                        return false;
+                    }
+                });
+                if (spriteStartFound == false) {
+                    //console.log("start not found");
+                    drawStartNotFound(cinegraphNodes, i, relatedNodePosition, spriteArray, drawEnd, nextCinegraph);
+                }
+                else {
+                    //console.log("start found, spriteStart: " + JSON.stringify(spriteStart));
+                    drawEnd(cinegraphNodes, i, relatedNodePosition, spriteStart, spriteArray, nextCinegraph);
+                }
+            }
+        }
+
+        function nextCinegraph(cinegraphNodes, index, spriteArray) {
+            if (index < cinegraphNodes.length) {
+                //console.log("index: " + index);
+                displayCinegraphNodes(cinegraphNodes, index, spriteArray);
+            }
+        }
+
+        function drawEnd(cinegraphNodes, i, relatedNodePosition, spriteStart, spriteArray, callback) {
+            var spriteEnd, spriteEndFound = false;
+            $.each(spriteArray, function(j, obj) {
+                if (cinegraphNodes[i].end == obj.nodeId) {
+                    spriteEndFound = true;
+                    spriteEnd = obj.sprite;
+                }
+            });
+            if (spriteEndFound == false) {
+                //console.log("end not found, index: " + i);
+                $http.get('/api/common/' + cinegraphNodes[i].end).success(function(endNode) {
+                    var tmp = relatedNodePosition.clone();
+                    var incrementPosition = tmp.add(new THREE.Vector3(10,10,0));
+                    //console.log("spriteStart: " + JSON.stringify(spriteStart));
+                    spriteEnd = drawNode(endNode, incrementPosition, spriteStart.sprite, cinegraphNodes[i].type);
+                    var oldlength = spriteArray.length;
+                    spriteArray.push({"nodeId": cinegraphNodes[i].end, "sprite": spriteEnd});
+                    if (spriteArray.length == oldlength + 1) {
+                        //console.log("spriteArray: " + JSON.stringify(spriteArray));
+                        callback(cinegraphNodes, i + 1, spriteArray);
+                    }
+                });
+            }
+            else {
+                //console.log("end found! spriteEnd: " + JSON.stringify(spriteEnd));
+                $http.get('/api/common/' + cinegraphNodes[i].end).success(function(endNode) {
+                    // drawing line
+                    var lineGeom = new THREE.Geometry();
+                    lineGeom.vertices.push(spriteEnd.sprite.position, spriteStart.sprite.position);
+                    var startColor, endColor;
+                    var type = cinegraphNodes[i].type
+                    if (endNode.name) {
+                        startColor = colors[type];
+                        endColor = orangeColor;
+                    } else {
+                        startColor = orangeColor;
+                        endColor = colors[type];
+                    }
+                    lineGeom.colors.push(new THREE.Color(startColor));
+                    lineGeom.colors.push(new THREE.Color(endColor));
+                    var lineMat = new THREE.LineBasicMaterial({
+                        linewidth: 1,
+                        vertexColors: true
+                    });
+                    line = new THREE.Line(lineGeom, lineMat);
+                    line.endNodeId = spriteEnd.sprite._id;
+                    line.startNodeId = spriteStart.sprite._id;
+                    linesScene.add(line);
+                    callback(cinegraphNodes, i + 1, spriteArray);
+                });
+            }
+        }
+
+        function drawStartNotFound(cinegraphNodes, i, relatedNodePosition, spriteArray, drawEnd, callback) {
+            $http.get('/api/common/' + cinegraphNodes[i].start).success(function(startNode) {
+                if (i == 0) {
+                    scope.currentNode = startNode;
+                    updateBackground(scope.currentNode);
+                    scope.updateTypesAndLimits();
+                    scope.updateSelectedJobs();
+                }
+                spriteStart = drawNode(startNode, relatedNodePosition, undefined, cinegraphNodes[i].type);
+                var oldlength = spriteArray.length;
+                spriteArray.push({"nodeId": cinegraphNodes[i].start, "sprite": spriteStart});
+                if (spriteArray.length == oldlength + 1) {
+                    drawEnd(cinegraphNodes, i, relatedNodePosition, spriteStart, spriteArray, callback);
+                }
+            });
         }
 
         var renderNeedsUpdate = false;
@@ -829,7 +962,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             {
                 var node = scene.children[i];
                 var index = -1;
-                $.each(scope.currentDisplayedNodes, function(j, obj) {
+                $.each(array, function(j, obj) {
                     var endpoint = obj.start;
                     if (scope.currentNode.type == "Person") {
                         endpoint = obj.end;
@@ -915,6 +1048,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             });
         }
 
+        function getNodeCinegraphMode(id, nodePosition, callback, shouldDrawRelatedNodes) {
+            $http.get('/api/common/' + id).success(function(node) {
+                callback(node, nodePosition, shouldDrawRelatedNodes);
+            });
+        }
+
         /* callback called when getting a node from the API */
         function draw(node, nodePosition) {
             var nodeSprite;
@@ -929,6 +1068,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 nodeSprite = drawNode(node, nodePosition).sprite;
             }
             getRelatedNodes(node, nodeSprite, scope.typesAndLimits, drawRelatedNodes);
+        }
+
+        function drawCinegraphMode(node, nodePosition, shouldDrawRelatedNodes) {
+            var nodeSprite = drawNode(node, nodePosition);
+            if (shouldDrawRelatedNodes) {
+                getRelatedNodes(node, nodeSprite.sprite, scope.typesAndLimits, drawRelatedNodes);
+            }
         }
 
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
@@ -950,14 +1096,14 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 }
         }
 
-        function pushRelations(index, count, direction, relationships, rels, callback) {
+        function pushRelations(array, index, count, direction, relationships, rels, callback) {
             var endpoint = relationships[index].start;
             if (direction == "out") {
                 endpoint = relationships[index].end;
             }
             $http.get('/api/common/' + endpoint).success(function(node) {
                 var found = false;
-                $.each(scope.currentDisplayedNodes, function(j, obj) {
+                $.each(array, function(j, obj) {
                     var endpoint2 = obj.start;
                     if (direction == "out") {
                         endpoint2 = obj.end;
@@ -969,7 +1115,10 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 });
                 if (!found) {
                     rels.push(node);
-                    scope.currentDisplayedNodes.push(relationships[index]);
+                    if (scope.cinegraphId != undefined)
+                        scope.suggestedNodes.push(relationships[index]);
+                    else
+                        scope.currentDisplayedNodes.push(relationships[index]);
                 }
                 count.val++;
                 if (count.val == relationships.length) {
@@ -987,10 +1136,20 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 .success(function(relationships) {
                     if (relationships.length > 0) {
                         var rels = [];
+                        if (scope.suggestedNodes == undefined || scope.suggestedNodes.length == 0) {
+                            scope.suggestedNodes = [];
+                        }
                         var count = { val: 0 };
                         for (var i = 0; i < relationships.length; i++) {
                             var found = false;
-                            $.each(scope.currentDisplayedNodes, function(j, obj) {
+                            var array = null;
+                            if (scope.cinegraphId != undefined) {
+                                array = JSON.parse(scope.currentCinegraph.nodes);
+                            }
+                            else {
+                                array = scope.currentDisplayedNodes;
+                            }
+                            $.each(array, function(j, obj) {
                                 if (relationships[i].id === obj.id) {
                                     found = true;
                                     count.val++;
@@ -998,7 +1157,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                                 }
                             });
                             if (found == false) {
-                                pushRelations(i, count, direction, relationships, rels, function(relsResult) {
+                                pushRelations(array, i, count, direction, relationships, rels, function(relsResult) {
                                     callback(startNodeSprite, relsResult, index, limit, type);
                                 });
                             }
@@ -1062,8 +1221,35 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             // animating scale
             new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 200).delay(800).easing(TWEEN.Easing.Linear.None).start();
             // animating position
+            if (scope.cinegraphId != undefined) {
+                sprite.position.copy(position);
+            }
             if (startNodeSprite !== undefined) {
-                new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 2000)
+                if (scope.cinegraphId != undefined) {
+                    // drawing line
+                        var lineGeom = new THREE.Geometry();
+                        lineGeom.vertices.push(sprite.position, startNodeSprite.position);
+                        var startColor, endColor;
+                        if (node.name) {
+                            startColor = colors[type];
+                            endColor = orangeColor;
+                        } else {
+                            startColor = orangeColor;
+                            endColor = colors[type];
+                        }
+                        lineGeom.colors.push(new THREE.Color(startColor));
+                        lineGeom.colors.push(new THREE.Color(endColor));
+                        var lineMat = new THREE.LineBasicMaterial({
+                            linewidth: 1,
+                            vertexColors: true
+                        });
+                        line = new THREE.Line(lineGeom, lineMat);
+                        line.endNodeId = sprite._id;
+                        line.startNodeId = startNodeSprite._id;
+                        linesScene.add(line);
+                }
+                else {
+                    new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 2000)
                     .easing(TWEEN.Easing.Elastic.InOut)
                     .onComplete(function (){
                         // drawing line
@@ -1088,6 +1274,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                         line.startNodeId = startNodeSprite._id;
                         linesScene.add(line);
                     }).start();
+                }
+                
             }
             return {sprite: sprite};
         }
@@ -1256,10 +1444,23 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         function onMouseDown(event) {
-            setMousePosition(event);
-            mouseClickStart.x = mouse.x;
-            mouseClickStart.y = mouse.y;
-            mouseIsDown = true;
+            if (scope.cinegraphId != undefined) {
+                if (event.which == 1) {
+                    setMousePosition(event);
+                    mouseClickStart.x = mouse.x;
+                    mouseClickStart.y = mouse.y;
+                    mouseIsDown = true;
+                }
+                else if (event.which == 3) {
+                    onRightClick(event);
+                }
+            }
+            else {
+                setMousePosition(event);
+                mouseClickStart.x = mouse.x;
+                mouseClickStart.y = mouse.y;
+                mouseIsDown = true;
+            }
         }
 
         function onMouseUp(event) {
@@ -1273,6 +1474,29 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 return;
             var id = intersection.object._id;
             if (id != null) {
+                if (scope.cinegraphId != undefined) {
+                    var alreadySuggestedNodes = false;
+                    $.each(scope.suggestedNodes, function (i, obj) {
+                        if (id == obj.start || id == obj.end) {
+                            alreadySuggestedNodes = true;
+                            return false;
+                        }
+                    });
+                    if (alreadySuggestedNodes) {
+                        return;
+                    }
+                    else {
+                        if (scope.suggestedNodes.length > 0) {
+                            for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
+                                var point = scope.suggestedNodes[i].start;
+                                if (scope.currentNode.type == 'Person') {
+                                    point = scope.suggestedNodes[i].end;
+                                }
+                                removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
+                            };
+                        }
+                    }
+                }
 
                 // animating camera
                 var moveX = intersection.object.position.x;
@@ -1304,7 +1528,12 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             updateBackground(node);
                         });
                         nodePosition = intersection.object.position;
-                        getNode(id, nodePosition, draw);
+                        if (scope.cinegraphId != undefined) {
+                            getNodeCinegraphMode(id, nodePosition, draw, true);
+                        }
+                        else {
+                            getNode(id, nodePosition, draw);
+                        }
                   })
                   .start();
             }
@@ -1346,6 +1575,62 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                             background.bgTexture.needsUpdate = true;
                         }).start();
                 };
+            }
+        }
+
+        function onRightClick(event) {
+            setMousePosition(event);
+
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(scene.children);
+            // removing unwanted objects
+            while (intersects.length > 0 && intersects[0].object.ignoreClick == true)
+                intersects = intersects.slice(1);
+            var intersection = intersects[0];
+            if (intersection == undefined) {
+                return;
+            }
+            var id = intersection.object._id;
+            if (id != null) {
+                var relationship = null;
+                $.each(scope.suggestedNodes, function(i, obj) {
+                    if (id == obj.start || id == obj.end) {
+                        relationship = obj;
+                        return false;
+                    }
+                });
+                if (relationship != null) {
+                    var nodeToRemoveIndex = null;
+                    var cinegraphNodes = JSON.parse(scope.currentCinegraph.nodes);
+                    $.each(cinegraphNodes, function(i, obj) {
+                        if (obj.id == null && (relationship.start == obj.start || relationship.end == obj.end)) {
+                            nodeToRemoveIndex = i;
+                            return false;
+                        }
+                    });
+                    if (nodeToRemoveIndex != null) {
+                        cinegraphNodes.splice(nodeToRemoveIndex, 1);
+                    }
+                    cinegraphNodes.push(relationship);
+                    $http.put('/api/mycinegraph/' + scope.currentCinegraph.id,
+                        { titleCinegraph: scope.currentCinegraph.title,
+                            cinegraphNodes: JSON.stringify(cinegraphNodes) }).success(function(res) {
+                                for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
+                                    if (scope.suggestedNodes[i].id != relationship.id) {
+                                        var point = scope.suggestedNodes[i].start;
+                                        if (scope.currentNode.type == 'Person') {
+                                            point = scope.suggestedNodes[i].end;
+                                        }
+                                        removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
+                                    }
+                                };
+                                scope.suggestedNodes = [];
+                                $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
+                                    scope.currentCinegraph = cinegraph;
+                                });
+                                $location.path('/cinegraph/' + scope.currentCinegraph.id);
+                    });
+                }
             }
         }
 

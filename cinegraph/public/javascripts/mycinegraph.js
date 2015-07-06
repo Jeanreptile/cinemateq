@@ -21,30 +21,33 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 
     $scope.suggestedNodes = [];
 
+    $scope.currentNode = {};
+
     $scope.updateTypesAndLimits = function() {
+        var craziness = 5;
         if ($scope.currentNode.type == "Person")
         {
-            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
-                                    { type: 'PRODUCED', limit: 2},
-                                    { type: 'DIRECTED', limit: 2},
-                                    { type: 'COMPOSED_MUSIC', limit: 1},
-                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                                    { type: 'WROTE', limit: 5},
-                                    { type: 'EDITED', limit: 3},
-                                    { type: 'DESIGNED_PRODUCTION', limit: 3},
-                                    { type: 'DESIGNED_COSTUMES', limit: 2} ];
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},
+                                    { type: 'PRODUCED', limit: 2 * craziness},
+                                    { type: 'DIRECTED', limit: 2 * craziness},
+                                    { type: 'COMPOSED_MUSIC', limit: 1 * craziness},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
+                                    { type: 'WROTE', limit: 5 * craziness},
+                                    { type: 'EDITED', limit: 3 * craziness},
+                                    { type: 'DESIGNED_PRODUCTION', limit: 3 * craziness},
+                                    { type: 'DESIGNED_COSTUMES', limit: 2 * craziness} ];
         }
         else
         {
-            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
-                                    { type: 'DIRECTED', limit: 1},
-                                    { type: 'PRODUCED', limit: 1},
-                                    { type: 'COMPOSED_MUSIC', limit: 1},
-                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                                    { type: 'WROTE', limit: 1},
-                                    { type: 'EDITED', limit: 1},
-                                    { type: 'DESIGNED_PRODUCTION', limit: 1},
-                                    { type: 'DESIGNED_COSTUMES', limit: 1} ];
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4 * craziness},
+                                    { type: 'DIRECTED', limit: 1 * craziness},
+                                    { type: 'PRODUCED', limit: 1 * craziness},
+                                    { type: 'COMPOSED_MUSIC', limit: 1 * craziness},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
+                                    { type: 'WROTE', limit: 1 * craziness},
+                                    { type: 'EDITED', limit: 1 * craziness},
+                                    { type: 'DESIGNED_PRODUCTION', limit: 1 * craziness},
+                                    { type: 'DESIGNED_COSTUMES', limit: 1 * craziness} ];
         }
     };
 

@@ -1,0 +1,129 @@
+aside#sidebar.aside-md.bg-black.hide
+	section.vbox.animated.fadeInRight
+		section.scrollable
+			.panel.bg-black.filter-menu
+				.panel-heading.b-b.b-dark
+					i.fa.fa-filter.m-r-xs
+					strong
+						|Filter by job
+				.panel-body
+					form.form-horizontal
+						.form-group
+							label.control-label.col-sm-6 Actor
+							.col-sm-6
+								label.switch.actor
+									input(type='checkbox', ng-model="selectedJobs.actor", ng-change="filterByActor()")
+									span
+						.form-group
+							label.control-label.col-sm-6 Producer
+							.col-sm-6
+								label.switch.producer
+									input(type='checkbox', ng-model="selectedJobs.producer", ng-change="filterByProducer()")
+									span
+						.form-group
+							label.control-label.col-sm-6 Director
+							.col-sm-6
+								label.switch.director
+									input(type='checkbox', ng-model="selectedJobs.director",  ng-change="filterByDirector()")
+									span
+						.form-group
+							label.control-label.col-sm-6 Writer
+							.col-sm-6
+								label.switch.writer
+									input(type='checkbox', ng-model="selectedJobs.writer", ng-change="filterByWriter()")
+									span
+						.form-group
+							label.control-label.col-sm-6 Editor
+							.col-sm-6
+								label.switch.editor
+									input(type='checkbox', ng-model="selectedJobs.editor", ng-change="filterByEditor()")
+									span
+						.form-group
+							label.control-label.col-sm-6 Director of photography
+							.col-sm-6
+								label.switch.dir-photography
+									input(type='checkbox', ng-model="selectedJobs.dirphotography", ng-change="filterByDirPhotography()")
+									span
+						.form-group
+							label.control-label.col-sm-6 Music composer
+							.col-sm-6
+								label.switch.music-composer
+									input(type='checkbox', ng-model="selectedJobs.musiccomposer", ng-change="filterByMusicComposer()")
+									span
+						.form-group
+							label.control-label.col-sm-6 Costume designer
+							.col-sm-6
+								label.switch.cos-designer
+									input(type='checkbox', ng-model="selectedJobs.cosdesigner", ng-change="filterByCosDesigner()")
+									span
+						.form-group
+							label.control-label.col-sm-6 Production designer
+							.col-sm-6
+								label.switch.prod-designer
+									input(type='checkbox', ng-model="selectedJobs.proddesigner", ng-change="filterByProdDesigner()")
+									span
+				.panel-heading.b-b.b-dark
+					i.fa.fa-filter.m-r-xs
+					strong
+						|Filter by genre
+				.panel-body
+					.checkbox.i-checks
+						label
+							input(type='checkbox', checked='', value='Drama')
+							i
+							| Drama
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Comedy')
+							i
+							| Comedy
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Romance')
+							i
+							| Romance
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Fantasy')
+							i
+							| Fantasy
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Thriller')
+							i
+							| Thriller
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Sci-Fi')
+							i
+							| Sci-Fi
+					.checkbox.i-checks
+						label
+							input(type='checkbox', checked='', value='Horror')
+							i
+							| Horror
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Documentary')
+							i
+							| Documentary
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Biography')
+							i
+							| Biography
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Adventure')
+							i
+							| Adventure
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='Musical')
+							i
+							| Musical
+					.checkbox.i-checks
+						label
+							input(type='checkbox', value='History')
+							i
+							| History

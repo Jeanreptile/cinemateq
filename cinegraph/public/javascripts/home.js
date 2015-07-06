@@ -136,7 +136,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
     $scope.updateTypesAndLimits = function() {
-        var craziness = 1;
+        var craziness = 10;
         if ($scope.currentNode.type == "Person")
         {
             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},
@@ -406,6 +406,19 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             }
         });
     };
+
+    $('input.rating').rating();
+
+    $(':radio').change(function() {
+      console.log("you rate movie " + selectedNodeId);
+      $http.post( "/api/user/rate", {movieId: selectedNodeId, noteLove : 5, noteObj: 3})
+        .success(function() {
+          alert( "second success" );
+        }).
+        error(function() {
+          alert( "error" );
+      });
+    });
 });
 
 cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, currentNode) {

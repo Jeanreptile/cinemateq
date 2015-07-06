@@ -109,6 +109,7 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
     request: function (config) {
       config.headers = config.headers || {};
       if ($window.localStorage.token) {
+        console.log('Beared putted in');
         config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
       }
       else

@@ -4,7 +4,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
     $locationProvider.html5Mode(true);
     $routeProvider
         .when('/', {
-          templateUrl: 'partials/index', controller: 'cinegraphController'
+          templateUrl: 'partials/search', controller: 'TypeaheadCtrl'
         })
         .when('/signin', {
             templateUrl: 'partials/signin', controller: "UserCtrl"
@@ -29,8 +29,8 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
         .when('/error', {
           templateUrl: '/partials/error'
         })
-        .when('/search', {
-          templateUrl: '/partials/search', controller: 'TypeaheadCtrl'
+        .when('/index', {
+          templateUrl: '/partials/index', controller: 'cinegraphController'
         })
         .when('/unauthorized', {
           templateUrl: '/partials/unauthorized', controller: 'restrictedController'

@@ -12,6 +12,9 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
         .when('/register', {
             templateUrl: 'partials/register', controller: "UserCtrl"
         })
+        .when('/profile', {
+            templateUrl: 'partials/profile', controller: 'UserCtrl'
+        })
         .when('/home', {
             templateUrl: 'partials/home', controller: 'UserCtrl'
         })

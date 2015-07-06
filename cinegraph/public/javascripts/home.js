@@ -652,7 +652,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function displayNodeAtPosition(i, positions) {
             $http.get('/api/common/' + i).success(function(node) {
-                drawNode(node, positions[i]);
+                if (i == Object.keys(positions)[0]) {
+                    scope.currentNode = node;
+                    scope.updateTypesAndLimits();
+                    scope.updateSelectedJobs();
+                    updateBackground(node);
+                }
+                scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
             });
         }
 

@@ -79,22 +79,24 @@ cinegraphApp.service('ModelDataService', ['$http', function ($http) {
 cinegraphApp.filter('JobNameFormatter', function() {
     return function(input) {
         var out = "";
-        if (input == "PRODUCED")
+        if (input == "ACTED_IN")
+            out = "Actor";
+        else if (input == "PRODUCED")
             out = "Producer";
         else if (input == "DIRECTED")
-            out = "Director"
-        else if (input == "ACTED_IN")
-            out = "Actor"
-        else if (input == "DESIGNED_PRODUCTION")
-            out = "Production Designer"
+            out = "Director";
         else if (input == "WROTE")
-            out = "Writer"
-        else if (input == "DESIGNED_COSTUMES")
-            out = "Costume Designer"
+            out = "Writer";
         else if (input == "EDITED")
-            out = "Editor"
+            out = "Editor";
+        else if (input == "DIRECTED_PHOTOGRAPHY")
+            out = "Director of photography";
         else if (input == "COMPOSED_MUSIC")
-            out = "Music Composer"
+            out = "Music composer";
+        else if (input == "DESIGNED_COSTUMES")
+            out = "Costume designer";
+        else if (input == "DESIGNED_PRODUCTION")
+            out = "Production designer";
         else
             out = input;
         return out;
@@ -133,7 +135,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
     $scope.updateTypesAndLimits = function() {
-        var craziness = 10;
+        var craziness = 1;
         if ($scope.currentNode.type == "Person")
         {
             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},

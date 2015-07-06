@@ -136,29 +136,30 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
     $scope.updateTypesAndLimits = function() {
+        var craziness = 1;
         if ($scope.currentNode.type == "Person")
         {
-            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5},
-                                    { type: 'PRODUCED', limit: 2},
-                                    { type: 'DIRECTED', limit: 2},
-                                    { type: 'COMPOSED_MUSIC', limit: 1},
-                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                                    { type: 'WROTE', limit: 5},
-                                    { type: 'EDITED', limit: 3},
-                                    { type: 'DESIGNED_PRODUCTION', limit: 3},
-                                    { type: 'DESIGNED_COSTUMES', limit: 2} ];
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},
+                                    { type: 'PRODUCED', limit: 2 * craziness},
+                                    { type: 'DIRECTED', limit: 2 * craziness},
+                                    { type: 'COMPOSED_MUSIC', limit: 1 * craziness},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
+                                    { type: 'WROTE', limit: 5 * craziness},
+                                    { type: 'EDITED', limit: 3 * craziness},
+                                    { type: 'DESIGNED_PRODUCTION', limit: 3 * craziness},
+                                    { type: 'DESIGNED_COSTUMES', limit: 2 * craziness} ];
         }
         else
         {
-            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4},
-                                    { type: 'DIRECTED', limit: 1},
-                                    { type: 'PRODUCED', limit: 1},
-                                    { type: 'COMPOSED_MUSIC', limit: 1},
-                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1},
-                                    { type: 'WROTE', limit: 1},
-                                    { type: 'EDITED', limit: 1},
-                                    { type: 'DESIGNED_PRODUCTION', limit: 1},
-                                    { type: 'DESIGNED_COSTUMES', limit: 1} ];
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4 * craziness},
+                                    { type: 'DIRECTED', limit: 1 * craziness},
+                                    { type: 'PRODUCED', limit: 1 * craziness},
+                                    { type: 'COMPOSED_MUSIC', limit: 1 * craziness},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
+                                    { type: 'WROTE', limit: 1 * craziness},
+                                    { type: 'EDITED', limit: 1 * craziness},
+                                    { type: 'DESIGNED_PRODUCTION', limit: 1 * craziness},
+                                    { type: 'DESIGNED_COSTUMES', limit: 1 * craziness} ];
         }
     };
 
@@ -459,11 +460,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var composerBackground, composerLines, composer, gradientComposer, blendComposer;
             const PI2 = 2 * Math.PI;
             const blurAmount = 25;
+            const borderFraction = 24;
             var gradients = [];
             var blackCircle;
             var idAnimationFrame = 0;
             var renderNeedsUpdate = false;
             var tweenCount = 0;
+            var occupiedPositions = [];
 
             // monitoring panels
             var rendererStats = new THREEx.RendererStats();
@@ -593,13 +596,13 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 composerBackground.addPass(renderBackgroundScene);
                 composerBackground.addPass(effectCopyBackground);
                 // lines
-                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * 1, viewHeight * 1, parameters);
+                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * 2, viewHeight * 2, parameters);
                 var renderLinesScene = new THREE.RenderPass(linesScene, camera);
                 var lineShader = new THREE.ShaderPass(THREE.ThickLineShader);
-                var lineThickness = 8;
-                lineShader.uniforms.totalWidth.value = viewWidth * 1;
-                lineShader.uniforms.totalHeight.value = viewHeight * 1;
-                lineShader.uniforms['edgeWidth'].value = lineThickness * 1;
+                var lineThickness = 5;
+                lineShader.uniforms.totalWidth.value = viewWidth * 2;
+                lineShader.uniforms.totalHeight.value = viewHeight * 2;
+                lineShader.uniforms['edgeWidth'].value = lineThickness * 2;
                 composerLines = new THREE.EffectComposer(renderer, renderLinesTarget);
                 composerLines.addPass(renderLinesScene);
                 composerLines.addPass(lineShader);
@@ -740,7 +743,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 var circleRadius = getSpriteRadius(sprite.position, sprite.scale.x);
                 if (circleRadius <= 2)
                     continue;
-                var innerRadius = Math.abs(circleRadius * 7 / 8);
+                var innerRadius = Math.abs(circleRadius * ((borderFraction - 2) / borderFraction));
                 var spriteCanv = document.createElement('canvas');
                 spriteCanv.width = circleRadius * 2 + 1;
                 spriteCanv.height = spriteCanv.width;
@@ -916,26 +919,27 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
             else
                 nodeSprite = drawNode(node, nodePosition).sprite;
+            occupiedPositions = getOccupiedPositions();
             getRelatedNodes(node, nodeSprite, scope.typesAndLimits, drawRelatedNodes);
         }
 
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
-                var limit;
-                var job;
-                if (startNode.type == "Person") {
-                    job = startNode.jobs[0].name;
-                    limit = scope.findLimitForJob(job);
+            var limit;
+            var job;
+            if (startNode.type == "Person") {
+                job = startNode.jobs[0].name;
+                limit = scope.findLimitForJob(job);
+                getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
+            }
+            else {
+                for (var i = 0; i < 2; i++) {
+                    job = typesAndLimits[i].type;
+                    limit = typesAndLimits[i].limit;
                     getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
+                    index += limit;
                 }
-                else {
-                    for (var i = 0; i < 2; i++) {
-                        job = typesAndLimits[i].type;
-                        limit = typesAndLimits[i].limit;
-                        getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
-                        index += limit;
-                    }
-                }
+            }
         }
 
         function pushRelations(index, count, direction, relationships, rels, callback) {
@@ -1076,27 +1080,55 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             return {sprite: sprite};
         }
 
-        function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit, type) {
-          var slice = PI2 / 10;
-            var relatedNodePosition = new THREE.Vector3();
-            if (limit > relatedNodes.length) {
-                limit = relatedNodes.length;
-            }
-            for (i = index, j = 0; i < limit + index, j < limit; i++, j++) {
-                var angle = slice * i;
-                relatedNodePosition.x = nodePosition.x + 18 * Math.cos(angle);
-                relatedNodePosition.y = nodePosition.y + 18 * Math.sin(angle);
-                //relatedNodePosition.z = nodePosition.z + 18 * Math.random();
-                var relatedNodeSprite = drawNode(relatedNodes[j], relatedNodePosition, startNodeSprite, type);
-                var endNodePosition;
-                if (relatedNodeSprite.added == false) {
-                    var obj = scene.getObjectByName(relatedNodes[j].name ?
-                        (relatedNodes[j].firstname + " " + relatedNodes[j].lastname) : relatedNodes[j].title);
-                    endNodePosition = obj.position;
+        function positionIsValid(array, vector)
+        {
+            var index;
+            for (index = 0; index < array.length; ++index)
+                if (array[index].distanceToSquared(vector) <= 64)
+                    return false;
+            return true;
+        }
+
+        function getOccupiedPositions()
+        {
+            var positions = new Array();
+            for (var i = scene.children.length - 1; i >= 0; i--)
+                if (scene.children[i].type == "Sprite")
+                    positions.push(scene.children[i].position);
+            return positions;
+        }
+
+        function getNextPosition(occupiedPositions, centerNodePosition)
+        {
+            var slice = PI2 / 10;
+            var sphereRadius = 18;
+            var nextPosition = centerNodePosition.clone();
+            var i = 0;
+            do {
+                if (i < 10)
+                {
+                    nextPosition.x = Math.round(centerNodePosition.x + sphereRadius * Math.cos(slice * i));
+                    nextPosition.y = Math.round(centerNodePosition.y + sphereRadius * Math.sin(slice * i));
+                    nextPosition.z = 0;
                 }
                 else {
-                    endNodePosition = relatedNodeSprite.sprite.position;
+                    nextPosition.x = Math.random() * 2 - 1;
+                    nextPosition.y = Math.random() * 2 - 1;
+                    nextPosition.z = Math.random() * 2 - 1;
+                    nextPosition.setLength(sphereRadius).round().add(centerNodePosition);
                 }
+                i++;
+            } while (!positionIsValid(occupiedPositions, nextPosition))
+            return nextPosition;
+        }
+
+        function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit, type) {
+            if (limit > relatedNodes.length)
+                limit = relatedNodes.length;
+            for (i = index, j = 0; i < limit + index, j < limit; i++, j++) {
+                var relatedNodePosition = getNextPosition(occupiedPositions, startNodeSprite.position);
+                occupiedPositions.push(relatedNodePosition);
+                var relatedNodeSprite = drawNode(relatedNodes[j], relatedNodePosition, startNodeSprite, type);
             }
         }
         scope.drawRelatedNodes = drawRelatedNodes;
@@ -1110,7 +1142,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         }
 
         function updateTexture(img, canvas, text, opacity) {
-            var borderThickness = canvas.width / 16;
+            var borderThickness = canvas.width / borderFraction;
             var halfWidth = canvas.width / 2;
             var halfHeight = canvas.height / 2;
             var context = canvas.getContext('2d');

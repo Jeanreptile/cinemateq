@@ -1115,6 +1115,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     nextPosition.setLength(sphereRadius).round().add(centerNodePosition);
                 }
                 i++;
+                if (i % 50 == 0)
+                    sphereRadius = 18 * (1 + i / 50);
             } while (!positionIsValid(occupiedPositions, nextPosition))
             return nextPosition;
         }

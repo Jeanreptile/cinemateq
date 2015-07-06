@@ -124,7 +124,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $scope.currentNode = {};
     var selectedNodeId = getParameterByName('id');
     if (selectedNodeId == undefined) {
-        selectedNodeId = 466302;
+        selectedNodeId = 719772;
     }
     $http.get('/api/common/' + selectedNodeId).success(function(node) {
         $scope.currentNode = node;
@@ -1141,6 +1141,78 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
         }
         scope.drawRelatedNodes = drawRelatedNodes;
+
+
+        function getCinegraphPositions(cinegraphNodes)
+        {
+            positions = [];
+            var occupiedPositions = getOccupiedPositions();
+            for (var i = 0; i < cinegraphNodes.length; i++)
+            {
+                var relation = cinegraphNodes[i];
+                var start = relation.start;
+                var end = relation.end;
+                // start node
+                if (start != null && positions[start] == undefined)
+                {
+                    var centerPos = positions[end] != undefined ? positions[end] : new THREE.Vector3(0,0,0);
+                    positions[start] = getNextPosition(occupiedPositions, centerPos);
+                    occupiedPositions.push(positions[start]);
+                }
+                // end node
+                if (end != null && positions[end] == undefined)
+                {
+                    var centerPos = positions[start] != undefined ? positions[start] : new THREE.Vector3(0,0,0);
+                    positions[end] = getNextPosition(occupiedPositions, centerPos);
+                    occupiedPositions.push(positions[end]);
+                }
+            }
+            return positions;
+        }
+
+        function testCinegraph()
+        {
+            var cinegraph = [
+                {"start":1706651,"end":719772,"type":"DIRECTED","properties":{},"id":8298151},
+                {"start":3961762,"end":719772,"type":"ACTED_IN","properties":{"position":1,"role":"Jordan Belfort"},"id":1018528},
+                {"start":5089667,"end":719772,"type":"ACTED_IN","properties":{"position":3,"role":"Naomi Lapaglia"},"id":6042104},
+                {"start":3248923,"end":719772,"type":"ACTED_IN","properties":{"position":4,"role":"Mark Hanna"},"id":2581790},
+                {"start":1124615,"end":719772,"type":"ACTED_IN","properties":{"position":2,"role":"Donnie Azoff"},"id":1717325}
+            ];
+            setTimeout(function(){
+                // cleaning current scene (only for this test!)
+                clearScene(scope.currentDisplayedNodes, -1);
+                //getting positions
+                var positions = getCinegraphPositions(cinegraph);
+                // drawing nodes
+                for (var i in positions)
+                {
+                    // TODO : draw real node at positions[i] instead of a cube
+                    var cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 0xff0000}));
+                    cube.position.set(positions[i].x, positions[i].y, positions[i].z);
+                    scene.add(cube);
+                }
+                // drawing lines
+                for (var i = 0; i < cinegraph.length; i++)
+                {
+                    var relation = cinegraph[i];
+                    if (relation.start != null && relation.end != null)
+                    {
+                        // drawing line
+                        var lineGeom = new THREE.Geometry();
+                        lineGeom.vertices.push(positions[relation.start], positions[relation.end]);
+                        var lineMat = new THREE.LineBasicMaterial({ linewidth: 1});
+                        line = new THREE.Line(lineGeom, lineMat);
+                        linesScene.add(line);
+                    }
+                }
+                // setting camera target on first node
+                var firstPos = positions[Object.keys(positions)[0]];
+                camera.position.set(firstPos.x, firstPos.y, firstPos.z + 55);
+                cameraControls.target.set(firstPos.x, firstPos.y, firstPos.z);
+            }, 8000);
+        }
+        //testCinegraph();
 
         function generateTexture(img, text) {
             var canvas = document.createElement('canvas');

@@ -407,18 +407,29 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         });
     };
 
-    $('input.rating').rating();
+    //$('input.rating').rating(3);
+    $('#noteObj').rating('rate', 3);
+    $('#noteLove').rating('rate', 4);
 
-    $(':radio').change(function() {
-      console.log("you rate movie " + selectedNodeId);
-      $http.post( "/api/user/rate", {movieId: selectedNodeId, noteLove : 5, noteObj: 3})
+    $('#noteObj').on('change', function () {
+      var noteObj = $(this).val();
+      $http.post( "/api/user/rateObj", {movieId: selectedNodeId, noteObj: noteObj})
         .success(function() {
-          alert( "second success" );
         }).
         error(function() {
-          alert( "error" );
       });
     });
+
+
+    $('#notLove').on('change', function () {
+      var noteLove = $(this).val();
+      $http.post( "/api/user/rateLove", {movieId: selectedNodeId, noteLove : noteLove})
+        .success(function() {
+        }).
+        error(function() {
+      });
+    });
+
 });
 
 cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, currentNode) {

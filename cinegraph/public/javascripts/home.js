@@ -764,6 +764,8 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                     else
                         continue;
                     var endIndex = startIndex == 0 ? 1 : 0;
+                    if (line.geometry.vertices[startIndex].distanceToSquared(line.geometry.vertices[endIndex]) <= 16)
+                        continue;
                     var color = line.geometry.colors[startIndex];
                     var startPos = toScreenPosition(line.geometry.vertices[startIndex]);
                     var endPos = toScreenPosition(line.geometry.vertices[endIndex]);
@@ -1040,41 +1042,42 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
                 };
             }
             sprite.nodeImage = nodeImage;
-
+            // animating scale, position and line
             if (startNodeSprite !== undefined)
                 sprite.position.set(startNodeSprite.position.x, startNodeSprite.position.y, startNodeSprite.position.z);
             else
                 sprite.position.set(position.x, position.y, position.z);
             sprite.scale.set(0, 0, 0);
             scene.add(sprite);
-            // animating scale
             new TWEEN.Tween(sprite.scale).to({x: 8, y: 8, z: 8}, 200).delay(800).easing(TWEEN.Easing.Linear.None).start();
-            // animating position
             if (startNodeSprite !== undefined) {
-                new TWEEN.Tween(sprite.position).to({x: position.x, y:position.y, z: position.z}, 2000)
+                // drawing line
+                var lineGeom = new THREE.Geometry();
+                lineGeom.vertices.push(sprite.position, startNodeSprite.position);
+                var startColor, endColor;
+                if (node.name) {
+                    startColor = colors[type];
+                    endColor = orangeColor;
+                } else {
+                    startColor = orangeColor;
+                    endColor = colors[type];
+                }
+                lineGeom.colors.push(new THREE.Color(startColor));
+                lineGeom.colors.push(new THREE.Color(endColor));
+                var lineMat = new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true });
+                line = new THREE.Line(lineGeom, lineMat);
+                line.endNodeId = sprite._id;
+                line.startNodeId = startNodeSprite._id;
+                linesScene.add(line);
+                // animation object
+                var animObj = new Object();
+                animObj.sprite = sprite;
+                animObj.line = lineGeom;
+                new TWEEN.Tween(animObj.sprite.position).to({x: position.x, y:position.y, z: position.z}, 2000)
                     .easing(TWEEN.Easing.Elastic.InOut)
-                    .onComplete(function (){
-                        // drawing line
-                        var lineGeom = new THREE.Geometry();
-                        lineGeom.vertices.push(sprite.position, startNodeSprite.position);
-                        var startColor, endColor;
-                        if (node.name) {
-                            startColor = colors[type];
-                            endColor = orangeColor;
-                        } else {
-                            startColor = orangeColor;
-                            endColor = colors[type];
-                        }
-                        lineGeom.colors.push(new THREE.Color(startColor));
-                        lineGeom.colors.push(new THREE.Color(endColor));
-                        var lineMat = new THREE.LineBasicMaterial({
-                            linewidth: 1,
-                            vertexColors: true
-                        });
-                        line = new THREE.Line(lineGeom, lineMat);
-                        line.endNodeId = sprite._id;
-                        line.startNodeId = startNodeSprite._id;
-                        linesScene.add(line);
+                    .onUpdate(function () {
+                        animObj.line.vertices[0].set(sprite.position.x, sprite.position.y, sprite.position.z);
+                        animObj.line.verticesNeedUpdate = true;
                     }).start();
             }
             return {sprite: sprite};

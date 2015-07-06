@@ -24,7 +24,7 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
     $scope.currentNode = {};
 
     $scope.updateTypesAndLimits = function() {
-        var craziness = 5;
+        var craziness = 1;
         if ($scope.currentNode.type == "Person")
         {
             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},

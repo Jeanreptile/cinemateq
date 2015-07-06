@@ -463,7 +463,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             var idAnimationFrame = 0;
             var renderNeedsUpdate = false;
             var tweenCount = 0;
-            var occupiedPositions = [];
 
             // monitoring panels
             var rendererStats = new THREEx.RendererStats();
@@ -918,7 +917,6 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
             }
             else
                 nodeSprite = drawNode(node, nodePosition).sprite;
-            occupiedPositions = getOccupiedPositions();
             getRelatedNodes(node, nodeSprite, scope.typesAndLimits, drawRelatedNodes);
         }
 
@@ -1092,9 +1090,17 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function getOccupiedPositions()
         {
             var positions = new Array();
+            // sprites already on the scene
             for (var i = scene.children.length - 1; i >= 0; i--)
                 if (scene.children[i].type == "Sprite")
                     positions.push(scene.children[i].position);
+            // sprites to be added
+            for (var i = TWEEN.getAll().length - 1; i >= 0; i--)
+            {
+                var targetPos = TWEEN.getAll()[i].getValuesEnd();
+                if (targetPos.x != undefined && targetPos.y != undefined && targetPos.z != undefined)
+                    positions.push(new THREE.Vector3(targetPos.x,targetPos.y,targetPos.z));
+            }
             return positions;
         }
 
@@ -1127,6 +1133,7 @@ cinegraphApp.directive("cinegraph", [ 'ModelDataService', '$http', function(Mode
         function drawRelatedNodes(startNodeSprite, relatedNodes, index, limit, type) {
             if (limit > relatedNodes.length)
                 limit = relatedNodes.length;
+            var occupiedPositions = getOccupiedPositions();
             for (i = index, j = 0; i < limit + index, j < limit; i++, j++) {
                 var relatedNodePosition = getNextPosition(occupiedPositions, startNodeSprite.position);
                 occupiedPositions.push(relatedNodePosition);

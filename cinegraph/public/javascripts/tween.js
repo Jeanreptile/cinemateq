@@ -126,6 +126,10 @@ TWEEN.Tween = function ( object ) {
 
 	}
 
+	this.getValuesEnd = function() {
+		return _valuesEnd;
+	}
+
 	this.to = function ( properties, duration ) {
 
 		if ( duration !== undefined ) {

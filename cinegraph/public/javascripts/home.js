@@ -411,7 +411,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $scope.open = function (size) {
         var modalInstance = $modal.open({
             animation: $scope.animationsEnabled,
-            templateUrl: 'partials/detailed-sheet',
+            templateUrl: '/partials/detailed-sheet',
             controller: 'ModalInstanceCtrl',
             size: size,
             resolve: {
@@ -501,7 +501,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var idAnimationFrame = 0;
             var renderNeedsUpdate = false;
             var tweenCount = 0;
-            const nodeSpacing = 200;
+            const nodeSpacing = 200, nodeOpacity = 0.6, nodeSuggestionOpacity = 0.5;
 
             // monitoring panels
             var rendererStats = new THREEx.RendererStats();
@@ -1176,14 +1176,18 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     nodeImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/poster.jpg';
                 nodeImage.onerror = function () { this.src = 'images/default.jpg'; };
                 nodeImage.onload = function () {
-                    updateTexture(nodeImage, sprite.canvas, sprite.name, 0.6);
+                    updateTexture(nodeImage, sprite.canvas, sprite.name, nodeOpacity);
                     sprite.texture.needsUpdate = true;
                 };
             }
             sprite.nodeImage = nodeImage;
             // animating scale, position and line
             if (startNodeSprite !== undefined)
+            {
                 sprite.position.set(startNodeSprite.position.x, startNodeSprite.position.y, startNodeSprite.position.z);
+                if (scope.cinegraphId != undefined)
+                    sprite.material.opacity = nodeSuggestionOpacity;
+            }
             else
                 sprite.position.set(position.x, position.y, position.z);
             sprite.scale.set(0, 0, 0);
@@ -1205,6 +1209,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 lineGeom.colors.push(new THREE.Color(startColor));
                 lineGeom.colors.push(new THREE.Color(endColor));
                 var lineMat = new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true });
+                if (scope.cinegraphId != undefined)
+                    lineMat.opacity = 0.1;
                 line = new THREE.Line(lineGeom, lineMat);
                 line.endNodeId = sprite._id;
                 line.startNodeId = startNodeSprite._id;
@@ -1328,7 +1334,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var canvas = document.createElement('canvas');
             canvas.width = 256;
             canvas.height = 256;
-            updateTexture(img, canvas, text, 0.6);
+            updateTexture(img, canvas, text, nodeOpacity);
             return canvas;
         }
 
@@ -1347,7 +1353,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             context.fillStyle = "#ffffff";
             context.font = "bold " + (canvas.width / 9) + "px Arial";
             context.textAlign = "center";
-            context.globalAlpha = (1 / (0.6 - 1)) * (opacity - 1);
+            context.globalAlpha = (1 / (nodeOpacity - 1)) * (opacity - 1);
             wrapText(context, text.toUpperCase(), halfWidth, canvas.height / 2.5, canvas.width -  5 * borderThickness, canvas.height / 6);
             context.globalAlpha = 1;
         }
@@ -1582,16 +1588,10 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function onRightClick(event) {
             setMousePosition(event);
-
             raycaster.setFromCamera(mouse, camera);
-            var intersects = raycaster.intersectObjects(scene.children);
-            // removing unwanted objects
-            while (intersects.length > 0 && intersects[0].object.ignoreClick == true)
-                intersects = intersects.slice(1);
-            var intersection = intersects[0];
-            if (intersection == undefined) {
+            var intersection = raycaster.intersectObjects(scene.children)[0];
+            if (intersection == undefined)
                 return;
-            }
             var id = intersection.object._id;
             if (id != null) {
                 var relationship = null;
@@ -1618,12 +1618,20 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         { titleCinegraph: scope.currentCinegraph.title,
                             cinegraphNodes: JSON.stringify(cinegraphNodes) }).success(function(res) {
                                 for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
-                                    if (scope.suggestedNodes[i].id != relationship.id) {
-                                        var point = scope.suggestedNodes[i].start;
-                                        if (scope.currentNode.type == 'Person') {
-                                            point = scope.suggestedNodes[i].end;
-                                        }
+                                    var point = scope.suggestedNodes[i].start;
+                                    if (scope.currentNode.type == 'Person')
+                                        point = scope.suggestedNodes[i].end;
+                                    if (scope.suggestedNodes[i].id != relationship.id)
                                         removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
+                                    else {
+                                        // setting node opacity to 1
+                                        for (var i = scene.children.length - 1; i >= 0; i--)
+                                            if(scene.children[i]._id == point)
+                                                scene.children[i].material.opacity = 1;
+                                        // setting line opacity to 1
+                                        for (var i = linesScene.children.length - 1; i >= 0; i--)
+                                            if(linesScene.children[i].startNodeId == point || linesScene.children[i].endNodeId == point)
+                                                linesScene.children[i].material.opacity = 1;
                                     }
                                 };
                                 scope.suggestedNodes = [];
@@ -1685,14 +1693,18 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 if (INTERSECTED._id !== undefined) {
                     // restoring node state when leaving it
                     if (current && (current._id != INTERSECTED._id)) {
-                        updateTexture(current.nodeImage, current.canvas, current.name, 0.6);
+                        if (scope.cinegraphId != undefined && current.material.opacity == 0.99)
+                            current.material.opacity = nodeSuggestionOpacity;
+                        updateTexture(current.nodeImage, current.canvas, current.name, nodeOpacity);
                         current.texture.needsUpdate = true;
                         old = current;
                     }
                     // updating intersected node and animating opacity
                     current = INTERSECTED;
                     updateHoverLabel(current.name);
-                    current.animationOpacity = 0.6;
+                    current.animationOpacity = nodeOpacity;
+                    if (scope.cinegraphId != undefined && current.material.opacity == nodeSuggestionOpacity)
+                        current.material.opacity = 0.99;
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)
                     .onUpdate(function (){

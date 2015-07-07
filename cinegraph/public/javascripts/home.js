@@ -13,7 +13,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
             templateUrl: 'partials/register', controller: "UserCtrl"
         })
         .when('/profile', {
-            templateUrl: 'partials/profile', controller: 'UserCtrl'
+            templateUrl: 'partials/profile', controller: 'cinegraphController'
         })
         .when('/home', {
             templateUrl: 'partials/home', controller: 'UserCtrl'
@@ -421,28 +421,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             }
         });
     };
-
-    //$('input.rating').rating(3);
-
-/*
-    var initNoteObj = $http.get("/api/user/rating/" + selectedNodeId)
-        .success(function(payload){
-          if (payload.message == "no rate")
-          {
-            $('#noteObj').rating();
-            $('#noteLove').rating();
-          }
-          else {
-            $('#noteObj').rating('rate', payload.obj);
-            $('#noteLove').rating('rate', payload.love);
-          }
-        }).
-        error(function(){
-            $('#noteObj').rating();
-            $('#noteLove').rating();
-        });
-        */
-
 
     $('#noteObj').on('change', function () {
       var noteObj = $(this).val();

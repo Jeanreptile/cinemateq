@@ -13,7 +13,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
             templateUrl: 'partials/register', controller: "UserCtrl"
         })
         .when('/profile', {
-            templateUrl: 'partials/profile', controller: 'UserCtrl'
+            templateUrl: 'partials/profile', controller: 'cinegraphController'
         })
         .when('/home', {
             templateUrl: 'partials/home', controller: 'UserCtrl'
@@ -146,6 +146,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             $('#noteObj').rating('rate', payload.obj);
             $('#noteLove').rating('rate', payload.love);
           }
+          $scope.rates = 3;
         }).
         error(function(){
             $('#noteObj').rating('rate', 0);
@@ -417,32 +418,15 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             resolve: {
                 currentNode: function() {
                     return $scope.currentNode;
+                },
+                rates: function(){
+                  var noteObj = $('#noteObj').rating('rate');
+                  var noteLove = $('#noteLove').rating('rate');
+                  return ({noteObj: noteObj, noteLove: noteLove});
                 }
             }
         });
     };
-
-    //$('input.rating').rating(3);
-
-/*
-    var initNoteObj = $http.get("/api/user/rating/" + selectedNodeId)
-        .success(function(payload){
-          if (payload.message == "no rate")
-          {
-            $('#noteObj').rating();
-            $('#noteLove').rating();
-          }
-          else {
-            $('#noteObj').rating('rate', payload.obj);
-            $('#noteLove').rating('rate', payload.love);
-          }
-        }).
-        error(function(){
-            $('#noteObj').rating();
-            $('#noteLove').rating();
-        });
-        */
-
 
     $('#noteObj').on('change', function () {
       var noteObj = $(this).val();
@@ -465,7 +449,34 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
 });
 
-cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, currentNode) {
+cinegraphApp.controller('ModalRatingCtrl', function($scope, $http) {
+  console.log("HOOO" + $('#noteObj').rating('rate'));
+  $('#noteLove2').rating('rate', $('#noteLove').rating('rate'));
+  $('#noteObj2').rating('rate', $('#noteObj').rating('rate'));
+
+  $('#noteObj2').on('change', function () {
+    var noteObj = $(this).val();
+    $http.post( "/api/user/rateObj", {movieId: $scope.currentNode.id, noteObj: noteObj})
+      .success(function() {
+        $('#noteObj').rating('rate', noteObj);
+      }).
+      error(function() {
+    });
+  });
+
+
+  $('#noteLove2').on('change', function () {
+    var noteLove = $(this).val();
+    $http.post( "/api/user/rateLove", {movieId: $scope.currentNode.id, noteLove : noteLove})
+      .success(function() {
+        $('#noteLove').rating('rate', noteLove);
+      }).
+      error(function() {
+    });
+  });
+});
+
+cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, currentNode, rates) {
 
     $scope.currentNode = currentNode;
 

@@ -11,10 +11,11 @@
 				img.col-sm-12(ng-src="images/persons/{{sanitizeFileName(currentNode.fullname)}}.jpg")
 			div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
 				img.col-sm-12(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
-			div.col-xs-12.m-t-sm
-				input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-3x', data-empty='fa fa-star-o fa-3x')
-			div.col-xs-12.m-t-sm
-				input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-3x', data-empty='fa fa-heart-o fa-3x')	
+			div(ng-controller="ModalRatingCtrl")
+				div.col-xs-12.m-t-sm
+					input#noteObj2.rating(type='hidden', data-filled='fa fa-star fa-3x', data-empty='fa fa-star-o fa-3x')
+				div.col-xs-12.m-t-sm
+					input#noteLove2.rating(type='hidden', data-filled='fa fa-heart fa-3x', data-empty='fa fa-heart-o fa-3x')
 			div.col-xs-12.m-t-sm
 					button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button')
 						i.fa.fa-heart.fa-lg
@@ -30,9 +31,6 @@
 							li.divider(ng-if="mycinegraphs")
 							li(ng-if="mycinegraphs")
 								a(href='#') Create a myCINEGRAPH
-					|  
-					button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default(type='button', ng-show="currentNode.type == 'Movie'")
-						i.fa.fa-eye.fa-lg
 		.col-sm-8
 			div
 				p.text-center

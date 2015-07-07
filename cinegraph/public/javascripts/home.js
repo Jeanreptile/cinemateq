@@ -413,14 +413,21 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
 
     var initNoteObj = $http.get("/api/user/rating/" + selectedNodeId)
-                      .success(function(payload){
-                        $('#noteObj').rating('rate', payload.obj);
-                        $('#noteLove').rating('rate', payload.love);
-                      }).
-                      error(function(){
-                        $('#noteObj').rating();
-                        $('#noteLove').rating();
-                      });
+        .success(function(payload){
+          if (payload.message == "no rate")
+          {
+            $('#noteObj').rating();
+            $('#noteLove').rating();
+          }
+          else {
+            $('#noteObj').rating('rate', payload.obj);
+            $('#noteLove').rating('rate', payload.love);
+          }
+        }).
+        error(function(){
+            $('#noteObj').rating();
+            $('#noteLove').rating();
+        });
 
 
     $('#noteObj').on('change', function () {

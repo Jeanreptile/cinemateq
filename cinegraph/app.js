@@ -31,6 +31,7 @@ app.all('*', function(req, res, next) {
 
 var routes = require('./routes');
 var users = require('./routes/users');
+var user = require('./routes/user');
 var persons = require('./routes/persons');
 var movies = require('./routes/movies');
 var searchRoutes = require('./routes/search');
@@ -62,7 +63,10 @@ app.use('/api/movies', movies);
 app.use('/api/search', searchRoutes);
 app.use('/api/common', commons);
 app.use('/api/mycinegraph', mycinegraph);
+app.use('/api/user',  user);
 
+
+app.get('/partials/mycinegraphSingle', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/mycinegraph', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/restricted', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/:name', routes.partials);

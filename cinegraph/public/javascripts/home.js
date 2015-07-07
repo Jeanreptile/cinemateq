@@ -12,6 +12,9 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
         .when('/register', {
             templateUrl: 'partials/register', controller: "UserCtrl"
         })
+        .when('/profile', {
+            templateUrl: 'partials/profile', controller: 'UserCtrl'
+        })
         .when('/home', {
             templateUrl: 'partials/home', controller: 'UserCtrl'
         })
@@ -405,6 +408,30 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             }
         });
     };
+
+    //$('input.rating').rating(3);
+    $('#noteObj').rating('rate', 3);
+    $('#noteLove').rating('rate', 4);
+
+    $('#noteObj').on('change', function () {
+      var noteObj = $(this).val();
+      $http.post( "/api/user/rateObj", {movieId: selectedNodeId, noteObj: noteObj})
+        .success(function() {
+        }).
+        error(function() {
+      });
+    });
+
+
+    $('#notLove').on('change', function () {
+      var noteLove = $(this).val();
+      $http.post( "/api/user/rateLove", {movieId: selectedNodeId, noteLove : noteLove})
+        .success(function() {
+        }).
+        error(function() {
+      });
+    });
+
 });
 
 cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, currentNode) {

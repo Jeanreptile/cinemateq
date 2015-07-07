@@ -282,6 +282,9 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
             resolve: {
                 currentNode: function() {
                     return $scope.currentNode;
+                },
+                rates: function() {
+                  return (null);
                 }
             }
         });

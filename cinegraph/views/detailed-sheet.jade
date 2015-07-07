@@ -12,16 +12,9 @@
 			div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
 				img.col-sm-12(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
 			div.col-xs-12.m-t-sm
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star.m-l-xs.fa-lg
-				i.fa.fa-star-o.m-l-xs.fa-lg
+				input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-3x', data-empty='fa fa-star-o fa-3x')
+			div.col-xs-12.m-t-sm
+				input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-3x', data-empty='fa fa-heart-o fa-3x')	
 			div.col-xs-12.m-t-sm
 					button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button')
 						i.fa.fa-heart.fa-lg

@@ -410,8 +410,18 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     };
 
     //$('input.rating').rating(3);
-    $('#noteObj').rating('rate', 3);
-    $('#noteLove').rating('rate', 4);
+
+
+    var initNoteObj = $http.get("/api/user/rating/" + selectedNodeId)
+                      .success(function(payload){
+                        $('#noteObj').rating('rate', payload.obj);
+                        $('#noteLove').rating('rate', payload.love);
+                      }).
+                      error(function(){
+                        $('#noteObj').rating();
+                        $('#noteLove').rating();
+                      });
+
 
     $('#noteObj').on('change', function () {
       var noteObj = $(this).val();
@@ -423,7 +433,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
 
-    $('#notLove').on('change', function () {
+    $('#noteLove').on('change', function () {
       var noteLove = $(this).val();
       $http.post( "/api/user/rateLove", {movieId: selectedNodeId, noteLove : noteLove})
         .success(function() {

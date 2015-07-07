@@ -138,6 +138,19 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
     $scope.updateTypesAndLimits = function() {
+    $http.get("/api/user/rating/" + $scope.currentNode.id)
+        .success(function(payload){
+          $('#noteObj').rating('rate', 0);
+          $('#noteLove').rating('rate', 0);
+          if (payload.message != "no rate"){
+            $('#noteObj').rating('rate', payload.obj);
+            $('#noteLove').rating('rate', payload.love);
+          }
+        }).
+        error(function(){
+            $('#noteObj').rating('rate', 0);
+            $('#noteLove').rating('rate', 0);
+        });
         var craziness = 2;
         if ($scope.currentNode.type == "Person")
         {
@@ -411,7 +424,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     //$('input.rating').rating(3);
 
-
+/*
     var initNoteObj = $http.get("/api/user/rating/" + selectedNodeId)
         .success(function(payload){
           if (payload.message == "no rate")
@@ -428,11 +441,12 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             $('#noteObj').rating();
             $('#noteLove').rating();
         });
+        */
 
 
     $('#noteObj').on('change', function () {
       var noteObj = $(this).val();
-      $http.post( "/api/user/rateObj", {movieId: selectedNodeId, noteObj: noteObj})
+      $http.post( "/api/user/rateObj", {movieId: $scope.currentNode.id, noteObj: noteObj})
         .success(function() {
         }).
         error(function() {
@@ -442,7 +456,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     $('#noteLove').on('change', function () {
       var noteLove = $(this).val();
-      $http.post( "/api/user/rateLove", {movieId: selectedNodeId, noteLove : noteLove})
+      $http.post( "/api/user/rateLove", {movieId: $scope.currentNode.id, noteLove : noteLove})
         .success(function() {
         }).
         error(function() {

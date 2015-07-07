@@ -30,9 +30,9 @@ section.vbox.allWindow
           b.caret 
         ul.dropdown-menu.animated.fadeInRight
           li(ng-if='currentUser')
-            a(href='') Profile
+            a(href='/profile') Profile
           li(ng-if='currentUser')
-            a(href='') My Cinegraphs
+            a(href='/mycinegraph') My Cinegraphs
           li.divider
           li
             a(ng-click='logout()' ng-if='currentUser') Logout

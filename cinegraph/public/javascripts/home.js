@@ -411,7 +411,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $scope.open = function (size) {
         var modalInstance = $modal.open({
             animation: $scope.animationsEnabled,
-            templateUrl: 'partials/detailed-sheet',
+            templateUrl: '/partials/detailed-sheet',
             controller: 'ModalInstanceCtrl',
             size: size,
             resolve: {

@@ -21,8 +21,6 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 
     $scope.suggestedNodes = [];
 
-    $scope.currentNode = {};
-
     $scope.updateTypesAndLimits = function() {
         var craziness = 1;
         if ($scope.currentNode.type == "Person")

@@ -721,13 +721,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function displayNodeAtPosition(i, positions) {
             $http.get('/api/common/' + i).success(function(node) {
+                var sprite = drawNode(node, positions[i]).sprite;
                 if (i == Object.keys(positions)[0]) {
                     scope.currentNode = node;
                     scope.updateTypesAndLimits();
                     scope.updateSelectedJobs();
                     updateBackground(node);
+                    scope.currentNode.sprite = sprite;
                 }
-                scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
             });
         }
 
@@ -1651,21 +1652,25 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                             cinegraphNodes: JSON.stringify(cinegraphNodes) }).success(function(res) {
                                 for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
                                     var point = scope.suggestedNodes[i].start;
-                                    if (scope.currentNode.type == 'Person')
+                                    if (scope.currentNode.type == 'Person') {
                                         point = scope.suggestedNodes[i].end;
-                                    if (scope.suggestedNodes[i].id != relationship.id)
+                                    }
+                                    if (scope.suggestedNodes[i].id != relationship.id) {
                                         removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
+                                    }
                                     else {
                                         // setting node opacity to 1
-                                        for (var i = scene.children.length - 1; i >= 0; i--)
-                                            if(scene.children[i]._id == point)
-                                                scene.children[i].material.opacity = 1;
+                                        for (var j = scene.children.length - 1; j >= 0; j--) {
+                                            if (scene.children[j]._id == point)
+                                                scene.children[j].material.opacity = 1;
+                                        }
                                         // setting line opacity to 1
-                                        for (var i = linesScene.children.length - 1; i >= 0; i--)
-                                            if(linesScene.children[i].startNodeId == point || linesScene.children[i].endNodeId == point)
-                                                linesScene.children[i].material.opacity = 1;
+                                        for (var k = linesScene.children.length - 1; k >= 0; k--) {
+                                            if (linesScene.children[k].startNodeId == point || linesScene.children[k].endNodeId == point)
+                                                linesScene.children[k].material.opacity = 1;
+                                        }
                                     }
-                                };
+                                }
                                 scope.suggestedNodes = [];
                                 $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
                                     scope.currentCinegraph = cinegraph;

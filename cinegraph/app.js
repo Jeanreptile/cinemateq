@@ -66,7 +66,7 @@ app.use('/api/mycinegraph', mycinegraph);
 app.use('/api/user',  user);
 
 
-app.get('/partials/mycinegraphSingle', expressJwt({secret : 'SecretStory'}), routes.partials);
+//app.get('/partials/mycinegraphSingle', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/mycinegraph', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/restricted', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/:name', routes.partials);

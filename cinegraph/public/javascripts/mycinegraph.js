@@ -1,6 +1,6 @@
 cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $location, AuthService, $routeParams, $modal) {
 
-	$scope.cinegraphId = $routeParams.id;
+	$scope.cinegraphId = $routeParams.testId;
 
 	if (AuthService.isLoggedIn()) {
 		$http.get('/api/mycinegraph/all/' + AuthService.currentUser().id).success(function (data, status, headers, config) {

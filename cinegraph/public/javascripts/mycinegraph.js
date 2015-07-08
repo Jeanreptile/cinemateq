@@ -2,6 +2,15 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 
 	$scope.cinegraphId = $routeParams.testId;
 
+    $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
+        $scope.isLoggedIn = isLoggedIn;
+        $scope.currentUser = AuthService.currentUser();
+    });
+
+    $scope.logout = function(){
+      AuthService.logout();
+    }
+
 	if (AuthService.isLoggedIn()) {
 		$http.get('/api/mycinegraph/all/' + AuthService.currentUser().id).success(function (data, status, headers, config) {
 			$scope.mycinegraphs = data;

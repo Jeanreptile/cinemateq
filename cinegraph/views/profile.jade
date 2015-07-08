@@ -1,0 +1,290 @@
+section.vbox
+	include ./header.jade
+	section
+		section.hbox.stretch
+			aside#nav.aside-lg.bg-black.hidden-print.hidden-xs
+				section.vbox
+					section.w-f.scrollable
+						.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
+							.clearfix.wrapper.dk.nav-user.hidden-xs
+								.row
+									.col-sm-12.avatar-center-xs
+										span.thumb.pull-left.avatar.m-r
+											img.dker(src="images/a0.png")
+											i.on.md.b-black
+										span.hidden-nav-xs.clear
+											span.block.m-t-xs
+												div(ng-if='currentUser')
+													strong.font-bold.text-lt {{currentUser.firstName}}
+													span.text-muted.text-xs.block Cinephile
+												div(ng-if='currentUser == undefined')
+													strong.font-bold.text-lt Invité
+													span.text-muted.text-xs.block Novice
+								.row.m-t-sm.hidden-nav-xs
+									.col-sm-12.text-center
+										a.btn.btn-s-md.btn-info.btn-sm(href='/mycinegraph')
+											|See my cinegraphs
+											i.i.i-arrow-right.m-l-xs
+					footer.footer.hidden-xs.no-padder.text-center-nav-xs
+						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(data-target='#nav', data-toggle='class:nav-xs')
+							i.i.i-circleleft.text
+								i.i.i-circleright.text-active
+			section#content
+				section.vbox
+						section.scrollable.bg-white
+							.wrapper-lg.bg-light
+								.hbox
+									aside.aside-md
+										.text-center
+											img.img-circle.m-b(src='images/a2.png', alt='...')
+									|                   
+									aside
+										p.pull-right.m-l.inline
+											a.btn.btn-sm.btn-icon.btn-info.rounded.m-b(href='#')
+												i.fa.fa-twitter
+											|                       
+											a.btn.btn-sm.btn-icon.btn-primary.rounded.m-b(href='#')
+												i.fa.fa-facebook
+											|                       
+											a.btn.btn-sm.btn-icon.btn-danger.rounded.m-b(href='#')
+												i.fa.fa-google-plus
+										|                     
+										div(ng-if='currentUser')
+											h3.font-bold.m-b-none.m-t-none {{currentUser.firstName}} {{currentUser.lastName}}
+											|                     
+											p {{currentUser.email}}
+											|                     
+											p
+												i.fa.fa-lg.fa-circle-o.text-primary.m-r-sm
+												strong Cinephile
+										div(ng-if='currentUser == undefined')
+											h3.font-bold.m-b-none.m-t-none Invité
+											|                     
+											p invite@guest.com
+											|                     
+											p
+												i.fa.fa-lg.fa-circle-o.text-primary.m-r-sm
+												strong Cinephile
+											
+										ul.nav.nav-pills.nav-stacked.aside-lg
+											li.bg-light.dk
+												a(href='#')
+													i.i.i-phone.m-r-sm
+													|  Call Drew
+											|                       
+											li.bg-light.dk
+												a(href='#')
+													i.i.i-mail.m-r-sm
+													|  Send Email
+											|                       
+											li.bg-light.dk
+												a(href='#')
+													i.i.i-chat.m-r-sm
+													|  Send Message
+							|               
+							ul.nav.nav-tabs.m-b-n-xxs.bg-light
+								li.active
+									a.m-l(data-target='#activities', data-toggle='tab')
+										| Activities
+										span.badge.bg-primary.badge-sm.m-l-xs 10
+								|                 
+								li
+									a(data-target='#bio', data-toggle='tab') Bio
+								|                 
+								li
+									a(data-target='#edit', data-toggle='tab') Edit profile
+							|               
+							.tab-content
+								#activities.panel.tab-pane.active
+									ul.list-group.no-radius.m-b-none.m-t-n-xxs.list-group-lg.no-border
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a0.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right 3 minuts ago
+												|                         
+												strong.block Drew Wllon
+												|                         
+												small Wellcome and play this web application template ... 
+										|                     
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a1.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right 1 hour ago
+												|                         
+												strong.block Jonathan George
+												|                         
+												small Morbi nec nunc condimentum...
+										|                     
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a2.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right 2 hours ago
+												|                         
+												strong.block Josh Long
+												|                         
+												small Vestibulum ullamcorper sodales nisi nec...
+										|                     
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a3.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right 1 day ago
+												|                         
+												strong.block Jack Dorsty
+												|                         
+												small Morbi nec nunc condimentum...
+										|                     
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a4.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right 3 days ago
+												|                         
+												strong.block Morgen Kntooh
+												|                         
+												small Mobile first web app for startup...
+										|                     
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a5.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right Jun 21
+												|                         
+												strong.block Yoha Omish
+												|                         
+												small Morbi nec nunc condimentum...
+										|                     
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a6.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right May 10
+												|                         
+												strong.block Gole Lido
+												|                         
+												small Vestibulum ullamcorper sodales nisi nec...
+										|                     
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a7.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right Jan 2
+												|                         
+												strong.block Jonthan Snow
+												|                         
+												small Morbi nec nunc condimentum...
+										|                     
+										li.list-group-item(href='#email-content', data-toggle='class:show')
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a8.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right 3 minuts ago
+												|                         
+												strong.block Drew Wllon
+												|                         
+												small Vestibulum ullamcorper sodales nisi nec sodales nisi nec sodales nisi nec...
+										|                     
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a9.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right 1 hour ago
+												|                         
+												strong.block Jonathan George
+												|                         
+												small Morbi nec nunc condimentum...
+								|                 
+								#bio.tab-pane.wrapper-lg
+									.row.m-b
+										.col-xs-6
+											small Cell Phone
+											|                       
+											.text-lt.font-bold 1243 0303 0333
+										|                     
+										.col-xs-6
+											small Family Phone
+											|                       
+											.text-lt.font-bold +32(0) 3003 234 543
+									|                   
+									.row.m-b
+										.col-xs-6
+											small Reporter
+											|                       
+											.text-lt.font-bold Coch Jose
+										|                     
+										.col-xs-6
+											small Manager
+											|                       
+											.text-lt.font-bold James Richo
+									|                   
+									div
+										small Bio
+										|                     
+										.text-lt
+											| Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi id neque quam. Aliquam sollicitudin venenatis ipsum ac feugiat. Vestibulum ullamcorper sodales nisi nec condimentum. Mauris convallis mauris at pellentesque volutpat. Phasellus at ultricies neque, quis malesuada augue.
+								|                 
+								#edit.tab-pane.wrapper-lg
+									form.form-horizontal(method='get')
+										.form-group
+											label.col-sm-3.control-label Name:
+											|                       
+											.col-sm-5
+												input.form-control(type='text')
+										|                     
+										.line.line-dashed.b-b.line-lg.pull-in
+										|                     
+										.form-group
+											label.col-sm-3.control-label(for='input-id-1') Email:
+											|                       
+											.col-sm-5
+												input#input-id-1.form-control(type='text', disabled='disabled', value='drew.willon@scale.com')
+										|                     
+										.line.line-dashed.b-b.line-lg.pull-in
+										|                     
+										.form-group
+											label.col-sm-3.control-label Password:
+											|                       
+											.col-sm-5
+												input.form-control(type='password')
+										|                     
+										.line.line-dashed.b-b.line-lg.pull-in
+										|                     
+										.form-group
+											label.col-sm-3.control-label Password Again:
+											|                       
+											.col-sm-5
+												input.form-control(type='password')
+										|                     
+										.line.line-dashed.b-b.line-lg.pull-in
+										|                     
+										.form-group
+											label.col-sm-3.control-label Phone:
+											|                       
+											.col-sm-5
+												input.form-control(type='text')
+										|                     
+										.line.line-dashed.b-b.line-lg.pull-in
+										|                     
+										.form-group
+											label.col-sm-3.control-label Bio:
+											|                       
+											.col-sm-5
+												textarea.form-control(rows='5')
+										|                     
+										.form-group
+											.col-sm-offset-3.col-sm-5
+												button.btn.btn-sm.btn-primary(type='submit') Update
+					a.hide.nav-off-screen-block(href='#', data-toggle='class:nav-off-screen,open', data-target='#nav,html')

@@ -42,7 +42,7 @@ function authenticate(req, res, next) {
     }
       // User exists but wrong password, log the error
     if (!isValidPassword(objs[0], req.body.password)) {
-      return res(401, {'message' :'Invalid Password'});
+      return res.json(401, {'message' :'Invalid Password'});
       // User and password both match, return user from
       // done method which will be treated like success
     }

@@ -772,7 +772,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     var lineGeom = new THREE.Geometry();
                     lineGeom.vertices.push(positions[relation.end], positions[relation.start]);
                     var startColor, endColor;
-                    var type = relation.type
+                    var type = relation.type;
                     displayLines(i, cinegraphNodes, type, lineGeom);
                 }
             }
@@ -1657,13 +1657,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                                         removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
                                     else {
                                         // setting node opacity to 1
-                                        for (var i = scene.children.length - 1; i >= 0; i--)
-                                            if(scene.children[i]._id == point)
-                                                scene.children[i].material.opacity = 1;
+                                        for (var j = scene.children.length - 1; j >= 0; j--)
+                                            if(scene.children[j]._id == point)
+                                                scene.children[j].material.opacity = 1;
                                         // setting line opacity to 1
-                                        for (var i = linesScene.children.length - 1; i >= 0; i--)
-                                            if(linesScene.children[i].startNodeId == point || linesScene.children[i].endNodeId == point)
-                                                linesScene.children[i].material.opacity = 1;
+                                        for (var k = linesScene.children.length - 1; k >= 0; k--)
+                                            if(linesScene.children[k].startNodeId == point || linesScene.children[k].endNodeId == point)
+                                                linesScene.children[k].material.opacity = 1;
                                     }
                                 };
                                 scope.suggestedNodes = [];

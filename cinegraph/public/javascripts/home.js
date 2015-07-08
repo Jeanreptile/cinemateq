@@ -450,7 +450,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 });
 
 cinegraphApp.controller('ModalRatingCtrl', function($scope, $http) {
-  console.log("HOOO" + $('#noteObj').rating('rate'));
   $('#noteLove2').rating('rate', $('#noteLove').rating('rate'));
   $('#noteObj2').rating('rate', $('#noteObj').rating('rate'));
 

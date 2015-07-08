@@ -7,7 +7,7 @@ section.vbox
 					section.w-f.scrollable
 						.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
 							.clearfix.wrapper.dk.nav-user.hidden-xs
-								.row
+								.row(ng-controller="cinegraphController")
 									.col-sm-12.avatar-center-xs
 										span.thumb.pull-left.avatar.m-r
 											img.dker(src="images/a0.png")

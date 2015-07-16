@@ -1137,6 +1137,19 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         return false;
                     }
                 });
+                if (scope.cinegraphId != undefined) {
+                    $.each(scope.suggestedNodes, function(j, obj) {
+                        var endpoint2 = obj.start;
+                        if (direction == "out") {
+                            endpoint2 = obj.end;
+                        }
+                        if (endpoint === endpoint2) {
+                            found = true;
+                            return false;
+                        }
+                    });
+                }
+
                 if (!found) {
                     rels.push(node);
                     if (scope.cinegraphId != undefined)

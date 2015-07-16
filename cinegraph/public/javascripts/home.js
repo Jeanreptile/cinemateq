@@ -560,9 +560,55 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 mouse = null;
                 document.body.removeChild(stats.domElement);
                 document.body.removeChild(rendererStats.domElement)
+                composer = null;
                 stats = null;
                 rendererStats = null;
+                $(document).unbind("keyup", switchRenderMode);
             })
+
+            /*window.addEventListener( 'resize', onWindowResize, false );
+
+            function onWindowResize(){
+                console.log('onWindowResize');
+                console.log("before", viewWidth, viewHeight);
+                viewWidth = $('#graph').width();
+                viewHeight = $('#graph').height();
+                camera.aspect = viewWidth / viewHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(viewWidth, viewHeight);
+
+                composerBackground.setSize(viewWidth * 0.5, viewHeight * 0.5);
+                composerLines.setSize(viewWidth * 2, viewHeight * 2);
+                composer.setSize(viewWidth * 2, viewHeight * 2);
+                gradientComposer.setSize(viewWidth * 1, viewHeight * 1);
+                console.log(blendComposer);
+                blendComposer.setSize(viewWidth * 1, viewHeight * 1);
+                var blendPass = blendComposer.passes[0];
+                blendPass.uniforms['tBase'].value = composerBackground.renderTarget1;
+                blendPass.uniforms['tAdd'].value = composerLines.renderTarget1;
+                blendPass.uniforms['tAdd2'].value = composer.renderTarget1;
+                blendPass.uniforms['tAdd3'].value = gradientComposer.renderTarget1;
+
+                renderNeedsUpdate = true;
+
+            }*/
+
+            function switchRenderMode(e) {
+                switch(e.which) {
+                    case 82: // R
+                        renderMode = (renderMode + 1) % 5;
+                        composerBackground.passes[composerBackground.passes.length - 1].renderToScreen = (renderMode == 1);
+                        composerLines.passes[composerLines.passes.length - 1].renderToScreen = (renderMode == 2);
+                        composer.passes[composer.passes.length - 1].renderToScreen = (renderMode == 3);
+                        gradientComposer.passes[gradientComposer.passes.length - 1].renderToScreen = (renderMode == 4);
+                        blendComposer.passes[blendComposer.passes.length - 1].renderToScreen = (renderMode == 0);
+                        renderNeedsUpdate = true;
+                        console.log(composer.renderTarget1.width, sampleRatio, viewWidth);
+                        break;
+                    default: return;
+                }
+                e.preventDefault();
+            }
 
             function init() {
                 $('#graph').css('height','100%');
@@ -635,12 +681,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
                 // label text init
                 label = $(
-                    '<div id="canvasNodeLabel" style="text-align:center;"> \
-                        <div class="labelText"></div>       \
-                        <button type="button" onclick="alert(\'coucou\');" class="add-cinegraph-btn btn btn-rounded \
-                                                                                  btn-sm btn-icon btn-dark"> \
-                            <i class="fa fa-plus fa-lg"></i> \
-                        </button> \
+                    '<div id="canvasNodeLabel" style="text-align:center;">\
+                        <div class="labelText"></div>\
                     </div>');
                 label.css({ 'position': 'absolute','z-index': '1','background-color': '#aaaaaa',
                     'color': 'white','padding':'10px','left':'-1000'
@@ -704,21 +746,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $('#graph').mouseup(onMouseUp);
                 document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
                 cameraControls.addEventListener('change', function() {renderNeedsUpdate = true;});
-                $(document).keyup(function(e) {
-                    switch(e.which) {
-                        case 82: // R
-                            renderMode = (renderMode + 1) % 5;
-                            composerBackground.passes[composerBackground.passes.length - 1].renderToScreen = (renderMode == 1 ? true : false);
-                            composerLines.passes[composerLines.passes.length - 1].renderToScreen = (renderMode == 2 ? true : false);
-                            composer.passes[composer.passes.length - 1].renderToScreen = (renderMode == 3 ? true : false);
-                            gradientComposer.passes[gradientComposer.passes.length - 1].renderToScreen = (renderMode == 4 ? true : false);
-                            blendComposer.passes[blendComposer.passes.length - 1].renderToScreen = (renderMode == 0 ? true : false);
-                            renderNeedsUpdate = true;
-                            break;
-                        default: return;
-                    }
-                    e.preventDefault();
-                });
+                $(document).keyup(switchRenderMode);
 
                 // first node or cinegraph init
                 if (scope.cinegraphId != undefined) {

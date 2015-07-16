@@ -741,8 +741,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     scope.updateTypesAndLimits();
                     scope.updateSelectedJobs();
                     updateBackground(node);
+                    scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
                 }
-                scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
+                else {
+                    drawNode(node, positions[i]);
+                }
             });
         }
 

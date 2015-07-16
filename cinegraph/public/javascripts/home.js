@@ -534,6 +534,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var renderNeedsUpdate = false;
             var tweenCount = 0;
             const nodeSpacing = 200, nodeOpacity = 0.6, nodeSuggestionOpacity = 0.5;
+            var renderMode = 0;
 
             // monitoring panels
             var rendererStats = new THREEx.RendererStats();
@@ -546,7 +547,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.right = '80px';
             stats.domElement.style.bottom = '0px';
-            document.body.appendChild( stats.domElement );
+            document.body.appendChild(stats.domElement);
 
             // Clean everything
             scope.$on('$destroy', function(){
@@ -680,7 +681,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 composer = new THREE.EffectComposer(renderer, renderTarget);
                 composer.addPass(renderScene);
                 composer.addPass(effectCopy);
-                //effectCopy.renderToScreen = true;
                 //gradient
                 var renderTargetGradient = new THREE.WebGLRenderTarget(viewWidth, viewHeight, parameters);
                 var renderGradientScene = new THREE.RenderPass(gradientScene, gradientCam);
@@ -688,7 +688,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 gradientComposer = new THREE.EffectComposer(renderer, renderTargetGradient);
                 gradientComposer.addPass(renderGradientScene);
                 gradientComposer.addPass(effectCopyGradient);
-                //effectCopyGradient.renderToScreen = true;
                 // blend
                 var blendPass = new THREE.ShaderPass(THREE.BlendShader);
                 blendPass.uniforms['tBase'].value = composerBackground.renderTarget1;
@@ -705,7 +704,23 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $('#graph').mouseup(onMouseUp);
                 document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
                 cameraControls.addEventListener('change', function() {renderNeedsUpdate = true;});
+                $(document).keyup(function(e) {
+                    switch(e.which) {
+                        case 82: // R
+                            renderMode = (renderMode + 1) % 5;
+                            composerBackground.passes[composerBackground.passes.length - 1].renderToScreen = (renderMode == 1 ? true : false);
+                            composerLines.passes[composerLines.passes.length - 1].renderToScreen = (renderMode == 2 ? true : false);
+                            composer.passes[composer.passes.length - 1].renderToScreen = (renderMode == 3 ? true : false);
+                            gradientComposer.passes[gradientComposer.passes.length - 1].renderToScreen = (renderMode == 4 ? true : false);
+                            blendComposer.passes[blendComposer.passes.length - 1].renderToScreen = (renderMode == 0 ? true : false);
+                            renderNeedsUpdate = true;
+                            break;
+                        default: return;
+                    }
+                    e.preventDefault();
+                });
 
+                // first node or cinegraph init
                 if (scope.cinegraphId != undefined) {
                     $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
                         scope.currentCinegraph = cinegraph;

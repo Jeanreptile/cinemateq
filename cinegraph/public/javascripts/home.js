@@ -35,6 +35,9 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
         .when('/index', {
           templateUrl: '/partials/index', controller: 'cinegraphController'
         })
+        .when('/friends', {
+          templateUrl: '/partials/friends', controller: 'cinegraphController'
+        })
         .when('/unauthorized', {
           templateUrl: '/partials/unauthorized', controller: 'restrictedController'
         })

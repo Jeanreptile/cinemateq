@@ -120,7 +120,17 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
         $scope.isLoggedIn = isLoggedIn;
         $scope.currentUser = AuthService.currentUser();
+        $scope.currentUserToEdit = angular.copy($scope.currentUser);
     });
+
+    $scope.updateProfile = function(user) {
+        var currentUser = angular.copy(user);
+        $http.put('/users/updateUser', currentUser).success(function (res) {
+            $window.localStorage.user = JSON.stringify(res.user);
+            $scope.currentUser = AuthService.currentUser();
+            $location.path('/profile');
+        });
+    }
 
     $scope.logout = function(){
       AuthService.logout();

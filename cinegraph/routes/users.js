@@ -27,6 +27,42 @@ router.post('/register', findOrCreateUser, function(req, res) {
    res.json({ token : token, user : user });
 });
 
+router.put('/updateUser', function(req, res) {
+  // check in neo4j if a user with username exists or not
+  predicate = {'username': req.body.username};
+  db.find(predicate, 'User', function (err, objs) {
+    // In case of any error, return using the done method
+    if (err) {
+      res.json(401, {"message" : "Error with database"});
+    }
+      // Username does not exist, log error & redirect back
+    if (objs.length == 0) {
+      return res.status(401).json({'message':'User Not found.'});
+    }
+
+    var userNode = objs[0];
+
+    var username = req.body.username;
+    var pwd = req.body.password ? createHash(req.body.password) : objs[0].password;
+    var email = req.body.email;
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+
+    userNode.username = username;
+    userNode.password = pwd;
+    userNode.email = email;
+    userNode.firstName = firstName;
+    userNode.lastName = lastName;
+
+    db.save(userNode, function(err, node) {
+      if (err) throw err;
+      var userUpdated = {'firstName':node.firstName, 'lastName':node.lastName, 'username': node.username,
+        'id': node.id, 'email': node.email, 'password': node.password};
+      res.json({user: userUpdated});
+    });
+  });
+});
+
 
 function authenticate(req, res, next) {
   // check in neo4j if a user with username exists or not
@@ -46,7 +82,7 @@ function authenticate(req, res, next) {
       // User and password both match, return user from
       // done method which will be treated like success
     }
-    user = {'firstName':objs[0].firstName, 'lastName':objs[0].lastName, 'username': objs[0].username, 'id':objs[0].id}
+    user = {'firstName':objs[0].firstName, 'lastName':objs[0].lastName, 'username': objs[0].username, 'id':objs[0].id, 'email':objs[0].email};
     next();
     });
 }
@@ -82,7 +118,7 @@ function findOrCreateUser(req, res, next) {
                 'User', function(err, node) {
         if (err) throw err;
         console.log("User Registration Sucessful");
-        user = {'firstName':node.firstName, 'lastName':node.lastName, 'username': node.username, 'id':node.id}
+        user = {'firstName':node.firstName, 'lastName':node.lastName, 'username': node.username, 'id':node.id, 'email': node.email};
         next();
       });
     }

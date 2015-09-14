@@ -1,0 +1,101 @@
+section.vbox
+	include ./header.jade
+	section
+		section.hbox.stretch
+			aside#nav.aside-lg.bg-black.hidden-print.hidden-xs
+				section.vbox
+					section.w-f.scrollable
+						.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
+							.clearfix.wrapper.dk.nav-user.hidden-xs
+								.row
+									.col-sm-12.avatar-center-xs
+										span.thumb.pull-left.avatar.m-r
+											img.dker(src="images/a0.png")
+											i.on.md.b-black
+										span.hidden-nav-xs.clear
+											span.block.m-t-xs
+												div(ng-if='currentUser')
+													strong.font-bold.text-lt {{currentUser.firstName}}
+													span.text-muted.text-xs.block Cinephile
+												div(ng-if='currentUser == undefined')
+													strong.font-bold.text-lt Invité
+													span.text-muted.text-xs.block Novice
+								.row.m-t-sm.hidden-nav-xs
+									.col-sm-12.text-center
+										a.btn.btn-s-md.btn-info.btn-sm(href='/mycinegraph')
+											|See my cinegraphs
+											i.i.i-arrow-right.m-l-xs
+					footer.footer.hidden-xs.no-padder.text-center-nav-xs
+						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(data-target='#nav', data-toggle='class:nav-xs')
+							i.i.i-circleleft.text
+								i.i.i-circleright.text-active
+			section#content
+				section.vbox(ng-controller='FriendsController')
+					section.panel.panel-default
+							header.panel-heading
+								.input-group.text-sm
+									input.input-sm.form-control(type='text', placeholder='Search')
+									|                         
+									.input-group-btn
+										button.btn.btn-sm.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
+											| Search 
+							|                     
+							ul.list-group.alt
+								li.list-group-item(ng-repeat="friend in currentFriends")
+									.media
+										span.pull-left.thumb-sm
+											img.img-circle(src='images/a0.png', alt='John said')
+										|                           
+										.pull-right.text-success.m-t-sm
+											i.fa.fa-circle
+										|                           
+										.media-body
+											div
+												a(href='#') {{friend.firstName}} {{friend.lastName}}
+								li.list-group-item
+									.media
+										span.pull-left.thumb-sm
+											img.img-circle(src='images/a0.png', alt='John said')
+										|                           
+										.pull-right.text-success.m-t-sm
+											i.fa.fa-circle
+										|                           
+										.media-body
+											div
+												a(href='#') Chris Fox
+								|                       
+								li.list-group-item
+									.media
+										span.pull-left.thumb-sm
+											img.img-circle(src='images/a0.png', alt='John said')
+										|                           
+										.pull-right.text-success.m-t-sm
+											i.fa.fa-circle
+										|                           
+										.media-body
+											div
+												a(href='#') Amanda Conlan
+								|                       
+								li.list-group-item
+									.media
+										span.pull-left.thumb-sm
+											img.img-circle(src='images/a0.png', alt='John said')
+										|                           
+										.pull-right.text-success.m-t-sm
+											i.fa.fa-circle
+										|                           
+										.media-body
+											div
+												a(href='#') Dan Doorack
+								|                       
+								li.list-group-item
+									.media
+										span.pull-left.thumb-sm
+											img.img-circle(src='images/a0.png', alt='John said')
+										|                           
+										.pull-right.text-success.m-t-sm
+											i.fa.fa-circle
+										|                           
+										.media-body
+											div
+												a(href='#') Lauren Taylor

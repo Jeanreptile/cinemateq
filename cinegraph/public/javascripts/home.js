@@ -441,8 +441,9 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $('#noteObj').on('change', function () {
       var noteObj = $(this).val();
       $http.post( "/api/user/rateObj", {movieId: $scope.currentNode.id, noteObj: noteObj})
-        .success(function() {
-        }).
+        .success(function(updatedNode) {
+        $scope.currentNode.globalObjScore = updatedNode.globalObjScore;
+      }).
         error(function() {
       });
     });
@@ -451,8 +452,9 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $('#noteLove').on('change', function () {
       var noteLove = $(this).val();
       $http.post( "/api/user/rateLove", {movieId: $scope.currentNode.id, noteLove : noteLove})
-        .success(function() {
-        }).
+        .success(function(updatedNode) {
+        $scope.currentNode.globalLoveScore = updatedNode.globalLoveScore;
+      }).
         error(function() {
       });
     });

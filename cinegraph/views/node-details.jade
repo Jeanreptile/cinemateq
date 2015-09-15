@@ -16,10 +16,21 @@ div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 	small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
 		| {{genre}}
 		i.i.i-dot(ng-hide="$last")
-	div.row
-		div.col-xs-12.m-t-sm
+	div.row.m-t-sm
+		div.col-xs-5.global-score
+			div.h4.font-bold
+				| {{currentNode.globalObjScore}}
+			small.text-muted
+				| Objective score
+		div.col-xs-7
 			input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-2x', data-empty='fa fa-star-o fa-2x')
-		div.col-xs-12.m-t-sm
+	div.row.m-t-sm
+		div.col-xs-5.global-score
+			div.h4.font-bold
+				| {{currentNode.globalLoveScore}}
+			small.text-muted
+				| Love score
+		div.col-xs-7
 			input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
 		div.col-xs-12.m-t-sm
 			button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button')

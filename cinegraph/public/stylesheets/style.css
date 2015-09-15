@@ -59,6 +59,11 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 	color: #159a78;
 }
 
+.global-score {
+  padding-left: 30px;
+  padding-right: 0;
+}
+
 /* SEARCH PAGE */
 
 .blur-filter {

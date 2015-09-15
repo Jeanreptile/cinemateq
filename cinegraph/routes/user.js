@@ -119,14 +119,15 @@ function updateGlobalScore(type, id, score, alreadyRatedByUser, oldScore, callba
 		}
 		if (!alreadyRatedByUser) {
 			numberOfRatings++;
-			globalScore += score * 2;
+			globalScore += score;
 			globalScore /= numberOfRatings;
 		}
 		else {
-			globalScore -= (oldScore * 2) / numberOfRatings;
-			globalScore += (score * 2) / numberOfRatings;
+			globalScore -= oldScore / numberOfRatings;
+			globalScore += score / numberOfRatings;
 		}
 
+		globalScore = globalScore % 1 != 0 ? globalScore.toFixed(1) : globalScore;
 		if (type == "love") {
 			node.globalLoveScore = globalScore;
 			node.numberOfLoveRatings = numberOfRatings;
@@ -135,11 +136,11 @@ function updateGlobalScore(type, id, score, alreadyRatedByUser, oldScore, callba
 			node.globalObjScore = globalScore;
 			node.numberOfObjRatings = numberOfRatings;
 		}
-		console.log("node: " + JSON.stringify(node));
-		console.log("global" + type + "Score: " + globalScore);
+		//console.log("node: " + JSON.stringify(node));
+		//console.log("global" + type + "Score: " + globalScore);
 		db.save(node, function (err, updatedNode) {
 			if (err) throw err;
-			console.log("new node: " + JSON.stringify(updatedNode));
+			//console.log("new node: " + JSON.stringify(updatedNode));
 			callback(updatedNode);
 		});
 	});

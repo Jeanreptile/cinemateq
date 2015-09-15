@@ -12,9 +12,25 @@
 			div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
 				img.col-sm-12(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
 			div(ng-controller="ModalRatingCtrl")
-				div.col-xs-12.m-t-sm
+				div.row
+					div.col-xs-5.global-score.m-t-sm
+						div.h4.font-bold
+							| {{currentNode.globalObjScore}}
+						small.text-muted
+							| Objective score
+					div.col-xs-7.m-t-sm
+						input#noteObj2.rating(type='hidden', data-filled='fa fa-star fa-2x', data-empty='fa fa-star-o fa-2x')
+				div.row
+					div.col-xs-5.global-score.m-t-sm
+						div.h4.font-bold
+							| {{currentNode.globalLoveScore}}
+						small.text-muted
+							| Love score
+					div.col-xs-7.m-t-sm
+						input#noteLove2.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
+				//div.col-xs-12.m-t-sm
 					input#noteObj2.rating(type='hidden', data-filled='fa fa-star fa-3x', data-empty='fa fa-star-o fa-3x')
-				div.col-xs-12.m-t-sm
+				//div.col-xs-12.m-t-sm
 					input#noteLove2.rating(type='hidden', data-filled='fa fa-heart fa-3x', data-empty='fa fa-heart-o fa-3x')
 			div.col-xs-12.m-t-sm
 					button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button')

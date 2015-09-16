@@ -3,44 +3,22 @@ var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
     $locationProvider.html5Mode(true);
     $routeProvider
-        .when('/', {
-          templateUrl: 'partials/search', controller: 'TypeaheadCtrl'
-        })
-        .when('/signin', {
-            templateUrl: 'partials/signin', controller: "UserCtrl"
-        })
-        .when('/register', {
-            templateUrl: 'partials/register', controller: "UserCtrl"
-        })
-        .when('/profile', {
-            templateUrl: 'partials/profile', controller: 'cinegraphController'
-        })
-        .when('/home', {
-            templateUrl: 'partials/home', controller: 'UserCtrl'
-        })
-        .when('/restricted', {
-          templateUrl: '/partials/restricted'
-        })
-        .when('/mycinegraph', {
-          templateUrl: '/partials/mycinegraph', controller: 'MyCinegraphCtrl',
-          access: { requiredAuthentication: true }
-        })
+        .when('/', { templateUrl: 'partials/search', controller: 'TypeaheadCtrl' })
+        .when('/signin', { templateUrl: 'partials/signin', controller: "UserCtrl" })
+        .when('/register', { templateUrl: 'partials/register', controller: "UserCtrl" })
+        .when('/profile', { templateUrl: 'partials/profile', controller: 'cinegraphController' })
+        .when('/home', { templateUrl: 'partials/home', controller: 'UserCtrl' })
+        .when('/restricted', { templateUrl: '/partials/restricted' })
+        .when('/mycinegraph', { templateUrl: '/partials/mycinegraph', controller: 'MyCinegraphCtrl',
+            access: { requiredAuthentication: true }})
         .when('/cinegraph/:testId', {
           templateUrl: '/partials/mycinegraphSingle', controller: 'MyCinegraphCtrl',
           access: { requiredAuthentication: true }
         })
-        .when('/error', {
-          templateUrl: '/partials/error'
-        })
-        .when('/index', {
-          templateUrl: '/partials/index', controller: 'cinegraphController'
-        })
-        .when('/friends', {
-          templateUrl: '/partials/friends', controller: 'cinegraphController'
-        })
-        .when('/unauthorized', {
-          templateUrl: '/partials/unauthorized', controller: 'restrictedController'
-        })
+        .when('/error', { templateUrl: '/partials/error' })
+        .when('/index', { templateUrl: '/partials/index', controller: 'cinegraphController' })
+        .when('/friends', { templateUrl: '/partials/friends', controller: 'cinegraphController' })
+        .when('/unauthorized', { templateUrl: '/partials/unauthorized', controller: 'restrictedController' })
         .when('/signout', {
             redirectTo: '/',
             resolve: {
@@ -49,9 +27,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
               }
             }
           })
-        .otherwise({
-            redirectTo: '/'
-        }
+        .otherwise({ redirectTo: '/'}
     );
 }]);
 
@@ -233,6 +209,26 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     }
 
+    $scope.paginateBy = function(job, relationship) {
+        //console.log('paginateBy', job, relationship);
+        /* TODO: real pagination */
+        if ($scope.selectedJobs[job]) {
+            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
+                var obj = $scope.currentDisplayedNodes[i];
+                var startpoint = obj.start;
+                var endpoint = obj.end;
+                if ($scope.currentNode.type != 'Person') {
+                    startpoint = obj.end;
+                    endpoint = obj.start;
+                }
+                if ($scope.currentNode.id === startpoint && obj.type == relationship)
+                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
+            }
+            $scope.getRelatedNodesForType($scope.currentNode, relationship, $scope.findLimitForJob(relationship),
+                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
+        }
+    };
+
     function filterBy(job, relationship) {
         if ($scope.selectedJobs[job]) {
             $scope.getRelatedNodesForType($scope.currentNode, relationship, $scope.findLimitForJob(relationship),
@@ -247,10 +243,9 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                     startpoint = obj.end;
                     endpoint = obj.start;
                 }
-                if ($scope.currentNode.id === startpoint && obj.type == relationship) {
+                if ($scope.currentNode.id === startpoint && obj.type == relationship)
                     $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
+            }
         }
     }
 

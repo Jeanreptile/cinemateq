@@ -15,9 +15,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.actor", ng-change="filterByActor()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('actor','ACTED_IN');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('actor','ACTED_IN');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Producer
@@ -26,9 +26,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.producer", ng-change="filterByProducer()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('producer','PRODUCED');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('producer','PRODUCED');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Director
@@ -37,9 +37,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.director",  ng-change="filterByDirector()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('director','DIRECTED');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('director','DIRECTED');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Writer
@@ -48,9 +48,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.writer", ng-change="filterByWriter()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('writer','WROTE');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('writer','WROTE');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Editor
@@ -59,9 +59,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.editor", ng-change="filterByEditor()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('editor','EDITED');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('editor','EDITED');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Director of photography
@@ -70,9 +70,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.dirphotography", ng-change="filterByDirPhotography()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('dirphotography','DIRECTED_PHOTOGRAPHY');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('dirphotography','DIRECTED_PHOTOGRAPHY');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Music composer
@@ -81,9 +81,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.musiccomposer", ng-change="filterByMusicComposer()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('musiccomposer','COMPOSED_MUSIC');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('musiccomposer','COMPOSED_MUSIC');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Costume designer
@@ -92,9 +92,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.cosdesigner", ng-change="filterByCosDesigner()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('cosdesigner','DESIGNED_COSTUMES');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('cosdesigner','DESIGNED_COSTUMES');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Production designer
@@ -103,9 +103,9 @@ aside#sidebar.aside-md.bg-black.hide
 									input(type='checkbox', ng-model="selectedJobs.proddesigner", ng-change="filterByProdDesigner()")
 									span
 								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('proddesigner','DESIGNED_PRODUCTION');")
 										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('proddesigner','DESIGNED_PRODUCTION');")
 										i.fa.fa-arrow-right
 				.panel-heading.b-b.b-dark
 					i.fa.fa-filter.m-r-xs

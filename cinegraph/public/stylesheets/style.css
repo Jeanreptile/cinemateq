@@ -274,6 +274,11 @@ i.fa-heart, i.fa-plus, i.fa-eye {
   background-color: #e56371;
 }
 
+.graph-pagination-btn {
+  margin-top: -11px;
+  margin-left: 8px;
+}
+
 /* MYCINEGRAPH SINGLE VIEW */
 
 .myCinegraphSingle .cinegraph-actions i.fa {

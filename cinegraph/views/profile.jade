@@ -89,6 +89,8 @@ section.vbox
 										span.badge.bg-primary.badge-sm.m-l-xs 10
 								li
 									a(data-target='#edit', data-toggle='tab') Edit profile
+								li
+									a(data-target='#friends', data-toggle='tab') Friends
 							|               
 							.tab-content
 								#activities.panel.tab-pane.active
@@ -229,12 +231,70 @@ section.vbox
 												input#input-id-1.form-control(type='email', ng-model='currentUserToEdit.email')
 										.line.line-dashed.b-b.line-lg.pull-in
 										|                     
-										.form-group
+										//.form-group
 											label.col-sm-3.control-label Password:
 											.col-sm-5
 												input.form-control(type='password', ng-model='currentUserToEdit.password')
-										.line.line-dashed.b-b.line-lg.pull-in
+										//.line.line-dashed.b-b.line-lg.pull-in
 										|                     
 										.form-group
 											.col-sm-offset-3.col-sm-5
 												button.btn.btn-sm.btn-primary(type='submit', ng-click='updateProfile(currentUserToEdit)') Update
+								#friends.panel.tab-pane
+									section.vbox(ng-controller='FriendsController')
+										section.panel.panel-default
+												header.panel-heading
+													.input-group.text-sm
+														input.input-sm.form-control(type='text', placeholder='Search', ng-model="userToFind")
+														|                         
+														.input-group-btn
+															button.btn.btn-sm.btn-default.dropdown-toggle(type='button', ng-click="searchUser()")
+																| Search 
+												|                     
+												ul.list-group.alt(ng-show="!searchBool")
+													li.list-group-item(ng-repeat="friend in currentFriends | filter:userToFind")
+														.media
+															span.pull-left.thumb-sm
+																img.img-circle(src='images/a0.png', alt='John said')
+															|                           
+															.pull-right.text-success.m-t-sm
+																i.fa.fa-circle
+															|                           
+															.media-body
+																div
+																	a(href='#')
+																	b {{friend.username}} 
+																	| ({{friend.firstName}} {{friend.lastName}})
+												span(ng-show="loading")
+													| Loading
+												ul.list-group.alt(ng-show="searchBool")
+													span(ng-show="!usersToAdd.length")
+														| Found nothing !
+													li.list-group-item(ng-repeat="user in usersToAdd")
+														.media
+															span.pull-left.thumb-sm
+																img.img-circle(src='images/a0.png', alt='John said')
+															|                           
+															p.pull-right.text-success.m-t-sm
+																button.btn.btn-sm.btn-info(ng-click="addFriend(user.username)")
+																		i.fa.fa-plus.text
+																		|     
+																		span.text Add
+															|                           
+															.media-body
+																div
+																	a(href='#')
+																	b {{user.username}} 
+																	| ({{user.firstName}} {{user.lastName}})
+												.col-lg-6.col-md-offset-3
+														span(ng-repeat="alert in alerts")
+															.alert.alert-success(ng-show="alert.success")
+																button.close(type='button', data-dismiss='alert') &times;
+																i.fa.fa-ok-sign
+																strong Done!
+																|  {{alert.msg}}
+															.alert.alert-warning(ng-show="alert.error")
+																button.close(type='button', data-dismiss='alert') &times;
+																i.fa.fa-ok-sign
+																strong Woopsie... 
+																|  {{alert.msg}}

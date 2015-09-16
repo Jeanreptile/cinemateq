@@ -13,22 +13,25 @@ router.get('/query', function(req, res) {
 });
 
 /* GET persons listing. */
-router.get('/all', function(req, res) {
-	dbLocal.nodesWithLabel('Person', function(err, persons) {
-		res.json(persons);
+router.get('/find/:friendName', function(req, res) {
+	var cypher = "MATCH (n:User) WHERE n.username =~ \".*"+ req.params.friendName + ".*\" RETURN n";
+	dbLocal.query(cypher, function(err, result) {
+		if (err) throw err;
+		res.json(result);
 	});
-	// TODO: Handle errors
 });
 
 router.post('/add', function(req, res) {
   var cypher = "MATCH (u1:User),(u2:User) \
                   WHERE u1.username = {userName} AND u2.username = {friendName} \
                   MERGE (u1)-[r:FRIEND_WITH]->(u2)  \
-                  RETURN u1,u2,r";
+                  ON CREATE SET r.alreadyExisted=false  \
+					        ON MATCH SET r.alreadyExisted=true  \
+                  RETURN r.alreadyExisted";
 	dbLocal.query(cypher, { userName: req.body.user, friendName: req.body.friend}, function(err, result) {
 		if (err)
 			throw err;
-		res.json(result[0]);
+		res.json(result["r.alreadyExisted"]);
 	});
 	// TODO: Handle errors
 });

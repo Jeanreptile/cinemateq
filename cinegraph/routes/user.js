@@ -119,7 +119,7 @@ function updateGlobalScore(type, id, score, alreadyRatedByUser, oldScore, callba
 		}
 		if (!alreadyRatedByUser) {
 			numberOfRatings++;
-			globalScore += score;
+			globalScore += score * 1;
 			globalScore /= numberOfRatings;
 		}
 		else {

@@ -35,7 +35,8 @@ cinegraphApp.controller('FriendsController', function($scope, $http, $window, $l
     $scope.searchUser = function() {
       $scope.searchBool = true;
       $scope.loading = true;
-      $http.get('/api/friends/find/' + $scope.userToFind).success(function (data, status, headers, config) {
+      var userToSearch = $scope.userToFind.username.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
+      $http.get('/api/friends/find/' + userToSearch).success(function (data, status, headers, config) {
         $scope.usersToAdd = data;
         $scope.loading = false;
       })

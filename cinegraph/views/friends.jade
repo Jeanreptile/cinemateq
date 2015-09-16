@@ -76,15 +76,16 @@ section.vbox
 												b {{user.username}} 
 												| ({{user.firstName}} {{user.lastName}})
 							.col-lg-6.col-md-offset-3
-									.alert.alert-success(ng-show="alert.success")
-										button.close(type='button', data-dismiss='alert') &times;
-										i.fa.fa-ok-sign
-										strong Done!
-										|  {{alert.msg}}
-									.alert.alert-warning(ng-show="alert.error")
-										button.close(type='button', data-dismiss='alert') &times;
-										i.fa.fa-ok-sign
-										strong Woopsie... 
-										|  {{alert.msg}}
+									span(ng-repeat="alert in alerts")
+										.alert.alert-success(ng-show="alert.success")
+											button.close(type='button', data-dismiss='alert') &times;
+											i.fa.fa-ok-sign
+											strong Done!
+											|  {{alert.msg}}
+										.alert.alert-warning(ng-show="alert.error")
+											button.close(type='button', data-dismiss='alert') &times;
+											i.fa.fa-ok-sign
+											strong Woopsie... 
+											|  {{alert.msg}}
 
 								

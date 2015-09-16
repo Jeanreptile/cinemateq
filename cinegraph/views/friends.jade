@@ -34,14 +34,14 @@ section.vbox
 					section.panel.panel-default
 							header.panel-heading
 								.input-group.text-sm
-									input.input-sm.form-control(type='text', placeholder='Search', ng-model="userToFind")
+									input.input-sm.form-control(type='text', placeholder='Search', ng-model="userToFind.username")
 									|                         
 									.input-group-btn
 										button.btn.btn-sm.btn-default.dropdown-toggle(type='button', ng-click="searchUser()")
 											| Search 
 							|                     
 							ul.list-group.alt(ng-show="!searchBool")
-								li.list-group-item(ng-repeat="friend in currentFriends | filter:userToFind")
+								li.list-group-item(ng-repeat="friend in currentFriends | filter: userToFind")
 									.media
 										span.pull-left.thumb-sm
 											img.img-circle(src='images/a0.png', alt='John said')

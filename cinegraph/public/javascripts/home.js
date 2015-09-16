@@ -123,7 +123,17 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
         $scope.isLoggedIn = isLoggedIn;
         $scope.currentUser = AuthService.currentUser();
+        $scope.currentUserToEdit = angular.copy($scope.currentUser);
     });
+
+    $scope.updateProfile = function(user) {
+        var currentUser = angular.copy(user);
+        $http.put('/users/updateUser', currentUser).success(function (res) {
+            $window.localStorage.user = JSON.stringify(res.user);
+            $scope.currentUser = AuthService.currentUser();
+            $location.path('/profile');
+        });
+    }
 
     $scope.logout = function(){
       AuthService.logout();
@@ -223,9 +233,9 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     }
 
-    $scope.filterByActor = function() {
-        if ($scope.selectedJobs.actor) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'ACTED_IN', $scope.findLimitForJob('ACTED_IN'),
+    function filterBy(job, relationship) {
+        if ($scope.selectedJobs[job]) {
+            $scope.getRelatedNodesForType($scope.currentNode, relationship, $scope.findLimitForJob(relationship),
                 $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
         }
         else {
@@ -237,180 +247,22 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                     startpoint = obj.end;
                     endpoint = obj.start;
                 }
-                if ($scope.currentNode.id === startpoint && obj.type == "ACTED_IN") {
+                if ($scope.currentNode.id === startpoint && obj.type == relationship) {
                     $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
                 }
             };
         }
-    };
+    }
 
-    $scope.filterByDirector = function() {
-        if ($scope.selectedJobs.director) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED', $scope.findLimitForJob('DIRECTED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == "DIRECTED") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
-        }
-    };
-
-    $scope.filterByProducer = function() {
-        if ($scope.selectedJobs.producer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'PRODUCED', $scope.findLimitForJob('PRODUCED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == "PRODUCED") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
-        }
-    };
-
-    $scope.filterByWriter = function() {
-        if ($scope.selectedJobs.writer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'WROTE', $scope.findLimitForJob('WROTE'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == "WROTE") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
-        }
-    };
-
-    $scope.filterByEditor = function() {
-        if ($scope.selectedJobs.editor) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'EDITED', $scope.findLimitForJob('EDITED'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == "EDITED") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
-        }
-    };
-
-    $scope.filterByDirPhotography = function() {
-        if ($scope.selectedJobs.dirphotography) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DIRECTED_PHOTOGRAPHY', $scope.findLimitForJob('DIRECTED_PHOTOGRAPHY'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == "DIRECTED_PHOTOGRAPHY") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
-        }
-    };
-
-    $scope.filterByMusicComposer = function() {
-        if ($scope.selectedJobs.musiccomposer) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'COMPOSED_MUSIC', $scope.findLimitForJob('COMPOSED_MUSIC'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == "COMPOSED_MUSIC") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
-        }
-    };
-
-    $scope.filterByCosDesigner = function() {
-        if ($scope.selectedJobs.cosdesigner) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_COSTUMES', $scope.findLimitForJob('DESIGNED_COSTUMES'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == "DESIGNED_COSTUMES") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
-        }
-    };
-
-    $scope.filterByProdDesigner = function() {
-        if ($scope.selectedJobs.proddesigner) {
-            $scope.getRelatedNodesForType($scope.currentNode, 'DESIGNED_PRODUCTION', $scope.findLimitForJob('DESIGNED_PRODUCTION'),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == "WROTE") {
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-                }
-            };
-        }
-    };
+    $scope.filterByActor = function() { filterBy("actor", "ACTED_IN"); };
+    $scope.filterByDirector = function() { filterBy("director", "DIRECTED"); };
+    $scope.filterByProducer = function() { filterBy("producer", "PRODUCED"); };
+    $scope.filterByWriter = function() { filterBy("writer", "WROTE"); };
+    $scope.filterByEditor = function() { filterBy("editor", "EDITED"); };
+    $scope.filterByDirPhotography = function() { filterBy("dirphotography", "DIRECTED_PHOTOGRAPHY"); };
+    $scope.filterByMusicComposer = function() { filterBy("musiccomposer", "COMPOSED_MUSIC"); };
+    $scope.filterByCosDesigner = function() { filterBy("cosdesigner", "DESIGNED_COSTUMES"); };
+    $scope.filterByProdDesigner = function() { filterBy("proddesigner", "DESIGNED_PRODUCTION"); };
 
     $scope.open = function (size) {
         var modalInstance = $modal.open({
@@ -434,8 +286,9 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $('#noteObj').on('change', function () {
       var noteObj = $(this).val();
       $http.post( "/api/user/rateObj", {movieId: $scope.currentNode.id, noteObj: noteObj})
-        .success(function() {
-        }).
+        .success(function(updatedNode) {
+        $scope.currentNode.globalObjScore = updatedNode.globalObjScore;
+      }).
         error(function() {
       });
     });
@@ -444,8 +297,9 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     $('#noteLove').on('change', function () {
       var noteLove = $(this).val();
       $http.post( "/api/user/rateLove", {movieId: $scope.currentNode.id, noteLove : noteLove})
-        .success(function() {
-        }).
+        .success(function(updatedNode) {
+        $scope.currentNode.globalLoveScore = updatedNode.globalLoveScore;
+      }).
         error(function() {
       });
     });

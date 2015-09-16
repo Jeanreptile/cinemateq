@@ -59,6 +59,11 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 	color: #159a78;
 }
 
+.global-score {
+  padding-left: 30px;
+  padding-right: 0;
+}
+
 /* SEARCH PAGE */
 
 .blur-filter {
@@ -267,6 +272,11 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 
 .filter-menu .switch.cos-designer input:checked + span {
   background-color: #e56371;
+}
+
+.graph-pagination-btn {
+  margin-top: -11px;
+  margin-left: 8px;
 }
 
 /* MYCINEGRAPH SINGLE VIEW */

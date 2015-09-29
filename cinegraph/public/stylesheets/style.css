@@ -346,3 +346,25 @@ i.fa-heart, i.fa-plus, i.fa-eye {
   padding: 20px;
   display: block;
 }
+
+/* GRAPH */
+.canvasNodeFilter {
+  position: absolute;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  left: -1000px;
+}
+.canvasNodeFilterContent {
+  background-color: #aaaaaa;
+  color: white;
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 9px;
+  border-radius: 50%;
+  position: relative;
+  top: -20px;
+  left: -20px;
+  cursor: pointer;
+}

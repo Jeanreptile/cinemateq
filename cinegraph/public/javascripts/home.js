@@ -197,6 +197,17 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     };
 
+    $scope.jobsRelationships = {
+        actor: 'ACTED_IN',
+        writer: 'WROTE',
+        producer: 'PRODUCED',
+        director: 'DIRECTED',
+        editor: 'EDITED',
+        dirphotography: 'DIRECTED_PHOTOGRAPHY',
+        musiccomposer: 'COMPOSED_MUSIC',
+        cosdesigner: 'DESIGNED_COSTUMES',
+        proddesigner: 'DESIGNED_PRODUCTION'
+    };
     $scope.currentNode.id = selectedNodeId;
 
     $scope.currentDisplayedNodes = [];
@@ -229,7 +240,8 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     };
 
-    function filterBy(job, relationship) {
+    $scope.filterBy = function filterBy(job, relationship) {
+        console.log('filterBy');
         if ($scope.selectedJobs[job]) {
             $scope.getRelatedNodesForType($scope.currentNode, relationship, $scope.findLimitForJob(relationship),
                 $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
@@ -247,17 +259,17 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                     $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
             }
         }
-    }
+    };
 
-    $scope.filterByActor = function() { filterBy("actor", "ACTED_IN"); };
-    $scope.filterByDirector = function() { filterBy("director", "DIRECTED"); };
-    $scope.filterByProducer = function() { filterBy("producer", "PRODUCED"); };
-    $scope.filterByWriter = function() { filterBy("writer", "WROTE"); };
-    $scope.filterByEditor = function() { filterBy("editor", "EDITED"); };
-    $scope.filterByDirPhotography = function() { filterBy("dirphotography", "DIRECTED_PHOTOGRAPHY"); };
-    $scope.filterByMusicComposer = function() { filterBy("musiccomposer", "COMPOSED_MUSIC"); };
-    $scope.filterByCosDesigner = function() { filterBy("cosdesigner", "DESIGNED_COSTUMES"); };
-    $scope.filterByProdDesigner = function() { filterBy("proddesigner", "DESIGNED_PRODUCTION"); };
+    $scope.filterByActor = function() { $scope.filterBy("actor", "ACTED_IN"); };
+    $scope.filterByDirector = function() { $scope.filterBy("director", "DIRECTED"); };
+    $scope.filterByProducer = function() { $scope.filterBy("producer", "PRODUCED"); };
+    $scope.filterByWriter = function() { $scope.filterBy("writer", "WROTE"); };
+    $scope.filterByEditor = function() { $scope.filterBy("editor", "EDITED"); };
+    $scope.filterByDirPhotography = function() { $scope.filterBy("dirphotography", "DIRECTED_PHOTOGRAPHY"); };
+    $scope.filterByMusicComposer = function() { $scope.filterBy("musiccomposer", "COMPOSED_MUSIC"); };
+    $scope.filterByCosDesigner = function() { $scope.filterBy("cosdesigner", "DESIGNED_COSTUMES"); };
+    $scope.filterByProdDesigner = function() { $scope.filterBy("proddesigner", "DESIGNED_PRODUCTION"); };
 
     $scope.open = function (size) {
         var modalInstance = $modal.open({
@@ -703,6 +715,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             composerBackground.render();
             composerLines.render();
             updateHoverLabelPosition();
+            updateFiltersPosition();
             composer.render();
             updateGradientLayer();
             gradientComposer.render();
@@ -1394,6 +1407,57 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        function filterCallback(job) {
+            scope.selectedJobs[job] = !scope.selectedJobs[job];
+            scope.filterBy(job, scope.jobsRelationships[job]);
+        }
+
+        function displayFilters() {
+            if(current._id != scope.currentNode.id)
+                return;
+            var i = -2;
+            var slice = PI2 / 12;
+            $('.canvasNodeFilter').fadeOut(function(){ $(this).remove(); });
+            for (var f in scope.selectedJobs){
+                i++;
+                var filter = $('<div class="canvasNodeFilter '+f+'"><div class="canvasNodeFilterContent">◄►</div></div>');
+                filter.find('.canvasNodeFilterContent').css({
+                    "background-color": scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+                    "color": !scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+                });
+                var p = toScreenPosition(current.position);
+                var radius = getSpriteRadius(current.position, current.scale.x);
+                var r = filter.find('.canvasNodeFilterContent').outerWidth() / 2;
+                radius += r * 1.2;
+                var x = p.x + radius * Math.cos(slice * i);
+                var y = p.y + radius * Math.sin(slice * i);
+                filter.css({ top: y, left: x });
+                filter.click((function(a) { return function() { filterCallback(a); }; })(f));
+                $('#graph').after(filter.hide().fadeIn(), "fast");
+            }
+        }
+
+        function updateFiltersPosition() {
+            if (current == null || current._id != scope.currentNode.id)
+            {
+                $('.canvasNodeFilter').fadeOut(function(){ $(this).remove(); });
+                return;
+            }
+            var i = -2;
+            var slice = PI2 / 12;
+            for (f in scope.selectedJobs){
+                i++;
+                var filter = $('.canvasNodeFilter.' + f);
+                var p = toScreenPosition(current.position);
+                var radius = getSpriteRadius(current.position, current.scale.x);
+                var r = filter.find('.canvasNodeFilterContent').outerWidth() / 2;
+                radius += r * 1.2;
+                var x = p.x + radius * Math.cos(slice * i);
+                var y = p.y + radius * Math.sin(slice * i);
+                filter.css({ top: y, left: x });
+            }
+        }
+
         function setMousePosition(event)
         {
             event = event || window.event;
@@ -1645,6 +1709,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     // updating intersected node and animating opacity
                     current = INTERSECTED;
                     updateHoverLabel(current.name);
+                    displayFilters();
                     current.animationOpacity = nodeOpacity;
                     if (scope.cinegraphId != undefined && current.material.opacity == nodeSuggestionOpacity)
                         current.material.opacity = 0.99;

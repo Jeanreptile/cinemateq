@@ -1,10 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var bCrypt = require('bcrypt-nodejs');
-var db = require("seraph")("http://localhost:7474");
 var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
 
+var config = require('../config');
+
+var db = require("seraph")(config.database_url);
 
 /* POST user login. */
 router.post('/login', authenticate, function(req, res) {

@@ -47,6 +47,9 @@ var insecureServer = http.createServer(function (req, res) {
 }).listen(port);
 
 
+var io     = app.io
+io.attach( server );
+
 /**
  * Normalize a port into a number, string, or false.
  */

@@ -1,7 +1,9 @@
 var express = require('express');
 var http = require('http');
 var router = express.Router();
-var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
+var config = require('../config');
+
+var dbLocal = require("seraph")(config.database_url);
 
 /* For tests only. */
 router.get('/query', function(req, res) {

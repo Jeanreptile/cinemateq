@@ -2,7 +2,8 @@ var express = require('express');
 var http = require('http');
 var request = require('request');
 var router = express.Router();
-var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
+var config = require('../config');
+var dbLocal = require("seraph")(config.database_url);
 
 function pushNumberOfRelations(index, id, relTypes, count, callback) {
 	dbLocal.relationships(id, "out", relTypes[index]["name"], function(err, relationships) {
@@ -138,7 +139,7 @@ router.get('/:id/relationshipsRaw/:direction/:type', function(req, res) {
 });
 
 router.get('/:id/relationshipsRaw/:direction/:type/:limit', function(req, res) {
-	
+
 	if (req.params.type == "ACTED_IN")
 	{
 		if (req.params.direction == "in")

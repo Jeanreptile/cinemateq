@@ -119,6 +119,20 @@ app.use(function(err, req, res, next) {
 var redis = require('redis');
 var client = redis.createClient();
 
+client.on("error", function (err) {
+    console.log("Error " + err);
+    String.prototype.endsWith = function(pattern) {
+      var d = this.length - pattern.length;
+      return d >= 0 && this.lastIndexOf(pattern) === d;
+    };
+    errStr = "" + err;
+    if (errStr.endsWith("ECONNREFUSED"))
+    {
+      console.log("Redis can't connect.");
+      client.end();
+    }
+});
+
 client.on('ready', function() {
   console.log('Got ready from Redis, will listen for notifications channel');
   client.subscribe('notification');

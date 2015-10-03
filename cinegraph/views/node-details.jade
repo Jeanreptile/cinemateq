@@ -22,24 +22,38 @@ div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 		| {{genre}}
 		i.i.i-dot(ng-hide="$last")
 	div.row.m-t-sm
-		div.col-xs-5.global-score
+		div.col-xs-5.global-score(ng-show='currentUser')
 			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
 				| {{currentNode.globalObjScore}}
 			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
 				| 0
 			small.text-muted
 				| Objective score
-		div.col-xs-7
+		div.col-xs-12.global-score(ng-show='currentUser == undefined')
+			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
+				| {{currentNode.globalObjScore}}
+			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
+				| 0
+			small.text-muted
+				| Objective score
+		div.col-xs-7(ng-show='currentUser')
 			input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-2x', data-empty='fa fa-star-o fa-2x')
 	div.row.m-t-sm
-		div.col-xs-5.global-score
+		div.col-xs-5.global-score(ng-show='currentUser')
 			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
 				| {{currentNode.globalLoveScore}}
 			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
 				| 0
 			small.text-muted
 				| Love score
-		div.col-xs-7
+		div.col-xs-12.global-score(ng-show='currentUser == undefined')
+			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
+				| {{currentNode.globalLoveScore}}
+			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
+				| 0
+			small.text-muted
+				| Love score
+		div.col-xs-7(ng-show='currentUser')
 			input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
 		div.col-xs-12.m-t-sm
 			//button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button')

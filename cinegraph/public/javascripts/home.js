@@ -208,6 +208,19 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         cosdesigner: 'DESIGNED_COSTUMES',
         proddesigner: 'DESIGNED_PRODUCTION'
     };
+
+    $scope.jobsNames = {
+        actor: 'Actor',
+        writer: 'Writer',
+        producer: 'Producer',
+        director: 'Director',
+        editor: 'Editor',
+        dirphotography: 'Director of photography',
+        musiccomposer: 'Music composer',
+        cosdesigner: 'Costume designer',
+        proddesigner: 'Production designer'
+    };
+
     $scope.currentNode.id = selectedNodeId;
 
     $scope.currentDisplayedNodes = [];
@@ -715,7 +728,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             composerBackground.render();
             composerLines.render();
             updateHoverLabelPosition();
-            updateFiltersPosition();
+            updateFilters();
             composer.render();
             updateGradientLayer();
             gradientComposer.render();
@@ -1410,51 +1423,64 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function filterCallback(job) {
             scope.selectedJobs[job] = !scope.selectedJobs[job];
             scope.filterBy(job, scope.jobsRelationships[job]);
-        }
-
-        function displayFilters() {
-            if(current._id != scope.currentNode.id)
-                return;
-            var i = -2;
-            var slice = PI2 / 12;
-            $('.canvasNodeFilter').fadeOut(function(){ $(this).remove(); });
-            for (var f in scope.selectedJobs){
-                i++;
-                var filter = $('<div class="canvasNodeFilter '+f+'"><div class="canvasNodeFilterContent">◄►</div></div>');
-                filter.find('.canvasNodeFilterContent').css({
-                    "background-color": scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
-                    "color": !scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+            var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilterLeft, .canvasNodeFilterRight');
+            if (btn.length > 0){
+                var tmp = btn.css('background-color');
+                btn.css({
+                    "background-color": btn.css('color'),
+                    "color": tmp,
                 });
-                var p = toScreenPosition(current.position);
-                var radius = getSpriteRadius(current.position, current.scale.x);
-                var r = filter.find('.canvasNodeFilterContent').outerWidth() / 2;
-                radius += r * 1.2;
-                var x = p.x + radius * Math.cos(slice * i);
-                var y = p.y + radius * Math.sin(slice * i);
-                filter.css({ top: y, left: x });
-                filter.click((function(a) { return function() { filterCallback(a); }; })(f));
-                $('#graph').after(filter.hide().fadeIn(), "fast");
             }
         }
 
-        function updateFiltersPosition() {
+        function paginateCallback(job, direction){
+            console.log('paginateCallback', job, direction);
+            // TODO
+            // real pagination call
+            //scope.paginateBy(job, scope.jobsRelationships[job]);
+        }
+
+        function updateFilters() {
             if (current == null || current._id != scope.currentNode.id)
-            {
-                $('.canvasNodeFilter').fadeOut(function(){ $(this).remove(); });
-                return;
-            }
-            var i = -2;
-            var slice = PI2 / 12;
-            for (f in scope.selectedJobs){
-                i++;
-                var filter = $('.canvasNodeFilter.' + f);
-                var p = toScreenPosition(current.position);
-                var radius = getSpriteRadius(current.position, current.scale.x);
-                var r = filter.find('.canvasNodeFilterContent').outerWidth() / 2;
-                radius += r * 1.2;
-                var x = p.x + radius * Math.cos(slice * i);
-                var y = p.y + radius * Math.sin(slice * i);
-                filter.css({ top: y, left: x });
+                $('.canvasNodeFilter').fadeOut(300, function(){ $(this).remove(); });
+            else {
+                var i = -2;
+                var slice = PI2 / 12;
+                for (f in scope.selectedJobs){
+                    i++;
+                    var filter = $('.canvasNodeFilter.' + f);
+                    if (filter.length <= 0) {
+                        filter = $('<div class="canvasNodeFilter ' + f + '" title="' + scope.jobsNames[f] + '"> \
+                            <div class="canvasNodeFilterLeft">◄</div><div class="canvasNodeFilterRight">►</div></div>');
+                        filter.find('.canvasNodeFilterLeft, .canvasNodeFilterRight').css({
+                            "background-color": scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+                            "color": !scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+                        });
+                        filter.data('job', f);
+                        // binding long click event
+                        filter.mousedown(function(){
+                            $(this).data('pressed', 'true');
+                            setTimeout((function(f) { return function() {
+                                if (f.data('pressed')) filterCallback(f.data('job'));
+                            }; })($(this)), 500);
+                        }).on('mouseup mouseleave', function(){ console.log('coucou');$(this).data('pressed', false); });
+                        // pagination click
+                        filter.find('.canvasNodeFilterLeft').click(function(){
+                            paginateCallback($(this).parent().data('job'), 'left');
+                        });
+                        filter.find('.canvasNodeFilterRight').click(function(){
+                            paginateCallback($(this).parent().data('job'), 'right');
+                        });
+                        $('#graph').after(filter.hide().fadeIn(300));
+                    }
+                    var p = toScreenPosition(current.position);
+                    var radius = getSpriteRadius(current.position, current.scale.x);
+                    var r = filter.outerWidth() / 2;
+                    radius += r * 1.2;
+                    var x = p.x + radius * Math.cos(slice * i) - r;
+                    var y = p.y + radius * Math.sin(slice * i) - r;
+                    filter.css({ top: y, left: x });
+                }
             }
         }
 
@@ -1709,7 +1735,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     // updating intersected node and animating opacity
                     current = INTERSECTED;
                     updateHoverLabel(current.name);
-                    displayFilters();
                     current.animationOpacity = nodeOpacity;
                     if (scope.cinegraphId != undefined && current.material.opacity == nodeSuggestionOpacity)
                         current.material.opacity = 0.99;

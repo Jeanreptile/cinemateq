@@ -7,6 +7,9 @@ var bodyParser = require('body-parser');
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 var socket_io    = require( "socket.io" );
 
+var redisClient = require('./redis-db.js')
+
+
 
 var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
@@ -35,6 +38,8 @@ app.io           = io;
 
 
 
+
+
 var routes = require('./routes');
 var users = require('./routes/users');
 var user = require('./routes/user');
@@ -44,6 +49,7 @@ var searchRoutes = require('./routes/search');
 var commons = require('./routes/common');
 var mycinegraph = require('./routes/mycinegraph');
 var friends = require('./routes/friends');
+var notif = require('./routes/notif');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -73,7 +79,7 @@ app.use('/api/common', commons);
 app.use('/api/mycinegraph', mycinegraph);
 app.use('/api/user',  user);
 app.use('/api/friends',  friends);
-//app.use('/api/notifications', notifications);
+app.use('/api/notif', notif);
 
 
 //app.get('/partials/mycinegraphSingle', expressJwt({secret : 'SecretStory'}), routes.partials);
@@ -116,10 +122,8 @@ app.use(function(err, req, res, next) {
   });
 });
 
-var redis = require('redis');
-var client = redis.createClient();
 
-client.on("error", function (err) {
+redisClient.on("error", function (err) {
     console.log("Error " + err);
     String.prototype.endsWith = function(pattern) {
       var d = this.length - pattern.length;
@@ -129,19 +133,18 @@ client.on("error", function (err) {
     if (errStr.endsWith("ECONNREFUSED"))
     {
       console.log("Redis can't connect.");
-      client.end();
+      redisClient.end();
     }
 });
 
-client.on('ready', function() {
+redisClient.on('ready', function() {
   console.log('Got ready from Redis, will listen for notifications channel');
-  client.subscribe('notification');
+  redisClient.subscribe('notifications');
 });
 
-client.on("message", function(channel, message){
+redisClient.on("message", function(channel, message){
   console.log('Received message at Redis = '+channel+', message = '+message);
-  var resp = {'message': message}
-  io.sockets.in(channel).emit('message', resp);
+  io.sockets.in(channel).emit('message', message);
 });
 
 io.sockets.on('connection', function (socket) {
@@ -149,7 +152,11 @@ io.sockets.on('connection', function (socket) {
   //later messages are broadcasted on the rooms
   console.log("connection on socket !")
   socket.on('subscribe', function (data) {
+    console.log("data channel is " + data.channel);
     socket.join(data.channel);
+    redisClient.subscribe(data.channel);
+    //notif_name = 'notif_' + data;
+    //socket.emit('all_' + notif_name);
   });
 });
 

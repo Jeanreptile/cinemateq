@@ -119,21 +119,14 @@ var cinegraphController = cinegraphApp.controller('restrictedController',
 });
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
-    function($scope, $http, $window, $location, AuthService, $modal, socket) {
+    function($scope, $http, $window, $location, AuthService, $modal) {
     $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
         $scope.isLoggedIn = isLoggedIn;
         $scope.currentUser = AuthService.currentUser();
         $scope.currentUserToEdit = angular.copy($scope.currentUser);
     });
 
-    socket.on('connect', function(data){
-      socket.emit('subscribe', {channel:'notification'});
-    });
 
-    //new message arrival -- you are going to append into some HTML div
-    socket.on('message', function (data) {
-      console.log("Notification is : " + data);
-    });
 
 
     $scope.updateProfile = function(user) {

@@ -35,6 +35,22 @@ header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 	a.btn.btn-icon.b-2x.btn-info.btn-rounded.active.right-menu(data-target='#nav, #sidebar', data-toggle='class:nav-xs, show')
 		i.fa.fa-bars
 	ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
+		li.hidden-xs(ng-controller='notificationsController')
+			a.dropdown-toggle(href='#', data-toggle='dropdown')
+					i.i.i-chat3
+					span.badge.badge-sm.up.bg-danger.count 0
+				section.dropdown-menu.aside-xl.animated.flipInY
+					section.panel.bg-white
+						.panel-heading.b-light.bg-light
+							strong
+								| You have 
+								span.count 2
+								|  notifications
+						.list-group.list-group-alt
+						.panel-footer.text-sm
+							a.pull-right(href='#')
+								i.fa.fa-cog
+							a(href='#notes', data-toggle='class:show animated fadeInRight') See all the notifications
 		li.dropdown
 			a.dropdown-toggle(href='#', data-toggle='dropdown')
 				span.thumb-sm.pull-left.avatar.m-r

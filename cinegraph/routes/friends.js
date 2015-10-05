@@ -1,10 +1,10 @@
 var express = require('express');
 var http = require('http');
 var router = express.Router();
-
 var config = require('../config');
-
 var dbLocal = require("seraph")(config.database_url);
+var redis = require('redis');
+
 
 /* For tests only. */
 router.get('/query', function(req, res) {
@@ -22,6 +22,27 @@ router.get('/find/:friendName', function(req, res) {
 		if (err) throw err;
 		res.json(result);
 	});
+});
+
+
+router.post('/friend_request', function(req, res) {
+	// save in redis (Create an object notif.username:n and append n in notifs.username)
+	var redisClient = redis.createClient();
+	redisClient.incr("id:notifs." + req.body.userName, function(err, idNotif)
+	{
+		notifData = '{"type":"friend_request", "friend_name": "' + req.body.friendName + '"}'
+		redisClient.set("notif." + req.body.userName + ":" + idNotif, notifData);
+		redisClient.sadd("notifs." + req.body.userName, idNotif);
+		//publish notif
+		redisClient.publish("notifs."+req.body.userName, notifData);
+	});
+
+
+	//redisClient.set();
+
+	// publish notification
+	res.json('');
+
 });
 
 router.post('/add', function(req, res) {
@@ -48,4 +69,5 @@ router.get('/:id', function(req, res) {
 		res.json(result);
 	});
 });
+
 module.exports = router;

@@ -231,6 +231,30 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     };
 
+    $scope.jobsRelationships = {
+        actor: 'ACTED_IN',
+        writer: 'WROTE',
+        producer: 'PRODUCED',
+        director: 'DIRECTED',
+        editor: 'EDITED',
+        dirphotography: 'DIRECTED_PHOTOGRAPHY',
+        musiccomposer: 'COMPOSED_MUSIC',
+        cosdesigner: 'DESIGNED_COSTUMES',
+        proddesigner: 'DESIGNED_PRODUCTION'
+    };
+
+    $scope.jobsNames = {
+        actor: 'Actor',
+        writer: 'Writer',
+        producer: 'Producer',
+        director: 'Director',
+        editor: 'Editor',
+        dirphotography: 'Director of photography',
+        musiccomposer: 'Music composer',
+        cosdesigner: 'Costume designer',
+        proddesigner: 'Production designer'
+    };
+
     $scope.currentNode.id = selectedNodeId;
 
     $scope.currentDisplayedNodes = [];
@@ -263,7 +287,8 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     };
 
-    function filterBy(job, relationship) {
+    $scope.filterBy = function filterBy(job, relationship) {
+        console.log('filterBy');
         if ($scope.selectedJobs[job]) {
             $scope.getRelatedNodesForType($scope.currentNode, relationship, $scope.findLimitForJob(relationship),
                 $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
@@ -281,17 +306,17 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                     $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
             }
         }
-    }
+    };
 
-    $scope.filterByActor = function() { filterBy("actor", "ACTED_IN"); };
-    $scope.filterByDirector = function() { filterBy("director", "DIRECTED"); };
-    $scope.filterByProducer = function() { filterBy("producer", "PRODUCED"); };
-    $scope.filterByWriter = function() { filterBy("writer", "WROTE"); };
-    $scope.filterByEditor = function() { filterBy("editor", "EDITED"); };
-    $scope.filterByDirPhotography = function() { filterBy("dirphotography", "DIRECTED_PHOTOGRAPHY"); };
-    $scope.filterByMusicComposer = function() { filterBy("musiccomposer", "COMPOSED_MUSIC"); };
-    $scope.filterByCosDesigner = function() { filterBy("cosdesigner", "DESIGNED_COSTUMES"); };
-    $scope.filterByProdDesigner = function() { filterBy("proddesigner", "DESIGNED_PRODUCTION"); };
+    $scope.filterByActor = function() { $scope.filterBy("actor", "ACTED_IN"); };
+    $scope.filterByDirector = function() { $scope.filterBy("director", "DIRECTED"); };
+    $scope.filterByProducer = function() { $scope.filterBy("producer", "PRODUCED"); };
+    $scope.filterByWriter = function() { $scope.filterBy("writer", "WROTE"); };
+    $scope.filterByEditor = function() { $scope.filterBy("editor", "EDITED"); };
+    $scope.filterByDirPhotography = function() { $scope.filterBy("dirphotography", "DIRECTED_PHOTOGRAPHY"); };
+    $scope.filterByMusicComposer = function() { $scope.filterBy("musiccomposer", "COMPOSED_MUSIC"); };
+    $scope.filterByCosDesigner = function() { $scope.filterBy("cosdesigner", "DESIGNED_COSTUMES"); };
+    $scope.filterByProdDesigner = function() { $scope.filterBy("proddesigner", "DESIGNED_PRODUCTION"); };
 
     $scope.open = function (size) {
         var modalInstance = $modal.open({
@@ -737,6 +762,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             composerBackground.render();
             composerLines.render();
             updateHoverLabelPosition();
+            updateFilters();
             composer.render();
             updateGradientLayer();
             gradientComposer.render();
@@ -1425,6 +1451,89 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     top: y,
                     left: v.x - $('#canvasNodeLabel').outerWidth() / 2
                 });
+            }
+        }
+
+        function filterCallback(job) {
+            scope.selectedJobs[job] = !scope.selectedJobs[job];
+            scope.filterBy(job, scope.jobsRelationships[job]);
+            var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilterLeft, .canvasNodeFilterRight');
+            if (btn.length > 0){
+                var tmp = btn.css('background-color');
+                btn.css({
+                    "background-color": btn.css('color'),
+                    "color": tmp,
+                });
+            }
+        }
+
+        function paginateCallback(job, direction){
+            console.log('paginateCallback', job, direction);
+            var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilter' + direction);
+            var bgColor = btn.css('background-color');
+            var c = btn.css('background-color').replace(/[^0-9,]+/g, "");
+            var r = Math.min(parseInt(c.split(",")[0],10) + 25, 255),
+                g = Math.min(parseInt(c.split(",")[1],10) + 25, 255),
+                b = Math.min(parseInt(c.split(",")[2],10) + 25, 255);
+            var lighterBg = 'rgb('+ r +','+ g +','+ b +')';
+            // animating button color when paginating
+            btn.animate({ 'background-color': lighterBg }, 250, function() {
+                setTimeout((function(b, c) { return function() {
+                    b.animate({ 'background-color': c }, 250);
+                }; })($(this), bgColor), 1000);
+            });
+            // TODO : real pagination call
+            scope.paginateBy(job, scope.jobsRelationships[job]);
+        }
+
+        function updateFilters() {
+            if (current == null || current._id != scope.currentNode.id)
+                $('.canvasNodeFilter').fadeOut(300, function(){ $(this).remove(); });
+            else {
+                var i = -2;
+                var slice = PI2 / 12;
+                for (f in scope.selectedJobs){
+                    i++;
+                    var filter = $('.canvasNodeFilter.' + f);
+                    if (filter.length <= 0) {
+                        // create element if not existing
+                        filter = $('<div class="canvasNodeFilter ' + f + '" title="' + scope.jobsNames[f] + '"> \
+                            <div class="canvasNodeFilterLeft">◄</div><div class="canvasNodeFilterRight">►</div></div>');
+                        filter.find('.canvasNodeFilterLeft, .canvasNodeFilterRight').css({
+                            "background-color": scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+                            "color": !scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+                        });
+                        filter.data('job', f);
+                        // binding mouse events
+                        filter.mousedown(function(){
+                            $(this).data('pressed', 'true');
+                            setTimeout((function(f) { return function() {
+                                if (f.data('pressed')) {
+                                    filterCallback(f.data('job'));
+                                    f.data('pressed', false);
+                                }
+                            }; })($(this)), 500);
+                        }).on('mouseup', function(e){
+                            if ($(this).data('pressed')) {
+                                if(e.target == $(this).find('.canvasNodeFilterLeft')[0])
+                                    paginateCallback($(this).data('job'), 'Left');
+                                else
+                                    paginateCallback($(this).data('job'), 'Right');
+                            }
+                            $(this).data('pressed', false);
+                        }).on('mouseleave', function(){ $(this).data('pressed', false); });
+                        // adding
+                        $('#graph').after(filter.hide().fadeIn(300));
+                    }
+                    // calculating position
+                    var p = toScreenPosition(current.position);
+                    var radius = getSpriteRadius(current.position, current.scale.x);
+                    var r = filter.outerWidth() / 2;
+                    radius += r * 1.2;
+                    var x = p.x + radius * Math.cos(slice * i) - r;
+                    var y = p.y + radius * Math.sin(slice * i) - r;
+                    filter.css({ top: y, left: x });
+                }
             }
         }
 

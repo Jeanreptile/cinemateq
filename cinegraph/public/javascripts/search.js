@@ -37,7 +37,7 @@ $scope.OnItemClick = function(event) {
 
   $scope.getLocation = function(val) {
     console.log('Go Search !');
-    return $http.get('https://localhost/api/search/' + $scope.selectedItem, {
+    return $http.get('/api/search/' + $scope.selectedItem, {
       params: {
         query: val
       }

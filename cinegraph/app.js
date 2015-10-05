@@ -5,6 +5,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
+var socket_io    = require( "socket.io" );
+
 
 var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
@@ -27,6 +29,10 @@ app.all('*', function(req, res, next) {
 //var flash = require('connect-flash');
 //app.use(flash());
 
+// Socket.io
+var io           = socket_io();
+app.io           = io;
+
 
 
 var routes = require('./routes');
@@ -48,6 +54,7 @@ app.use(favicon(__dirname + '/public/favicon.png'));
 
 
 
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -66,6 +73,7 @@ app.use('/api/common', commons);
 app.use('/api/mycinegraph', mycinegraph);
 app.use('/api/user',  user);
 app.use('/api/friends',  friends);
+//app.use('/api/notifications', notifications);
 
 
 //app.get('/partials/mycinegraphSingle', expressJwt({secret : 'SecretStory'}), routes.partials);
@@ -73,6 +81,9 @@ app.get('/partials/mycinegraph', expressJwt({secret : 'SecretStory'}), routes.pa
 app.get('/partials/restricted', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/:name', routes.partials);
 app.get('*', routes.index);
+
+
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -104,5 +115,43 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
+
+var redis = require('redis');
+var client = redis.createClient();
+
+client.on("error", function (err) {
+    console.log("Error " + err);
+    String.prototype.endsWith = function(pattern) {
+      var d = this.length - pattern.length;
+      return d >= 0 && this.lastIndexOf(pattern) === d;
+    };
+    errStr = "" + err;
+    if (errStr.endsWith("ECONNREFUSED"))
+    {
+      console.log("Redis can't connect.");
+      client.end();
+    }
+});
+
+client.on('ready', function() {
+  console.log('Got ready from Redis, will listen for notifications channel');
+  client.subscribe('notification');
+});
+
+client.on("message", function(channel, message){
+  console.log('Received message at Redis = '+channel+', message = '+message);
+  var resp = {'message': message}
+  io.sockets.in(channel).emit('message', resp);
+});
+
+io.sockets.on('connection', function (socket) {
+  //on subscription request joins specified room
+  //later messages are broadcasted on the rooms
+  console.log("connection on socket !")
+  socket.on('subscribe', function (data) {
+    socket.join(data.channel);
+  });
+});
+
 
 module.exports = app;

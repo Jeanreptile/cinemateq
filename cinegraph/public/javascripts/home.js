@@ -1,5 +1,29 @@
 var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
+cinegraphApp.factory('socket', function ($rootScope) {
+  var socket = io.connect();
+  return {
+    on: function (eventName, callback) {
+      socket.on(eventName, function () {
+        var args = arguments;
+        $rootScope.$apply(function () {
+          callback.apply(socket, args);
+        });
+      });
+    },
+    emit: function (eventName, data, callback) {
+      socket.emit(eventName, data, function () {
+        var args = arguments;
+        $rootScope.$apply(function () {
+          if (callback) {
+            callback.apply(socket, args);
+          }
+        });
+      })
+    }
+  };
+});
+
 cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
     $locationProvider.html5Mode(true);
     $routeProvider
@@ -95,12 +119,22 @@ var cinegraphController = cinegraphApp.controller('restrictedController',
 });
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
-    function($scope, $http, $window, $location, AuthService, $modal) {
+    function($scope, $http, $window, $location, AuthService, $modal, socket) {
     $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
         $scope.isLoggedIn = isLoggedIn;
         $scope.currentUser = AuthService.currentUser();
         $scope.currentUserToEdit = angular.copy($scope.currentUser);
     });
+
+    socket.on('connect', function(data){
+      socket.emit('subscribe', {channel:'notification'});
+    });
+
+    //new message arrival -- you are going to append into some HTML div
+    socket.on('message', function (data) {
+      console.log("Notification is : " + data);
+    });
+
 
     $scope.updateProfile = function(user) {
         var currentUser = angular.copy(user);

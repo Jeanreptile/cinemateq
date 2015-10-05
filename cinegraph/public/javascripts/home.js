@@ -1435,9 +1435,21 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function paginateCallback(job, direction){
             console.log('paginateCallback', job, direction);
-            // TODO
-            // real pagination call
-            //scope.paginateBy(job, scope.jobsRelationships[job]);
+            var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilter' + direction);
+            var bgColor = btn.css('background-color');
+            var c = btn.css('background-color').replace(/[^0-9,]+/g, "");
+            var r = Math.min(parseInt(c.split(",")[0],10) + 25, 255),
+                g = Math.min(parseInt(c.split(",")[1],10) + 25, 255),
+                b = Math.min(parseInt(c.split(",")[2],10) + 25, 255);
+            var lighterBg = 'rgb('+ r +','+ g +','+ b +')';
+            // animating button color when paginating
+            btn.animate({ 'background-color': lighterBg }, 250, function() {
+                setTimeout((function(b, c) { return function() {
+                    b.animate({ 'background-color': c }, 250);
+                }; })($(this), bgColor), 1000);
+            });
+            // TODO : real pagination call
+            scope.paginateBy(job, scope.jobsRelationships[job]);
         }
 
         function updateFilters() {
@@ -1450,6 +1462,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     i++;
                     var filter = $('.canvasNodeFilter.' + f);
                     if (filter.length <= 0) {
+                        // create element if not existing
                         filter = $('<div class="canvasNodeFilter ' + f + '" title="' + scope.jobsNames[f] + '"> \
                             <div class="canvasNodeFilterLeft">◄</div><div class="canvasNodeFilterRight">►</div></div>');
                         filter.find('.canvasNodeFilterLeft, .canvasNodeFilterRight').css({
@@ -1457,22 +1470,28 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                             "color": !scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
                         });
                         filter.data('job', f);
-                        // binding long click event
+                        // binding mouse events
                         filter.mousedown(function(){
                             $(this).data('pressed', 'true');
                             setTimeout((function(f) { return function() {
-                                if (f.data('pressed')) filterCallback(f.data('job'));
+                                if (f.data('pressed')) {
+                                    filterCallback(f.data('job'));
+                                    f.data('pressed', false);
+                                }
                             }; })($(this)), 500);
-                        }).on('mouseup mouseleave', function(){ console.log('coucou');$(this).data('pressed', false); });
-                        // pagination click
-                        filter.find('.canvasNodeFilterLeft').click(function(){
-                            paginateCallback($(this).parent().data('job'), 'left');
-                        });
-                        filter.find('.canvasNodeFilterRight').click(function(){
-                            paginateCallback($(this).parent().data('job'), 'right');
-                        });
+                        }).on('mouseup', function(e){
+                            if ($(this).data('pressed')) {
+                                if(e.target == $(this).find('.canvasNodeFilterLeft')[0])
+                                    paginateCallback($(this).data('job'), 'Left');
+                                else
+                                    paginateCallback($(this).data('job'), 'Right');
+                            }
+                            $(this).data('pressed', false);
+                        }).on('mouseleave', function(){ $(this).data('pressed', false); });
+                        // adding
                         $('#graph').after(filter.hide().fadeIn(300));
                     }
+                    // calculating position
                     var p = toScreenPosition(current.position);
                     var radius = getSpriteRadius(current.position, current.scale.x);
                     var r = filter.outerWidth() / 2;

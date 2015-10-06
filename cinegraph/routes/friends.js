@@ -31,18 +31,13 @@ router.post('/friend_request', function(req, res) {
 	redisClient.incr("id:notifs." + req.body.userName, function(err, idNotif)
 	{
 		notifData = '{"type":"friend_request", "friend_name": "' + req.body.friendName + '", "id" : "' + idNotif + '"}'
+	//redisClient.set();
 		redisClient.set("notif." + req.body.userName + ":" + idNotif, notifData);
 		redisClient.sadd("notifs." + req.body.userName, idNotif);
 		//publish notif
 		redisClient.publish("notifs."+req.body.userName, notifData);
 	});
-
-
-	//redisClient.set();
-
-	// publish notification
-	res.json('');
-
+	res.json({});
 });
 
 router.post('/add', function(req, res) {
@@ -58,6 +53,18 @@ router.post('/add', function(req, res) {
 		res.json(result["r.alreadyExisted"]);
 	});
 	// TODO: Handle errors
+});
+
+
+router.get('/isFriend', function(req, res){
+  var cypher = "MATCH (u1:User)-[r:FRIEND_WITH]-(u2:User) \
+                  WHERE u1.username = {userName} AND u2.username = {friendName} \
+                  RETURN r";
+	dbLocal.query(cypher, { userName: req.query.userName, friendName: req.query.friendName}, function(err, result) {
+		if (err)
+			throw err;
+		res.json((result.length > 0));
+	});
 });
 
 

@@ -9,7 +9,6 @@ cinegraphApp.controller('FriendsController', function($scope, $http, $window, $l
     });
 
     $scope.alerts = [];
-
     $scope.usersToAdd = [];
 
 
@@ -33,12 +32,22 @@ cinegraphApp.controller('FriendsController', function($scope, $http, $window, $l
     }
 
     $scope.searchUser = function() {
+      $scope.usersToAdd = [];
       $scope.searchBool = true;
       $scope.loading = true;
       var userToSearch = $scope.userToFind.username.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
       $http.get('/api/friends/find/' + userToSearch).success(function (data, status, headers, config) {
-        $scope.usersToAdd = data;
-        $scope.loading = false;
+        data.forEach(function(user, index)
+        {
+          $http.get('/api/friend/isFriend?userName=' + AuthService.currentUser().username + "&friendName"+ data[0].username).success(function (data, status, headers, config) {
+            user["isFriend"] = (data == true);
+            $scope.usersToAdd.push(user);
+            $scope.loading = false;
+    		  })
+    		  .error(function (data, status, headers, config) {
+    		 	console.log('error');
+    		  });
+        })
       })
     }
 
@@ -58,4 +67,5 @@ cinegraphApp.controller('FriendsController', function($scope, $http, $window, $l
 			}
 		});
 	}
+
 });

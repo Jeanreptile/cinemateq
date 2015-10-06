@@ -149,6 +149,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
       AuthService.logout();
     }
 
+    $scope.friendsTastes = [];
     $scope.currentNode = {};
     var selectedNodeId = getParameterByName('id');
     if (selectedNodeId == undefined) {
@@ -1013,6 +1014,49 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        function getFriendsRatings(friends, index, node, currentUserRating) {
+            $http.get('/api/user/'+ friends[index].id + '/rating/' + node.id).success(function (rating) {
+                //console.log("friend id: " + friends[index].id);
+                //console.log("rating: " + JSON.stringify(rating));
+                if (rating.message) {
+                    scope.friendsTastes.push("Your mate " + friends[index].username + " didn't rate this movie. Want to send him a notification?");
+                }
+                else {
+                    if (rating.love >= 4 && currentUserRating.love >= 4) {
+                        if (node.type == 'Person') {
+                            scope.friendsTastes.push("You and " + friends[index].username + " love the same person, are you movie soulmates?");
+                        }
+                        else {
+                            scope.friendsTastes.push("Hey, your buddy " + friends[index].username + " dig " + node.title + " too ! Maybe grab a beer together?");
+                        }
+                    }
+                    else if (rating.love >= 4 && currentUserRating.love <= 1) {
+                        scope.friendsTastes.push("Woh, there is a big difference of opinion between you and " +
+                            friends[index].username + ". Unlike you, " + friends[index].username + " just hates this movie !");
+                    }
+                    else if (rating.love <= 1 && currentUserRating.love >= 3) {
+                        scope.friendsTastes.push("Damn, your friend " + friends[index].username + " is not really a big fan of " + (node.type == 'Person' ? node.name : node.title));
+                    }
+                }
+            });
+        }
+
+        function displayFriendsTastes() {
+            $http.get('/api/user/rating/' + scope.currentNode.id).success(function (rating) {
+                if (!rating.message) {
+                    $http.get('/api/friends/' + scope.currentUser.id).success(function (friends) {
+                        for (var i = 0; i < friends.length; i++) {
+                             getFriendsRatings(friends, i, scope.currentNode, rating);
+                        };
+                    });
+                }
+                else {
+                    scope.friendsTastes = [];
+                    scope.friendsTastes.push("Hey buddy, rate this movie to compare it with your friends.");
+                }
+            });
+        }
+
         function getNode(id, nodePosition, callback) {
             if (id != scope.currentNode.id) {
                 clearScene(scope.currentDisplayedNodes, id);
@@ -1024,6 +1068,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 scope.updateTypesAndLimits();
                 scope.updateSelectedJobs();
                 updateBackground(node);
+                displayFriendsTastes();
                 callback(node, nodePosition);
             });
         }

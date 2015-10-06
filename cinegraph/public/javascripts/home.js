@@ -175,7 +175,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             $('#noteObj').rating('rate', 0);
             $('#noteLove').rating('rate', 0);
         });
-        var craziness = 2;
+        var craziness = 1;
         if ($scope.currentNode.type == "Person")
         {
             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},
@@ -371,6 +371,10 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 cosdesigner: 0,
                 proddesigner: 0
             };
+            scope.clearOffsets = function () {
+                for (var job in scope.jobsOffset)
+                    scope.jobsOffset[job] = 0;
+            };
 
             scope.currentDisplayedNodes = [];
             scope.suggestedNodes = [];
@@ -379,6 +383,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 console.log('paginateBy');
                 var nodes = scope.cinegraphId != undefined ? scope.suggestedNodes : scope.currentDisplayedNodes;
                 if (scope.selectedJobs[job]) {
+                    // removing old nodes
                     for (var i = nodes.length - 1; i >= 0; i--) {
                         var obj = nodes[i];
                         var startpoint = obj.start, endpoint = obj.end;
@@ -389,6 +394,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         if (scope.currentNode.id === startpoint && obj.type == relationship)
                             scope.removeOneFromScene(nodes, endpoint, scope.currentNode.id);
                     }
+                    // getting new offset
                     var limit = scope.findLimitForJob(relationship);
                     if (direction == 'Right')
                         scope.jobsOffset[job] += limit;
@@ -396,6 +402,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         scope.jobsOffset[job] -= limit;
                         scope.jobsOffset[job] = Math.max(scope.jobsOffset[job], 0);
                     }
+                    // getting new nodes
                     console.log(job, relationship, direction, scope.jobsOffset);
                     scope.getRelatedNodesForType(scope.currentNode, relationship, scope.findLimitForJob(relationship),
                         scope.jobsOffset[job], nodes.length, scope.currentNode.sprite, scope.drawRelatedNodes);
@@ -1475,18 +1482,22 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function filterCallback(job) {
             scope.selectedJobs[job] = !scope.selectedJobs[job];
             scope.filterBy(job, scope.jobsRelationships[job]);
+            var f = $('.canvasNodeFilter.' + job);
+            f.toggleClass('selected');
             var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilterLeft, .canvasNodeFilterRight');
             if (btn.length > 0){
-                var tmp = btn.css('background-color');
-                btn.css({
-                    "background-color": btn.css('color'),
-                    "color": tmp,
-                });
+                if (f.hasClass('selected'))
+                    btn.animate({"background-color": colors[scope.jobsRelationships[job]],"color": "#555555" }, 200);
+                else
+                    btn.animate({"background-color": "#555555","color": colors[scope.jobsRelationships[job]] }, 200);
             }
         }
 
         function paginateCallback(job, direction){
             console.log('paginateCallback', job, direction);
+            if (direction == 'Left' && scope.jobsOffset[job] == 0
+                || !$('.canvasNodeFilter.' + job).hasClass('selected'))
+                return;
             var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilter' + direction);
             var bgColor = btn.css('background-color');
             var c = btn.css('background-color').replace(/[^0-9,]+/g, "");
@@ -1500,7 +1511,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     b.animate({ 'background-color': c }, 250);
                 }; })($(this), bgColor), 1000);
             });
-            // TODO : real pagination call
             scope.paginateBy(job, scope.jobsRelationships[job], direction);
         }
 
@@ -1521,6 +1531,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                             "background-color": scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
                             "color": !scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
                         });
+                        if (scope.selectedJobs[f])
+                            filter.toggleClass('selected');
                         filter.data('job', f);
                         // binding mouse events
                         filter.mousedown(function(){
@@ -1551,9 +1563,19 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     var x = p.x + radius * Math.cos(slice * i) - r;
                     var y = p.y + radius * Math.sin(slice * i) - r;
                     filter.css({ top: y, left: x });
+                    if (filter.hasClass('selected'))
+                        filter.find('.canvasNodeFilterLeft').css("color", scope.jobsOffset[f] == 0 ?
+                            jQuery.Color(colors[scope.jobsRelationships[f]]).darkenColor(20) : '#55555');
                 }
             }
         }
+
+        jQuery.Color.fn.darkenColor = function(amount) {
+            var r = Math.max(this._rgba[0] - amount, 0),
+                g = Math.max(this._rgba[1] - amount, 0),
+                b = Math.max(this._rgba[2] - amount, 0);
+            return 'rgb('+ r +','+ g +','+ b +')';
+        };
 
         function setMousePosition(event)
         {
@@ -1610,21 +1632,21 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                             return false;
                         }
                     });
-                    if (alreadySuggestedNodes) {
+                    if (alreadySuggestedNodes)
                         return;
-                    }
                     else {
                         if (scope.suggestedNodes.length > 0) {
                             for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
                                 var point = scope.suggestedNodes[i].start;
-                                if (scope.currentNode.type == 'Person') {
+                                if (scope.currentNode.type == 'Person')
                                     point = scope.suggestedNodes[i].end;
-                                }
                                 removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
-                            };
+                            }
                         }
                     }
                 }
+                // clearing pagination offsets
+                scope.clearOffsets();
                 // animating camera
                 var duration = 500;
                 new TWEEN.Tween(camera.position).to({
@@ -1636,16 +1658,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     x: intersection.object.position.x,
                     y: intersection.object.position.y,
                     z: intersection.object.position.z}, duration).easing(TWEEN.Easing.Linear.None)
-                      .onComplete(function() {
-                            scope.currentNode.sprite = intersection.object;
-                            nodePosition = intersection.object.position;
-                            if (scope.cinegraphId != undefined) {
-                                getNodeCinegraphMode(id, nodePosition, draw, true);
-                            }
-                            else {
-                                getNode(id, nodePosition, draw);
-                            }
-                      }).start();
+                  .onComplete(function() {
+                        scope.currentNode.sprite = intersection.object;
+                        nodePosition = intersection.object.position;
+                        if (scope.cinegraphId != undefined)
+                            getNodeCinegraphMode(id, nodePosition, draw, true);
+                        else
+                            getNode(id, nodePosition, draw);
+                }).start();
             }
         }
 

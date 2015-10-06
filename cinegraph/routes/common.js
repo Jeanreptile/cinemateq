@@ -144,7 +144,7 @@ router.get('/:id/relationshipsRaw/:direction/:type/:limit/:offset?', function(re
 		if (req.params.type == "ACTED_IN")
 			var cypher = "MATCH (m:Movie) WHERE id(m) = " + req.params.id +
 			" MATCH (m)-[r:" + req.params.type + "]-(p:Person) " +
-			"WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position " +
+			"WHERE r.position IS NOT NULL RETURN r ORDER BY r.position " +
 			(req.params.offset ? "SKIP " + req.params.offset : "") +
 			" LIMIT " + req.params.limit
 		else
@@ -158,7 +158,7 @@ router.get('/:id/relationshipsRaw/:direction/:type/:limit/:offset?', function(re
 		if (req.params.type == "ACTED_IN")
 			var cypher = "MATCH (p:Person) WHERE id(p) = " + req.params.id +
 				" MATCH (p)-[r:" + req.params.type + "]-(m:Movie) " +
-				"WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position " +
+				"WHERE r.position IS NOT NULL RETURN r ORDER BY r.position " +
 				(req.params.offset ? "SKIP " + req.params.offset : "") +
 				" LIMIT " + req.params.limit
 		else
@@ -168,7 +168,6 @@ router.get('/:id/relationshipsRaw/:direction/:type/:limit/:offset?', function(re
 				(req.params.offset ? "SKIP " + req.params.offset : "") +
 				" LIMIT " + req.params.limit
 	}
-
 	dbLocal.query(cypher, function (err, relationships) {
 		res.json(relationships);
 	});
@@ -178,9 +177,9 @@ router.get('/:id/relationships/:direction/:type', function(req, res) {
 	if (req.params.type == "ACTED_IN")
 	{
 		if (req.params.direction == "in")
-			var cypher = "MATCH (m:Movie) WHERE id(m) = " + req.params.id + "  MATCH (m)-[r:ACTED_IN]-(p:Person) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+			var cypher = "MATCH (m:Movie) WHERE id(m) = " + req.params.id + "  MATCH (m)-[r:ACTED_IN]-(p:Person) WHERE r.position IS NOT NULL RETURN r ORDER BY r.position"
 		else
-			var cypher = "MATCH (p:Person) WHERE id(p) = " + req.params.id + "  MATCH (p)-[r:ACTED_IN]-(m:Movie) WHERE r.position IS NOT NULL AND r.position < 5 RETURN r ORDER BY r.position"
+			var cypher = "MATCH (p:Person) WHERE id(p) = " + req.params.id + "  MATCH (p)-[r:ACTED_IN]-(m:Movie) WHERE r.position IS NOT NULL RETURN r ORDER BY r.position"
 
 		dbLocal.query(cypher,
 				function(err, relationships)

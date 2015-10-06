@@ -356,6 +356,7 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 }
 .canvasNodeFilterLeft, .canvasNodeFilterRight {
   display: inline-block;
+  vertical-align: top;
   width: 50%;
   height: 100%;
   box-sizing: border-box;

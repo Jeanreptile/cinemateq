@@ -119,7 +119,7 @@ var cinegraphController = cinegraphApp.controller('restrictedController',
 });
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
-    function($scope, $http, $window, $location, AuthService, $modal) {
+    function($scope, $http, $window, $location, AuthService, $modal, socket) {
     $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
         $scope.isLoggedIn = isLoggedIn;
         $scope.currentUser = AuthService.currentUser();
@@ -127,6 +127,21 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
     });
 
 
+
+    $scope.sendNotifToKevin = function() {
+      if ($scope.currentNode.type == 'Person') {
+        dataOfNode = "" + $scope.currentNode.firstname + $scope.currentNode.lastname;
+      }
+      else{
+        dataOfNode = $scope.currentNode.title;
+      }
+      $http.post( "/api/notif/inviteToRate", {userName: $scope.currentUser.username , friendName: "kevin42", idToRate: $scope.currentNode.id, dataOfNode: dataOfNode})
+        .success(function(res) {
+         console.log("Notif To Rate send to friend !");
+      }).
+        error(function() {
+      });
+    }
 
 
     $scope.updateProfile = function(user) {

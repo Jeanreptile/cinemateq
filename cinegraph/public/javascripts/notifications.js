@@ -1,4 +1,4 @@
-angular.module('cinegraphApp').controller('notificationsController', function($scope, $http, $compile, socket, AuthService) {
+angular.module('cinegraphApp').controller('notificationsController', function($scope, $http, $compile, socket, AuthService, $location) {
 
   //Auth Service
   $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
@@ -39,12 +39,26 @@ angular.module('cinegraphApp').controller('notificationsController', function($s
     {
       var msg = $compile(angular.element('<span id="notif' + AuthService.currentUser().username + ":" + notif.id +'"  class="list-group-item">'+
             '<span class="pull-left thumb-sm text-center">'+
-              '<i class="fa fa-envelope-o fa-2x text-success"></i>'+
+              '<i class="fa fa-user fa-2x text-success"></i>'+
             '</span>'+
             '<span class="media-body block m-b-none">'+
               notif.friend_name + ' wants to be friend with you !<br>'+
-              '<a href="#" ng-click="removeNotif(\'notif' + AuthService.currentUser().username + ":" + notif.id + '\')" class="pull-right btn btn-sm btn-rounded btn-icon btn-danger"><i class="i i-cross2"></i></a>' +
-              '<a href="#" ng-click="addFriend(\'notif' + AuthService.currentUser().username + ":" + notif.id + '\', \'' + notif.friend_name + '\')" class="pull-right btn btn-sm btn-rounded btn-icon btn-success"><i class="i i-checkmark2"></i></a>' +
+              '<a href="#" ng-click="removeNotif(\'notif' + AuthService.currentUser().username + ":" + notif.id + '\')" class="pull-right btn btn-sm btn-rounded btn-danger"><i class="i i-cross2">Nope.</i></a>' +
+              '<a href="#" ng-click="addFriend(\'notif' + AuthService.currentUser().username + ":" + notif.id + '\', \'' + notif.friend_name + '\')" class="pull-right btn btn-sm btn-rounded btn-success"><i class="i i-checkmark2">Sure!</i></a>' +
+            '</span>'+
+          '</span>'))($scope);
+      return msg;
+    }
+    else if (notif.type === "invite_to_rate")
+    {
+      var msg = $compile(angular.element('<span id="notif' + AuthService.currentUser().username + ":" + notif.id +'"  class="list-group-item">'+
+            '<span class="pull-left thumb-sm text-center">'+
+              '<i class="fa fa-star-half-o fa-2x text-success"></i>'+
+            '</span>'+
+            '<span class="media-body block m-b-none">'+
+              'Your buddy ' + notif.friend_name + ' wants you to rate ' + notif.dataOfNode +'!<br>'+
+              '<a href="#" ng-click="removeNotif(\'notif' + AuthService.currentUser().username + ":" + notif.id + '\')" class="pull-right btn btn-sm btn-rounded btn-danger"><i class="i i-cross2">Nope.</i></a>' +
+              '<a href="#" ng-click="goToNode(\'notif' + AuthService.currentUser().username + ":" + notif.id + '\', \'' + notif.idToRate + '\')" class="pull-right btn btn-sm btn-rounded btn-success"><i class="i i-checkmark2">Sure!</i></a>' +
             '</span>'+
           '</span>'))($scope);
       return msg;
@@ -92,6 +106,11 @@ angular.module('cinegraphApp').controller('notificationsController', function($s
                   '</span>'+
                 '</a>'))($scope);
     //setTimeout(function(){$scope.addNotif(msg);}, 1500);
+
+    $scope.goToNode = function(data, idToRate){
+      $location.path('/index').search({id: idToRate, type: 'on'});
+      $scope.removeNotif(data);
+    }
 
     $scope.addFriend = function(data, friendName){
       $http.post('/api/friends/add', { user: AuthService.currentUser().username, friend: friendName}).success(function(res) {

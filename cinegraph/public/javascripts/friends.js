@@ -25,7 +25,7 @@ cinegraphApp.controller('FriendsController', function($scope, $http, $window, $l
     $scope.addFriend = function(friendUsername){
       $http.post('/api/friends/friend_request', { userName: $scope.currentUser.username, friendName: friendUsername }).success(function(res) {
           if(res == true)
-            $scope.alerts.push({success: 'true', msg:'You sent a friend request to' + friendUsername + '!'});
+            $scope.alerts.push({success: 'true', msg:'You sent a friend request to ' + friendUsername + '!'});
           else
             $scope.alerts.push({error: 'true', msg:'You are already friend with ' + friendUsername + '!'});
       });

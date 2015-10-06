@@ -15,6 +15,10 @@ div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 		.btn-group.m-l-md(dropdown='', ng-controller="MyCinegraphCtrl")
 			button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
 				i.fa.fa-plus.fa-lg
+		|  
+		.btn-group(dropdown='', ng-click='sendNotifToKevin()')
+			button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle.btn-dark(type='button', dropdown-toggle='')
+				i.i.i-share.i-lg
 	small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
 		| {{job.name | JobNameFormatter }}
 		i.i.i-dot(ng-hide="$last")
@@ -101,4 +105,3 @@ nav.nav-primary.hidden-xs
 					i.i.i-circle-sm.text-active
 				i.i.i-plus2.icon
 				span.font-bold Suggestions
-

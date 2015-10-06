@@ -30,7 +30,7 @@ router.post('/friend_request', function(req, res) {
 	var redisClient = redis.createClient();
 	redisClient.incr("id:notifs." + req.body.userName, function(err, idNotif)
 	{
-		notifData = '{"type":"friend_request", "friend_name": "' + req.body.friendName + '"}'
+		notifData = '{"type":"friend_request", "friend_name": "' + req.body.friendName + '", "id" : "' + idNotif + '"}'
 		redisClient.set("notif." + req.body.userName + ":" + idNotif, notifData);
 		redisClient.sadd("notifs." + req.body.userName, idNotif);
 		//publish notif

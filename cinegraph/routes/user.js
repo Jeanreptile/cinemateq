@@ -8,7 +8,20 @@ var config = require('../config');
 var db = require("seraph")(config.database_url);
 
 
+router.get('/:userId/rating/:movieId', function(req, res) {
+	var cypher = "MATCH (u:User)-[r:RATED]->(m) " +
+					"WHERE id(m) = {movieId} AND id(u) = {userId} " +
+					"RETURN r"
 
+	db.query(cypher, {movieId: parseInt(req.params.movieId), userId: parseInt(req.params.userId)}, function (err, result) {
+		if (err) throw err;
+		if (result[0] == undefined)
+		{
+			return res.json({message: "no rate"});
+		}
+		res.json(result[0].properties);
+	});
+});
 
 router.get('/rating/:movieId', authenticate, function(req, res) {
 	var userName = decodedToken.username;

@@ -23,9 +23,9 @@ cinegraphApp.controller('FriendsController', function($scope, $http, $window, $l
     }
 
     $scope.addFriend = function(friendUsername){
-      $http.post('/api/friends/add', { user: $scope.currentUser.username, friend: friendUsername }).success(function(res) {
-          if(res == false)
-            $scope.alerts.push({success: 'true', msg:'You are friend with ' + friendUsername + '!'});
+      $http.post('/api/friends/friend_request', { userName: $scope.currentUser.username, friendName: friendUsername }).success(function(res) {
+          if(res == true)
+            $scope.alerts.push({success: 'true', msg:'You sent a friend request to' + friendUsername + '!'});
           else
             $scope.alerts.push({error: 'true', msg:'You are already friend with ' + friendUsername + '!'});
       });
@@ -40,16 +40,14 @@ cinegraphApp.controller('FriendsController', function($scope, $http, $window, $l
         data.forEach(function(user, index)
         {
           $http.get('/api/friends/isFriend?userName=' + AuthService.currentUser().username + "&friendName="+ data[0].username).success(function (data, status, headers, config) {
-            console.log("ami ??" + data);
             user["isFriend"] = (data == true);
             $scope.usersToAdd.push(user);
-            console.log("user is " + JSON.stringify(user));
-            $scope.loading = false;
     		  })
     		  .error(function (data, status, headers, config) {
     		 	console.log('error');
     		  });
         })
+        $scope.loading = false;
       })
     }
 

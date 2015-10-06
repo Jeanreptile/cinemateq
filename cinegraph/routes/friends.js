@@ -28,16 +28,16 @@ router.get('/find/:friendName', function(req, res) {
 router.post('/friend_request', function(req, res) {
 	// save in redis (Create an object notif.username:n and append n in notifs.username)
 	var redisClient = redis.createClient();
-	redisClient.incr("id:notifs." + req.body.userName, function(err, idNotif)
+	redisClient.incr("id:notifs." + req.body.friendName, function(err, idNotif)
 	{
-		notifData = '{"type":"friend_request", "friend_name": "' + req.body.friendName + '", "id" : "' + idNotif + '"}'
+		notifData = '{"type":"friend_request", "friend_name": "' + req.body.userName + '", "id" : "' + idNotif + '"}'
 	//redisClient.set();
-		redisClient.set("notif." + req.body.userName + ":" + idNotif, notifData);
-		redisClient.sadd("notifs." + req.body.userName, idNotif);
+		redisClient.set("notif." + req.body.friendName + ":" + idNotif, notifData);
+		redisClient.sadd("notifs." + req.body.friendName, idNotif);
 		//publish notif
-		redisClient.publish("notifs."+req.body.userName, notifData);
+		redisClient.publish("notifs."+req.body.friendName, notifData);
 	});
-	res.json({});
+	res.json(true);
 });
 
 router.post('/add', function(req, res) {

@@ -63,6 +63,7 @@ router.get('/isFriend', function(req, res){
 	dbLocal.query(cypher, { userName: req.query.userName, friendName: req.query.friendName}, function(err, result) {
 		if (err)
 			throw err;
+		console.log(JSON.stringify(result));
 		res.json((result.length > 0));
 	});
 });

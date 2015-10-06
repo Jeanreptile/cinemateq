@@ -39,9 +39,11 @@ cinegraphApp.controller('FriendsController', function($scope, $http, $window, $l
       $http.get('/api/friends/find/' + userToSearch).success(function (data, status, headers, config) {
         data.forEach(function(user, index)
         {
-          $http.get('/api/friend/isFriend?userName=' + AuthService.currentUser().username + "&friendName"+ data[0].username).success(function (data, status, headers, config) {
+          $http.get('/api/friends/isFriend?userName=' + AuthService.currentUser().username + "&friendName="+ data[0].username).success(function (data, status, headers, config) {
+            console.log("ami ??" + data);
             user["isFriend"] = (data == true);
             $scope.usersToAdd.push(user);
+            console.log("user is " + JSON.stringify(user));
             $scope.loading = false;
     		  })
     		  .error(function (data, status, headers, config) {

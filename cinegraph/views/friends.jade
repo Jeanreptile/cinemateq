@@ -65,7 +65,9 @@ section.vbox
 											img.img-circle(src='images/a0.png', alt='John said')
 										|                           
 										p.pull-right.text-success.m-t-sm
-											button.btn.btn-sm.btn-info(ng-click="addFriend(user.username)")
+											button.btn.btn-sm.btn-info.disabled(ng-show="user.isFriend")
+													span.text You are already friend !
+											button.btn.btn-sm.btn-info(ng-click="addFriend(user.username)" ng-show="!user.isFriend")
 													i.fa.fa-plus.text
 													|     
 													span.text Add

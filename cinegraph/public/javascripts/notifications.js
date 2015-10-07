@@ -75,7 +75,9 @@ angular.module('cinegraphApp').controller('notificationsController', function($s
   });
 
 
-  //new message arrival -- you are going to append into some HTML div
+
+  if (AuthService.isLoggedIn()) {
+    //new message arrival -- you are going to append into some HTML div
   socket.on('message', function (data) {
     notif = JSON.parse(data);
     $scope.addNotif($scope.getNotif(notif));
@@ -95,6 +97,7 @@ angular.module('cinegraphApp').controller('notificationsController', function($s
       }).
       error(function(){
   })
+}
 
 	var msg = $compile(angular.element('<a id="toto124" ng-click="removeNotif(\'toto124\')" class="media list-group-item">'+
                   '<span class="pull-left thumb-sm text-center">'+

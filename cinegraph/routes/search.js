@@ -16,11 +16,11 @@ router.get('/movie', function(req, res) {
     }
     var reqBefore = req.query.query;
 
-    var requestMovie = reqBefore.replace(" ", " AND ");
+    var requestMovie = reqBefore.replace(" ", "* AND ");
     var regEx = /[+\-!(){}\[\]^"~*?:\\]|(&&)|(\|{2})/g; // regex for special characters allowed by Lucene: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
     var subst = "\\\\$&"; // substitution string: double backslash before matched content
     var requestMovie2 = requestMovie.replace(regEx, subst);
-    var cypher = "START movie=node:node_auto_index('title:(" + requestMovie2 + "*)') WHERE NOT (ANY ( x IN [\"Short\", \"Documentary\"] WHERE x in movie.genre)) RETURN movie LIMIT 10";
+    var cypher = "START movie=node:node_auto_index('title:(" + requestMovie2 + "*)') WHERE NOT (ANY ( x IN [\"Short\", \"Documentary\"] WHERE x in movie.genre)) RETURN movie ORDER BY length(movie.title) LIMIT 10";
     dbLocal.query(cypher,
         function(err, result)
         {

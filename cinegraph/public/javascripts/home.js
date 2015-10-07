@@ -130,7 +130,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     $scope.sendNotifToKevin = function() {
       if ($scope.currentNode.type == 'Person') {
-        dataOfNode = "" + $scope.currentNode.firstname + $scope.currentNode.lastname;
+        dataOfNode = $scope.currentNode.firstname + " " + $scope.currentNode.lastname;
       }
       else{
         dataOfNode = $scope.currentNode.title;

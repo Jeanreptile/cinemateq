@@ -158,6 +158,10 @@ io.sockets.on('connection', function (socket) {
     //notif_name = 'notif_' + data;
     //socket.emit('all_' + notif_name);
   });
+  socket.on('disconnect', function () {
+   io.emit('user disconnected');
+   console.log("user disconnected")
+ });
 });
 
 

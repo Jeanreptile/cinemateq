@@ -157,6 +157,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
       AuthService.logout();
     }
 
+    $scope.friendsTastes = [];
     $scope.currentNode = {};
     var selectedNodeId = getParameterByName('id');
     if (selectedNodeId == undefined) {
@@ -183,7 +184,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             $('#noteObj').rating('rate', 0);
             $('#noteLove').rating('rate', 0);
         });
-        var craziness = 2;
+        var craziness = 1;
         if ($scope.currentNode.type == "Person")
         {
             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},
@@ -241,65 +242,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     $scope.currentNode.id = selectedNodeId;
 
-    $scope.currentDisplayedNodes = [];
-
     $scope.findLimitForJob = function(type) {
         for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {
             if ($scope.typesAndLimits[i].type == type) {
                 return $scope.typesAndLimits[i].limit;
             }
         }
-    }
-
-    $scope.paginateBy = function(job, relationship) {
-        //console.log('paginateBy', job, relationship);
-        /* TODO: real pagination */
-        if ($scope.selectedJobs[job]) {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == relationship)
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-            }
-            $scope.getRelatedNodesForType($scope.currentNode, relationship, $scope.findLimitForJob(relationship),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
     };
-
-    function filterBy(job, relationship) {
-        if ($scope.selectedJobs[job]) {
-            $scope.getRelatedNodesForType($scope.currentNode, relationship, $scope.findLimitForJob(relationship),
-                $scope.currentDisplayedNodes.length, $scope.currentNode.sprite, $scope.drawRelatedNodes);
-        }
-        else {
-            for (var i = $scope.currentDisplayedNodes.length - 1; i >= 0; i--) {
-                var obj = $scope.currentDisplayedNodes[i];
-                var startpoint = obj.start;
-                var endpoint = obj.end;
-                if ($scope.currentNode.type != 'Person') {
-                    startpoint = obj.end;
-                    endpoint = obj.start;
-                }
-                if ($scope.currentNode.id === startpoint && obj.type == relationship)
-                    $scope.removeOneFromScene($scope.currentDisplayedNodes, endpoint, $scope.currentNode.id);
-            }
-        }
-    }
-
-    $scope.filterByActor = function() { filterBy("actor", "ACTED_IN"); };
-    $scope.filterByDirector = function() { filterBy("director", "DIRECTED"); };
-    $scope.filterByProducer = function() { filterBy("producer", "PRODUCED"); };
-    $scope.filterByWriter = function() { filterBy("writer", "WROTE"); };
-    $scope.filterByEditor = function() { filterBy("editor", "EDITED"); };
-    $scope.filterByDirPhotography = function() { filterBy("dirphotography", "DIRECTED_PHOTOGRAPHY"); };
-    $scope.filterByMusicComposer = function() { filterBy("musiccomposer", "COMPOSED_MUSIC"); };
-    $scope.filterByCosDesigner = function() { filterBy("cosdesigner", "DESIGNED_COSTUMES"); };
-    $scope.filterByProdDesigner = function() { filterBy("proddesigner", "DESIGNED_PRODUCTION"); };
 
     $scope.open = function (size) {
         var modalInstance = $modal.open({
@@ -397,6 +346,109 @@ cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, cu
 cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $location) {
 	return {
 		link: function link(scope, element, attrs) {
+            //scope
+            scope.jobsNames = {
+                actor: 'Actor',
+                writer: 'Writer',
+                producer: 'Producer',
+                director: 'Director',
+                editor: 'Editor',
+                dirphotography: 'Director of photography',
+                musiccomposer: 'Music composer',
+                cosdesigner: 'Costume designer',
+                proddesigner: 'Production designer'
+            };
+            scope.jobsRelationships = {
+                actor: 'ACTED_IN',
+                writer: 'WROTE',
+                producer: 'PRODUCED',
+                director: 'DIRECTED',
+                editor: 'EDITED',
+                dirphotography: 'DIRECTED_PHOTOGRAPHY',
+                musiccomposer: 'COMPOSED_MUSIC',
+                cosdesigner: 'DESIGNED_COSTUMES',
+                proddesigner: 'DESIGNED_PRODUCTION'
+            };
+            scope.jobsOffset = {
+                actor: 0,
+                writer: 0,
+                producer: 0,
+                director: 0,
+                editor: 0,
+                dirphotography: 0,
+                musiccomposer: 0,
+                cosdesigner: 0,
+                proddesigner: 0
+            };
+            scope.clearOffsets = function () {
+                for (var job in scope.jobsOffset)
+                    scope.jobsOffset[job] = 0;
+            };
+
+            scope.currentDisplayedNodes = [];
+            scope.suggestedNodes = [];
+
+            scope.paginateBy = function(job, relationship, direction) {
+                console.log('paginateBy');
+                var nodes = scope.cinegraphId != undefined ? scope.suggestedNodes : scope.currentDisplayedNodes;
+                if (scope.selectedJobs[job]) {
+                    // removing old nodes
+                    for (var i = nodes.length - 1; i >= 0; i--) {
+                        var obj = nodes[i];
+                        var startpoint = obj.start, endpoint = obj.end;
+                        if (scope.currentNode.type != 'Person') {
+                            startpoint = obj.end;
+                            endpoint = obj.start;
+                        }
+                        if (scope.currentNode.id === startpoint && obj.type == relationship)
+                            scope.removeOneFromScene(nodes, endpoint, scope.currentNode.id);
+                    }
+                    // getting new offset
+                    var limit = scope.findLimitForJob(relationship);
+                    if (direction == 'Right')
+                        scope.jobsOffset[job] += limit;
+                    else {
+                        scope.jobsOffset[job] -= limit;
+                        scope.jobsOffset[job] = Math.max(scope.jobsOffset[job], 0);
+                    }
+                    // getting new nodes
+                    console.log(job, relationship, direction, scope.jobsOffset);
+                    scope.getRelatedNodesForType(scope.currentNode, relationship, scope.findLimitForJob(relationship),
+                        scope.jobsOffset[job], nodes.length, scope.currentNode.sprite, scope.drawRelatedNodes);
+                }
+            };
+
+            scope.filterBy = function filterBy(job, relationship) {
+                console.log('filterBy');
+                var nodes = scope.cinegraphId != undefined ? scope.suggestedNodes : scope.currentDisplayedNodes;
+                if (scope.selectedJobs[job]) {
+                    scope.getRelatedNodesForType(scope.currentNode, relationship, scope.findLimitForJob(relationship), 0,
+                        nodes.length, scope.currentNode.sprite, scope.drawRelatedNodes);
+                }
+                else {
+                    for (var i = nodes.length - 1; i >= 0; i--) {
+                        var obj = nodes[i];
+                        var startpoint = obj.start, endpoint = obj.end;
+                        if (scope.currentNode.type != 'Person') {
+                            startpoint = obj.end;
+                            endpoint = obj.start;
+                        }
+                        if (scope.currentNode.id === startpoint && obj.type == relationship)
+                            scope.removeOneFromScene(nodes, endpoint, scope.currentNode.id);
+                    }
+                }
+            };
+            scope.filterByActor = function() { scope.filterBy("actor", "ACTED_IN"); };
+            scope.filterByDirector = function() { scope.filterBy("director", "DIRECTED"); };
+            scope.filterByProducer = function() { scope.filterBy("producer", "PRODUCED"); };
+            scope.filterByWriter = function() { scope.filterBy("writer", "WROTE"); };
+            scope.filterByEditor = function() { scope.filterBy("editor", "EDITED"); };
+            scope.filterByDirPhotography = function() { scope.filterBy("dirphotography", "DIRECTED_PHOTOGRAPHY"); };
+            scope.filterByMusicComposer = function() { scope.filterBy("musiccomposer", "COMPOSED_MUSIC"); };
+            scope.filterByCosDesigner = function() { scope.filterBy("cosdesigner", "DESIGNED_COSTUMES"); };
+            scope.filterByProdDesigner = function() { scope.filterBy("proddesigner", "DESIGNED_PRODUCTION"); };
+
+
 			// global vars
             var scene = new THREE.Scene();
             var linesScene = new THREE.Scene();
@@ -745,6 +797,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             composerBackground.render();
             composerLines.render();
             updateHoverLabelPosition();
+            updateFilters();
             composer.render();
             updateGradientLayer();
             gradientComposer.render();
@@ -976,6 +1029,49 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        function getFriendsRatings(friends, index, node, currentUserRating) {
+            $http.get('/api/user/'+ friends[index].id + '/rating/' + node.id).success(function (rating) {
+                //console.log("friend id: " + friends[index].id);
+                //console.log("rating: " + JSON.stringify(rating));
+                if (rating.message) {
+                    scope.friendsTastes.push("Your mate " + friends[index].username + " didn't rate this movie. Want to send him a notification?");
+                }
+                else {
+                    if (rating.love >= 4 && currentUserRating.love >= 4) {
+                        if (node.type == 'Person') {
+                            scope.friendsTastes.push("You and " + friends[index].username + " love the same person, are you movie soulmates?");
+                        }
+                        else {
+                            scope.friendsTastes.push("Hey, your buddy " + friends[index].username + " dig " + node.title + " too ! Maybe grab a beer together?");
+                        }
+                    }
+                    else if (rating.love >= 4 && currentUserRating.love <= 1) {
+                        scope.friendsTastes.push("Woh, there is a big difference of opinion between you and " +
+                            friends[index].username + ". Unlike you, " + friends[index].username + " just hates this movie !");
+                    }
+                    else if (rating.love <= 1 && currentUserRating.love >= 3) {
+                        scope.friendsTastes.push("Damn, your friend " + friends[index].username + " is not really a big fan of " + (node.type == 'Person' ? node.name : node.title));
+                    }
+                }
+            });
+        }
+
+        function displayFriendsTastes() {
+            $http.get('/api/user/rating/' + scope.currentNode.id).success(function (rating) {
+                if (!rating.message) {
+                    $http.get('/api/friends/' + scope.currentUser.id).success(function (friends) {
+                        for (var i = 0; i < friends.length; i++) {
+                             getFriendsRatings(friends, i, scope.currentNode, rating);
+                        };
+                    });
+                }
+                else {
+                    scope.friendsTastes = [];
+                    scope.friendsTastes.push("Hey buddy, rate this movie to compare it with your friends.");
+                }
+            });
+        }
+
         function getNode(id, nodePosition, callback) {
             if (id != scope.currentNode.id) {
                 clearScene(scope.currentDisplayedNodes, id);
@@ -987,6 +1083,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 scope.updateTypesAndLimits();
                 scope.updateSelectedJobs();
                 updateBackground(node);
+                displayFriendsTastes();
                 callback(node, nodePosition);
             });
         }
@@ -1025,18 +1122,17 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function getRelatedNodes(startNode, startNodeSprite, typesAndLimits, callback) {
             var index = 0;
-            var limit;
-            var job;
+            var limit, job;
             if (startNode.type == "Person") {
                 job = startNode.jobs[0].name;
                 limit = scope.findLimitForJob(job);
-                getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
+                getRelatedNodesForType(startNode, job, limit, 0, index, startNodeSprite, callback);
             }
             else {
                 for (var i = 0; i < 2; i++) {
                     job = typesAndLimits[i].type;
                     limit = typesAndLimits[i].limit;
-                    getRelatedNodesForType(startNode, job, limit, index, startNodeSprite, callback);
+                    getRelatedNodesForType(startNode, job, limit, 0, index, startNodeSprite, callback);
                     index += limit;
                 }
             }
@@ -1086,12 +1182,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             });
         }
 
-        function getRelatedNodesForType(startNode, type, limit, index, startNodeSprite, callback) {
+        function getRelatedNodesForType(startNode, type, limit, offset, index, startNodeSprite, callback) {
             var direction = 'in';
             if (startNode.type == 'Person') {
                 direction = 'out';
             }
-            $http.get('/api/common/' + startNode.id + '/relationshipsRaw/' + direction + '/' + type + '/' + limit)
+            $http.get('/api/common/' + startNode.id + '/relationshipsRaw/' + direction + '/' + type + '/' + limit + '/' + offset)
                 .success(function(relationships) {
                     if (relationships.length > 0) {
                         var rels = [];
@@ -1436,6 +1532,104 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        function filterCallback(job) {
+            scope.selectedJobs[job] = !scope.selectedJobs[job];
+            scope.filterBy(job, scope.jobsRelationships[job]);
+            var f = $('.canvasNodeFilter.' + job);
+            f.toggleClass('selected');
+            var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilterLeft, .canvasNodeFilterRight');
+            if (btn.length > 0){
+                if (f.hasClass('selected'))
+                    btn.animate({"background-color": colors[scope.jobsRelationships[job]],"color": "#555555" }, 200);
+                else
+                    btn.animate({"background-color": "#555555","color": colors[scope.jobsRelationships[job]] }, 200);
+            }
+        }
+
+        function paginateCallback(job, direction){
+            console.log('paginateCallback', job, direction);
+            if (direction == 'Left' && scope.jobsOffset[job] == 0
+                || !$('.canvasNodeFilter.' + job).hasClass('selected'))
+                return;
+            var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilter' + direction);
+            var bgColor = btn.css('background-color');
+            var c = btn.css('background-color').replace(/[^0-9,]+/g, "");
+            var r = Math.min(parseInt(c.split(",")[0],10) + 25, 255),
+                g = Math.min(parseInt(c.split(",")[1],10) + 25, 255),
+                b = Math.min(parseInt(c.split(",")[2],10) + 25, 255);
+            var lighterBg = 'rgb('+ r +','+ g +','+ b +')';
+            // animating button color when paginating
+            btn.animate({ 'background-color': lighterBg }, 250, function() {
+                setTimeout((function(b, c) { return function() {
+                    b.animate({ 'background-color': c }, 250);
+                }; })($(this), bgColor), 1000);
+            });
+            scope.paginateBy(job, scope.jobsRelationships[job], direction);
+        }
+
+        function updateFilters() {
+            if (current == null || current._id != scope.currentNode.id)
+                $('.canvasNodeFilter').fadeOut(300, function(){ $(this).remove(); });
+            else {
+                var i = -2;
+                var slice = PI2 / 12;
+                for (f in scope.selectedJobs){
+                    i++;
+                    var filter = $('.canvasNodeFilter.' + f);
+                    if (filter.length <= 0) {
+                        // create element if not existing
+                        filter = $('<div class="canvasNodeFilter ' + f + '" title="' + scope.jobsNames[f] + '"> \
+                            <div class="canvasNodeFilterLeft">◄</div><div class="canvasNodeFilterRight">►</div></div>');
+                        filter.find('.canvasNodeFilterLeft, .canvasNodeFilterRight').css({
+                            "background-color": scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+                            "color": !scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
+                        });
+                        if (scope.selectedJobs[f])
+                            filter.toggleClass('selected');
+                        filter.data('job', f);
+                        // binding mouse events
+                        filter.mousedown(function(){
+                            $(this).data('pressed', 'true');
+                            setTimeout((function(f) { return function() {
+                                if (f.data('pressed')) {
+                                    filterCallback(f.data('job'));
+                                    f.data('pressed', false);
+                                }
+                            }; })($(this)), 500);
+                        }).on('mouseup', function(e){
+                            if ($(this).data('pressed')) {
+                                if(e.target == $(this).find('.canvasNodeFilterLeft')[0])
+                                    paginateCallback($(this).data('job'), 'Left');
+                                else
+                                    paginateCallback($(this).data('job'), 'Right');
+                            }
+                            $(this).data('pressed', false);
+                        }).on('mouseleave', function(){ $(this).data('pressed', false); });
+                        // adding
+                        $('#graph').after(filter.hide().fadeIn(300));
+                    }
+                    // calculating position
+                    var p = toScreenPosition(current.position);
+                    var radius = getSpriteRadius(current.position, current.scale.x);
+                    var r = filter.outerWidth() / 2;
+                    radius += r * 1.2;
+                    var x = p.x + radius * Math.cos(slice * i) - r;
+                    var y = p.y + radius * Math.sin(slice * i) - r;
+                    filter.css({ top: y, left: x });
+                    if (filter.hasClass('selected'))
+                        filter.find('.canvasNodeFilterLeft').css("color", scope.jobsOffset[f] == 0 ?
+                            jQuery.Color(colors[scope.jobsRelationships[f]]).darkenColor(20) : '#55555');
+                }
+            }
+        }
+
+        jQuery.Color.fn.darkenColor = function(amount) {
+            var r = Math.max(this._rgba[0] - amount, 0),
+                g = Math.max(this._rgba[1] - amount, 0),
+                b = Math.max(this._rgba[2] - amount, 0);
+            return 'rgb('+ r +','+ g +','+ b +')';
+        };
+
         function setMousePosition(event)
         {
             event = event || window.event;
@@ -1491,21 +1685,21 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                             return false;
                         }
                     });
-                    if (alreadySuggestedNodes) {
+                    if (alreadySuggestedNodes)
                         return;
-                    }
                     else {
                         if (scope.suggestedNodes.length > 0) {
                             for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
                                 var point = scope.suggestedNodes[i].start;
-                                if (scope.currentNode.type == 'Person') {
+                                if (scope.currentNode.type == 'Person')
                                     point = scope.suggestedNodes[i].end;
-                                }
                                 removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
-                            };
+                            }
                         }
                     }
                 }
+                // clearing pagination offsets
+                scope.clearOffsets();
                 // animating camera
                 var duration = 500;
                 new TWEEN.Tween(camera.position).to({
@@ -1517,16 +1711,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     x: intersection.object.position.x,
                     y: intersection.object.position.y,
                     z: intersection.object.position.z}, duration).easing(TWEEN.Easing.Linear.None)
-                      .onComplete(function() {
-                            scope.currentNode.sprite = intersection.object;
-                            nodePosition = intersection.object.position;
-                            if (scope.cinegraphId != undefined) {
-                                getNodeCinegraphMode(id, nodePosition, draw, true);
-                            }
-                            else {
-                                getNode(id, nodePosition, draw);
-                            }
-                      }).start();
+                  .onComplete(function() {
+                        scope.currentNode.sprite = intersection.object;
+                        nodePosition = intersection.object.position;
+                        if (scope.cinegraphId != undefined)
+                            getNodeCinegraphMode(id, nodePosition, draw, true);
+                        else
+                            getNode(id, nodePosition, draw);
+                }).start();
             }
         }
 

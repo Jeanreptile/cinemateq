@@ -8,7 +8,20 @@ var config = require('../config');
 var db = require("seraph")(config.database_url);
 
 
+router.get('/:userId/rating/:movieId', function(req, res) {
+	var cypher = "MATCH (u:User)-[r:RATED]->(m) " +
+					"WHERE id(m) = {movieId} AND id(u) = {userId} " +
+					"RETURN r"
 
+	db.query(cypher, {movieId: parseInt(req.params.movieId), userId: parseInt(req.params.userId)}, function (err, result) {
+		if (err) throw err;
+		if (result[0] == undefined)
+		{
+			return res.json({message: "no rate"});
+		}
+		res.json(result[0].properties);
+	});
+});
 
 router.get('/rating/:movieId', authenticate, function(req, res) {
 	var userName = decodedToken.username;
@@ -107,43 +120,54 @@ function updateGlobalScore(type, id, score, alreadyRatedByUser, oldScore, callba
 	db.read(id, function (err, node) {
 		if (err) throw err;
 
-		var globalScore = node.globalLoveScore;
-		var numberOfRatings = node.numberOfLoveRatings;
-		if (type == "obj") {
-			globalScore = node.globalObjScore;
-			numberOfRatings = node.numberOfObjRatings;
-		}
-		if (globalScore == undefined) {
-			globalScore = 0;
-		}
-		if (numberOfRatings == undefined) {
-			numberOfRatings = 0;
-		}
-		if (!alreadyRatedByUser) {
-			numberOfRatings++;
-			globalScore += score * 1;
-			globalScore /= numberOfRatings;
+		var cypherRatings;
+		var cypherLoveRatings = "MATCH (u:User)-[r:RATED]->(m:Movie) WHERE id(m) = {movieId} AND HAS (r.love) RETURN r";
+		var cypherObjRatings = "MATCH (u:User)-[r:RATED]->(m:Movie) WHERE id(m) = {movieId} AND HAS (r.obj) RETURN r";
+
+		if (type == "love") {
+			cypherRatings = cypherLoveRatings;
 		}
 		else {
-			globalScore -= oldScore / numberOfRatings;
-			globalScore += score / numberOfRatings;
+			cypherRatings = cypherObjRatings;
 		}
 
-		globalScore = globalScore % 1 != 0 ? globalScore.toFixed(1) : globalScore;
-		if (type == "love") {
-			node.globalLoveScore = globalScore;
-			node.numberOfLoveRatings = numberOfRatings;
-		}
-		else {
-			node.globalObjScore = globalScore;
-			node.numberOfObjRatings = numberOfRatings;
-		}
-		//console.log("node: " + JSON.stringify(node));
-		//console.log("global" + type + "Score: " + globalScore);
-		db.save(node, function (err, updatedNode) {
+		db.query(cypherRatings, {movieId: id}, function (err, result) {
 			if (err) throw err;
-			//console.log("new node: " + JSON.stringify(updatedNode));
-			callback(updatedNode);
+
+			var globalScore;
+			var numberOfRatings;
+			if (result[0] == undefined) {
+				globalScore = 0;
+			}
+			else {
+				numberOfRatings = result.length;
+				//console.log("numberOfRatings: " + numberOfRatings);
+				var sumOfRatings = 0;
+				for (var i = result.length - 1; i >= 0; i--) {
+					if (type == "love") {
+						sumOfRatings += parseInt(result[i].properties.love);
+					}
+					else {
+						sumOfRatings += parseInt(result[i].properties.obj);
+					}
+				};
+				//console.log("sumOfRatings: " + sumOfRatings);
+				globalScore = sumOfRatings / numberOfRatings;
+				globalScore = globalScore % 1 != 0 ? globalScore.toFixed(1) : globalScore;
+			}
+			if (type == "love") {
+				node.globalLoveScore = globalScore;
+			}
+			else {
+				node.globalObjScore = globalScore;
+			}
+			//console.log("node: " + JSON.stringify(node));
+			//console.log("global" + type + "Score: " + globalScore);
+			db.save(node, function (err, updatedNode) {
+				if (err) throw err;
+				//console.log("new node: " + JSON.stringify(updatedNode));
+				callback(updatedNode);
+			});
 		});
 	});
 }

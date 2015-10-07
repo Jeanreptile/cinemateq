@@ -26,29 +26,43 @@ div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 		| {{genre}}
 		i.i.i-dot(ng-hide="$last")
 	div.row.m-t-sm
-		div.col-xs-5.global-score
+		div.col-xs-5.global-score(ng-show='currentUser')
 			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
 				| {{currentNode.globalObjScore}}
 			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
 				| 0
 			small.text-muted
 				| Objective score
-		div.col-xs-7
+		div.col-xs-12.global-score(ng-show='currentUser == undefined')
+			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
+				| {{currentNode.globalObjScore}}
+			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
+				| 0
+			small.text-muted
+				| Objective score
+		div.col-xs-7(ng-show='currentUser')
 			input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-2x', data-empty='fa fa-star-o fa-2x')
 	div.row.m-t-sm
-		div.col-xs-5.global-score
+		div.col-xs-5.global-score(ng-show='currentUser')
 			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
 				| {{currentNode.globalLoveScore}}
 			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
 				| 0
 			small.text-muted
 				| Love score
-		div.col-xs-7
+		div.col-xs-12.global-score(ng-show='currentUser == undefined')
+			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
+				| {{currentNode.globalLoveScore}}
+			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
+				| 0
+			small.text-muted
+				| Love score
+		div.col-xs-7(ng-show='currentUser')
 			input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
-		div.col-xs-12.m-t-sm
-			//button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button')
+		//div.col-xs-12.m-t-sm
+			button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button')
 				i.fa.fa-heart.fa-lg
-			//button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-show="currentNode.type == 'Movie'")
+			button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-show="currentNode.type == 'Movie'")
 				i.fa.fa-eye.fa-lg
 	//div.row
 		div.col-xs-12
@@ -66,7 +80,7 @@ div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 					| Read more...
 nav.nav-primary.hidden-xs
 	ul.nav.nav-main(data-ride='collapse')
-		li
+		li(ng-show="!currentCinegraph")
 			a.auto(ng-href='')
 				span.pull-right.text-muted
 					i.i.i-circle-sm-o.text
@@ -74,23 +88,13 @@ nav.nav-primary.hidden-xs
 				i.i.i-plus2.icon
 				span.font-bold Friends
 			ul.list-group.no-bg.no-borders.auto
-				li.list-group-item
+				li.list-group-item(ng-repeat="sentence in friendsTastes")
 					span.pull-left.thumb-sm.avatar
 						img.img-circle(src='images/a3.png', alt='...')
 						i.on.b-black.bottom
 					span.clear
-						a(href='#') Jean Reptile
-						|  sent your email 
-						small.icon-muted 13 minutes ago
-				li.list-group-item
-					span.pull-left.thumb-sm.avatar
-						img.img-circle(src='images/a3.png', alt='...')
-						i.on.b-black.bottom
-					span.clear
-						a(href='#') Florian Magot
-						|  invite you to join a meeting 
-						small.icon-muted 20 minutes ago
-				li.list-group-item
+						| {{sentence}}
+				//li.list-group-item
 					span.pull-left.thumb-sm.avatar
 						img.img-circle(src='images/a3.png', alt='...')
 						i.on.b-black.bottom

@@ -171,7 +171,24 @@ router.get('/person', function(req, res) {
         function(err, result)
         {
             if (err) throw err;
-            res.json(result);
+
+            if (result.length == 0)
+            {
+              console.log('yeah new search');
+              var cypher2 = "MATCH (person:Person) WHERE person.fullname =~ '" + reqBefore + ".*' RETURN person LIMIT 10";
+              dbLocal.query(cypher2,
+                function(err, result)
+                {
+                  if (err) throw err;
+
+                  console.log("result is " + JSON.stringify(result));
+                  return res.json(result)
+                });
+            }
+            else {
+              console.log("result is " + JSON.stringify(result));
+              res.json(result);
+            }
         });
 });
 

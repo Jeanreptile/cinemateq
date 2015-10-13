@@ -16,10 +16,11 @@ router.get('/movie', function(req, res) {
     }
     var reqBefore = req.query.query;
 
-    var requestMovie = reqBefore.replace(" ", "* AND ");
     var regEx = /[+\-!(){}\[\]^"~*?:\\]|(&&)|(\|{2})/g; // regex for special characters allowed by Lucene: + - && || ! ( ) { } [ ] ^ " ~ * ? : \
     var subst = "\\\\$&"; // substitution string: double backslash before matched content
-    var requestMovie2 = requestMovie.replace(regEx, subst);
+    var requestMovie = reqBefore.replace(regEx, subst);
+    var requestMovie2 = requestMovie.replace(" ", "* AND ");
+    console.log("request is " + requestMovie2);
     var cypher = "START movie=node:node_auto_index('title:(" + requestMovie2 + "*)') WHERE NOT (ANY ( x IN [\"Short\", \"Documentary\"] WHERE x in movie.genre)) RETURN movie ORDER BY length(movie.title) LIMIT 10";
     dbLocal.query(cypher,
         function(err, result)
@@ -170,7 +171,24 @@ router.get('/person', function(req, res) {
         function(err, result)
         {
             if (err) throw err;
-            res.json(result);
+
+            if (result.length == 0)
+            {
+              console.log('yeah new search');
+              var cypher2 = "MATCH (person:Person) WHERE person.fullname =~ '" + reqBefore + ".*' RETURN person LIMIT 10";
+              dbLocal.query(cypher2,
+                function(err, result)
+                {
+                  if (err) throw err;
+
+                  console.log("result is " + JSON.stringify(result));
+                  return res.json(result)
+                });
+            }
+            else {
+              console.log("result is " + JSON.stringify(result));
+              res.json(result);
+            }
         });
 });
 

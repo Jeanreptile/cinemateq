@@ -1,4 +1,4 @@
-angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $window, $location, AuthService) {
+angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $window, $location, AuthService, socket) {
   $scope.message = '';
   $scope.message2 = '';
 
@@ -79,16 +79,18 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
   };
 });
 
-angular.module('cinegraphApp').factory('AuthService', function($window, $location) {
-
+angular.module('cinegraphApp').factory('AuthService', function($window, $location, socket, $route) {
   return {
     login: function() {
       currentUser = $window.localStorage.user;
     },
     logout: function() {
+      user = JSON.parse($window.localStorage.user);
+      socket.emit('unsubscribe', {channel:'notifs.' + user.username});
       delete $window.localStorage.user;
       delete $window.localStorage.token;
       $location.path('/');
+      $window.location.reload();
     },
     isLoggedIn: function() {
       return ($window.localStorage.user != undefined);

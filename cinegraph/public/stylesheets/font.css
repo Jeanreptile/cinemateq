@@ -24,6 +24,14 @@
 }
 
 @font-face {
+  font-family: 'FuturaLT';
+  font-style: normal;
+  font-weight: 300;
+  src: local('FuturaLT'), local('FuturaLT'), url('../fonts/FuturaLT.ttf') format('truetype');
+}
+
+
+@font-face {
   font-family: 'Moon Bold';
   font-style: bold;
   font-weight: 700;

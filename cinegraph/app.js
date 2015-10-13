@@ -151,8 +151,13 @@ io.sockets.on('connection', function (socket) {
   //on subscription request joins specified room
   //later messages are broadcasted on the rooms
   console.log("connection on socket !")
+  socket.on('unsubscribe', function (data) {
+    socket.leave(data.channel);
+    redisClient.unsubscribe(data.channel);
+    //notif_name = 'notif_' + data;
+    //socket.emit('all_' + notif_name);
+  });
   socket.on('subscribe', function (data) {
-    console.log("data channel is " + data.channel);
     socket.join(data.channel);
     redisClient.subscribe(data.channel);
     //notif_name = 'notif_' + data;
@@ -161,6 +166,10 @@ io.sockets.on('connection', function (socket) {
   socket.on('disconnect', function () {
    io.emit('user disconnected');
    console.log("user disconnected")
+ });
+  socket.on('reconnect', function () {
+    socket.reconnect();
+    console.log("reconnected !");
  });
 });
 

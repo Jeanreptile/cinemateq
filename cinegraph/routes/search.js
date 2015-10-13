@@ -170,7 +170,7 @@ router.get('/person', function(req, res) {
         function(err, result)
         {
             if (err) throw err;
-
+            /*
             if (result.length == 0)
             {
               var cypher2 = "MATCH (person:Person) WHERE person.fullname =~ '" + reqBefore + ".*' RETURN person LIMIT 10";
@@ -184,9 +184,10 @@ router.get('/person', function(req, res) {
                 });
             }
             else {
+            */
               console.log("result is " + JSON.stringify(result));
               res.json(result);
-            }
+            //}
         });
 });
 

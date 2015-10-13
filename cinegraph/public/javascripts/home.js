@@ -881,8 +881,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 spriteCanv.width = circleRadius * 2 + 1;
                 spriteCanv.height = spriteCanv.width;
                 var spriteCtx = spriteCanv.getContext('2d');
-                spriteCtx.fillStyle='rgba(255,255,255,0.1)';
-                spriteCtx.fillRect(0,0,spriteCanv.width,spriteCanv.height);
+                /*spriteCtx.fillStyle='rgba(255,255,255,0)';
+                spriteCtx.fillRect(0,0,spriteCanv.width,spriteCanv.height);*/
                 // getting lines related to node
                 for (var j = linesScene.children.length - 1; j >= 0; j--)
                 {
@@ -907,7 +907,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     var c = 'rgba(' + color.r * 255 + ',' + color.g * 255 + ',' + color.b * 255 +',1)';
                     if (gradients[c] == undefined)
                         generateGradient(c);
-                    var r = circleRadius * 4.5;
+                    var r = circleRadius * 2.5;
                     spriteCtx.drawImage(
                         gradients[c],
                         circleRadius + radgradPos.x - r / 2,
@@ -1236,7 +1236,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function drawNode(node, position, startNodeSprite, type) {
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title
-            var canvas = generateTexture(defaultImg, text);
+            var canvas = generateTexture(node.jobs != undefined ? node.jobs[0].name : undefined, defaultImg, text);
             var texture = new THREE.Texture(canvas);
             THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
             texture.needsUpdate = true;
@@ -1245,6 +1245,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             sprite.name = text;
             sprite.canvas = canvas;
             sprite.texture = texture;
+            sprite.mainJob = node.jobs != undefined ? node.jobs[0].name : undefined;
             // image loading
             var nodeImage;
             if (node.img == undefined || node.img == false)
@@ -1257,7 +1258,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     nodeImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/poster.jpg';
                 nodeImage.onerror = function () { this.src = 'images/default.jpg'; };
                 nodeImage.onload = function () {
-                    updateTexture(nodeImage, sprite.canvas, sprite.name, nodeOpacity);
+                    updateTexture(sprite.mainJob, nodeImage, sprite.canvas, sprite.name, nodeOpacity);
                     sprite.texture.needsUpdate = true;
                 };
             }
@@ -1411,31 +1412,43 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             return positions;
         }
 
-        function generateTexture(img, text) {
+        function generateTexture(job, img, text) {
             var canvas = document.createElement('canvas');
             canvas.width = 256;
             canvas.height = 256;
-            updateTexture(img, canvas, text, nodeOpacity);
+            updateTexture(job, img, canvas, text, nodeOpacity);
             return canvas;
         }
 
-        function updateTexture(img, canvas, text, opacity) {
+        function updateTexture(job, img, canvas, text, opacity) {
             var borderThickness = canvas.width / borderFraction;
             var halfWidth = canvas.width / 2;
             var halfHeight = canvas.height / 2;
             var context = canvas.getContext('2d');
+            // outer circle
+            context.beginPath();
+            context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
+            context.clip();
+            context.fillStyle = job != undefined ? colors[job] : orangeColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            // clipping to inner circle
             context.beginPath();
             context.arc(halfWidth, halfHeight, halfWidth - borderThickness, 0, PI2);
             context.clip();
+            // black background for opacity
             context.fillStyle = '#000000';
             context.fillRect(0, 0, canvas.width, canvas.height);
+            // drawing image
             context.globalAlpha = opacity;
-            drawImageProp(context, img, borderThickness, borderThickness, canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
+            drawImageProp(context, img, borderThickness, borderThickness,
+                canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
+            // drawing text
             context.fillStyle = "#ffffff";
             context.font = "bold " + (canvas.width / 9) + "px Arial";
             context.textAlign = "center";
             context.globalAlpha = (1 / (nodeOpacity - 1)) * (opacity - 1);
-            wrapText(context, text.toUpperCase(), halfWidth, canvas.height / 2.5, canvas.width -  5 * borderThickness, canvas.height / 6);
+            wrapText(context, text.toUpperCase(), halfWidth, canvas.height / 2.5,
+                canvas.width -  5 * borderThickness, canvas.height / 6);
             context.globalAlpha = 1;
         }
 
@@ -1872,7 +1885,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     if (current && (current._id != INTERSECTED._id)) {
                         if (scope.cinegraphId != undefined && current.material.opacity == 0.99)
                             current.material.opacity = nodeSuggestionOpacity;
-                        updateTexture(current.nodeImage, current.canvas, current.name, nodeOpacity);
+                        updateTexture(current.mainJob, current.nodeImage, current.canvas, current.name, nodeOpacity);
                         current.texture.needsUpdate = true;
                         old = current;
                     }
@@ -1885,7 +1898,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
                     .easing(TWEEN.Easing.Linear.None)
                     .onUpdate(function (){
-                        updateTexture(current.nodeImage, current.canvas, current.name, current.animationOpacity);
+                        updateTexture(current.mainJob, current.nodeImage, current.canvas, current.name, current.animationOpacity);
                         current.texture.needsUpdate = true;
                     }).start();
                 }

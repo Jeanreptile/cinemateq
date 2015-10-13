@@ -26,6 +26,50 @@ THREE.CopyShader = {
     ].join("\n")
 };
 
+THREE.TestLineShader = {
+
+    uniforms: {
+        "tDiffuse": { type: "t", value: null }
+    },
+
+    vertexShader: [
+        "attribute vec3 a_startPosition;",
+        "attribute vec3 a_endPosition;",
+        "attribute float a_choice;",
+        "attribute float a_dir;",
+        "uniform mat4 u_mvpMatrix;",
+        "uniform vec2 u_viewDims;",
+        "varying vec2 vUv;",
+
+        "void main()",
+        "{",
+        "   vUv = uv;",
+        "   vec4 start = u_mvpMatrix*vec4(a_startPosition,1.0);",
+        "   vec4 end   = u_mvpMatrix*vec4(a_endPosition,  1.0);",
+        "   vec2 slope = normalize(end.xy - start.xy);",
+        "   slope = vec2(slope.y,-slope.x);",
+        "   const float width = 8.0;//pixels",
+        "   vec2 scale = width/1024;",
+
+        "   gl_Position = a_choice == 0.0 ?",
+        "                 vec4(start.xy + a_dir*scale*slope.xy*start.w,start.zw) :",
+        "                 vec4(end.xy   + a_dir*scale*slope.xy*end.w,end.zw);",
+
+            /*"gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",*/
+        "}"
+    ].join("\n"),
+
+    fragmentShader: [
+        "uniform sampler2D tDiffuse;",
+        "varying vec2 vUv;",
+
+        "void main() {",
+            "vec4 texel = texture2D(tDiffuse, vUv);",
+            "gl_FragColor = vec4(1.0,0.0,1.0,1.0);",
+        "}"
+    ].join("\n")
+};
+
 
 THREE.BlendShader = {
 
@@ -62,7 +106,9 @@ THREE.BlendShader = {
 /*            "float f = 0.76;",
             "if (t4.a == 1.0 && t4.r == 0.0 && t4.g == 0.0 && t4.b == 0.0)",
             "    t4.a = 0.0;",*/
-            "gl_FragColor = ((t1 * (1.0 - t2.a) + t2 * t2.a) * (1.0 - t3.a) + t3 * t3.a) * (1.0 - t4.a) + t4 * t4.a;",
+            "gl_FragColor = ((t1 * (1.0 - t2.a) + t2 * t2.a) * (1.0 - t3.a) + t3 * t3.a) * (1.0 - t4.a) + vec4(t4[0],t4[1],t4[2],1.0) * t4.a;",
+            /*"gl_FragColor = vec4(t4[0],t4[1],t4[2],1.0) * t4.a;",*/
+            /*"gl_FragColor = ((t1 * (1.0 - t2.a) + t2 * t2.a) * (1.0 - t3.a) + t3 * t3.a) * (1.0 - t4.a) + t4 * t4.a;",*/
         "}"
     ].join("\n")
 };

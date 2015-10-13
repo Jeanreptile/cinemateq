@@ -69,10 +69,11 @@ angular.module('cinegraphApp').controller('notificationsController', function($s
     }
   }
 
-  socket.emit('subscribe', {channel:'notifs.' + AuthService.currentUser().username});
 
   if (AuthService.isLoggedIn()) {
     //new message arrival -- you are going to append into some HTML div
+  socket.emit('subscribe', {channel:'notifs.' + AuthService.currentUser().username});
+  
   socket.on('message', function (data) {
     notif = JSON.parse(data);
     $scope.addNotif($scope.getNotif(notif));

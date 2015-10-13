@@ -122,6 +122,7 @@ app.use(function(err, req, res, next) {
   });
 });
 
+isRedisLaunched = true;
 
 redisClient.on("error", function (err) {
     console.log("Error " + err);
@@ -133,6 +134,7 @@ redisClient.on("error", function (err) {
     if (errStr.endsWith("ECONNREFUSED"))
     {
       console.log("Redis can't connect.");
+      isRedisLaunched = false;
       redisClient.end();
     }
 });
@@ -153,13 +155,17 @@ io.sockets.on('connection', function (socket) {
   console.log("connection on socket !")
   socket.on('unsubscribe', function (data) {
     socket.leave(data.channel);
-    redisClient.unsubscribe(data.channel);
+    if (isRedisLaunched)
+      console.log('UNsubscribe to Redis');
+      redisClient.unsubscribe(data.channel);
     //notif_name = 'notif_' + data;
     //socket.emit('all_' + notif_name);
   });
   socket.on('subscribe', function (data) {
     socket.join(data.channel);
-    redisClient.subscribe(data.channel);
+    if (isRedisLaunched)
+      console.log('subscribe to Redis');
+      redisClient.subscribe(data.channel);
     //notif_name = 'notif_' + data;
     //socket.emit('all_' + notif_name);
   });

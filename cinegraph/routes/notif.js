@@ -8,31 +8,48 @@ var redis = require('redis');
 /* Get all notifications of an user */
 router.get('/:userName', function(req, res) {
   result = [];
+  isRedisLaunched = true;
   var redisClient = redis.createClient();
-  redisClient.smembers("notifs." + req.params.userName, function (err, replies) {
-    console.log(JSON.stringify(replies));
-    if (replies && replies.length)
-    {
-      console.log('dedans');
-      replies.forEach(function (reply, i) {
-        redisClient.get("notif." + req.params.userName + ":" + reply, function(err, reply_notif)
-        {
-          if(!err)
-          {
-            result.push(JSON.parse(reply_notif));
-            if((i+1) === replies.length)
-              res.json(result);
-          }
-          else
-            console.log("Redis error: " + err.toString());
-        })
-      })
-      redisClient.quit();
-    }
-    else {
-      res.json([]);
-    }
+  redisClient.on("error", function (err) {
+      console.log("Error " + err);
+      String.prototype.endsWith = function(pattern) {
+        var d = this.length - pattern.length;
+        return d >= 0 && this.lastIndexOf(pattern) === d;
+      };
+      errStr = "" + err;
+      if (errStr.endsWith("ECONNREFUSED"))
+      {
+        console.log("Redis can't connect.");
+        isRedisLaunched = false;
+      }
   });
+  if (isRedisLaunched)
+  {
+    redisClient.smembers("notifs." + req.params.userName, function (err, replies) {
+      if (replies && replies.length)
+      {
+        replies.forEach(function (reply, i) {
+          redisClient.get("notif." + req.params.userName + ":" + reply, function(err, reply_notif)
+          {
+            if(!err)
+            {
+              result.push(JSON.parse(reply_notif));
+              if((i+1) === replies.length)
+                res.json(result);
+            }
+            else
+              console.log("Redis error: " + err.toString());
+          })
+        })
+        redisClient.quit();
+      }
+      else {
+        redisClient.quit();
+        res.json([]);
+      }
+    });
+  }
+  res.json([]);
 });
 
 

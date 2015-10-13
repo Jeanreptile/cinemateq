@@ -42,6 +42,7 @@ $scope.OnItemClick = function(event) {
         query: val
       }
     }).then(function(response){
+      console.log("response front is: " + JSON.stringify(response));
         return response.data.map(function(item){
           if ($scope.selectedItem == "movie" )
           {

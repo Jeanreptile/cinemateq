@@ -163,7 +163,7 @@ a:hover .caret-white {
   width: 250px;
 }
 .input-lg {
-  height: 45px;
+  /*height: 45px;*/
 }
 .input-group-addon {
   border-color: #cbd5dd;
@@ -814,7 +814,7 @@ body.container {
   float: none;
   text-align: center;
   font-size: 20px;
-  font-weight: 700;
+  /*font-weight: 700;*/
   height: auto;
   line-height: 50px;
   display: inline-block;
@@ -879,7 +879,7 @@ body.container {
 .bg-black .nav-primary > ul.nav-main > li:focus > a,
 .bg-black .nav-primary > ul.nav-main > li:active > a,
 .bg-black .nav-primary > ul.nav-main > li.active > a {
-  background-color: #1aae88;
+  background-color: #C9262F;
 }
 @media (min-width: 768px) {
   .visible-nav-xs {
@@ -1372,8 +1372,8 @@ fieldset[disabled] .btn-success.active {
 }
 .btn-info {
   color: #fff !important;
-  background-color: #1ccacc;
-  border-color: #1ccacc;
+  background-color: #C9262F;
+  border-color: #C9262F;
 }
 .btn-info:hover,
 .btn-info:focus,
@@ -1381,8 +1381,8 @@ fieldset[disabled] .btn-success.active {
 .btn-info.active,
 .open .dropdown-toggle.btn-info {
   color: #fff !important;
-  background-color: #19b4b6;
-  border-color: #17a6a8;
+  background-color: #DB4049;
+  border-color: #DB4049;
 }
 .btn-info:active,
 .btn-info.active,
@@ -2195,7 +2195,7 @@ fieldset[disabled] .btn-dark.active {
   background-color: #171b24 !important;
 }
 .bg-black {
-  background-color: #12131a;
+  background-color: #030303;
   color: #656b93;
 }
 .bg-black.lt,

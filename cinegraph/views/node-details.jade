@@ -5,7 +5,7 @@ div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 		img(ng-src="images/persons/{{sanitizeFileName(currentNode.fullname)}}.jpg")
 	div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
 		img(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
-	div.h4.m-t.m-b-xs.font-bold
+	div.h4.m-t.m-b-xs
 		a(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
 			{{currentNode.firstname}} {{currentNode.lastname}}
 			i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")

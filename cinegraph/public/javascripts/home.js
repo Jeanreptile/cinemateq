@@ -215,11 +215,11 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         if ($scope.currentNode.type == 'Person') {
             $scope.selectedJobs = {
                 actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
-                writer: $scope.currentNode.jobs[0].name == 'WROTE',
-                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
                 director: $scope.currentNode.jobs[0].name == 'DIRECTED',
-                editor: $scope.currentNode.jobs[0].name == 'EDITED',
+                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
+                writer: $scope.currentNode.jobs[0].name == 'WROTE',
                 dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
+                editor: $scope.currentNode.jobs[0].name == 'EDITED',
                 musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
                 cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
                 proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION'
@@ -228,11 +228,11 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         else {
             $scope.selectedJobs = {
                 actor: true,
-                writer: false,
-                producer: false,
                 director: true,
-                editor: false,
+                producer: false,
+                writer: false,
                 dirphotography: false,
+                editor: false,
                 musiccomposer: false,
                 cosdesigner: false,
                 proddesigner: false
@@ -374,8 +374,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 writer: 0,
                 producer: 0,
                 director: 0,
-                editor: 0,
                 dirphotography: 0,
+                editor: 0,
                 musiccomposer: 0,
                 cosdesigner: 0,
                 proddesigner: 0
@@ -465,11 +465,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var nodePosition = new THREE.Vector3(0, 0, 0);
             var randomVector = new THREE.Vector3(Math.random() * 60 - 20, Math.random() * 60 - 20, Math.random() * 60 - 20);
             var currentDisplayedNodes = [];
-            var orangeColor = '#ffa827';
+            var orangeColor = '#FFA226';
             var colors = [];
-            colors['ACTED_IN'] = '#319ef1'; colors['PRODUCED'] = '#1AAE88'; colors['DIRECTED'] = '#177BBB';
-            colors['WROTE'] = '#FCC633'; colors['EDITED'] = '#E33244'; colors['DIRECTED_PHOTOGRAPHY'] = '#F9D269';
-            colors['COMPOSED_MUSIC'] = '#27D4A8'; colors['DESIGNED_COSTUMES'] = '#E56371'; colors['DESIGNED_PRODUCTION'] = '#3DDCDE';
+            colors['ACTED_IN'] = '#319ef1'; colors['PRODUCED'] = '#27AE60'; colors['DIRECTED'] = '#8E44AD';
+            colors['WROTE'] = '#F1C40F'; colors['EDITED'] = '#E33244'; colors['DIRECTED_PHOTOGRAPHY'] = '#FC6E51';
+            colors['COMPOSED_MUSIC'] = '#00D6CE'; colors['DESIGNED_COSTUMES'] = '#EC87C0'; colors['DESIGNED_PRODUCTION'] = '#AC92EC';
             var composerBackground, composerLines, composer, gradientComposer, blendComposer;
             const PI2 = 2 * Math.PI;
             const blurAmount = 25;
@@ -549,7 +549,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         gradientComposer.passes[gradientComposer.passes.length - 1].renderToScreen = (renderMode == 4);
                         blendComposer.passes[blendComposer.passes.length - 1].renderToScreen = (renderMode == 0);
                         renderNeedsUpdate = true;
-                        console.log(composer.renderTarget1.width, sampleRatio, viewWidth);
                         break;
                     default: return;
                 }

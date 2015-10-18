@@ -20,17 +20,6 @@ aside#sidebar.aside-md.bg-black.hide
 									button.btn.btn-default.btn-xs(ng-click="paginateBy('actor','ACTED_IN');")
 										i.fa.fa-arrow-right
 						.form-group
-							label.control-label.col-sm-5 Producer
-							.col-sm-7
-								label.switch.producer
-									input(type='checkbox', ng-model="selectedJobs.producer", ng-change="filterByProducer()")
-									span
-								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs(ng-click="paginateBy('producer','PRODUCED');")
-										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs(ng-click="paginateBy('producer','PRODUCED');")
-										i.fa.fa-arrow-right
-						.form-group
 							label.control-label.col-sm-5 Director
 							.col-sm-7
 								label.switch.director
@@ -40,6 +29,17 @@ aside#sidebar.aside-md.bg-black.hide
 									button.btn.btn-default.btn-xs(ng-click="paginateBy('director','DIRECTED');")
 										i.fa.fa-arrow-left
 									button.btn.btn-default.btn-xs(ng-click="paginateBy('director','DIRECTED');")
+										i.fa.fa-arrow-right
+						.form-group
+							label.control-label.col-sm-5 Producer
+							.col-sm-7
+								label.switch.producer
+									input(type='checkbox', ng-model="selectedJobs.producer", ng-change="filterByProducer()")
+									span
+								.btn-group.graph-pagination-btn
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('producer','PRODUCED');")
+										i.fa.fa-arrow-left
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('producer','PRODUCED');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Writer
@@ -53,17 +53,6 @@ aside#sidebar.aside-md.bg-black.hide
 									button.btn.btn-default.btn-xs(ng-click="paginateBy('writer','WROTE');")
 										i.fa.fa-arrow-right
 						.form-group
-							label.control-label.col-sm-5 Editor
-							.col-sm-7
-								label.switch.editor
-									input(type='checkbox', ng-model="selectedJobs.editor", ng-change="filterByEditor()")
-									span
-								.btn-group.graph-pagination-btn
-									button.btn.btn-default.btn-xs(ng-click="paginateBy('editor','EDITED');")
-										i.fa.fa-arrow-left
-									button.btn.btn-default.btn-xs(ng-click="paginateBy('editor','EDITED');")
-										i.fa.fa-arrow-right
-						.form-group
 							label.control-label.col-sm-5 Director of photography
 							.col-sm-7
 								label.switch.dir-photography
@@ -73,6 +62,17 @@ aside#sidebar.aside-md.bg-black.hide
 									button.btn.btn-default.btn-xs(ng-click="paginateBy('dirphotography','DIRECTED_PHOTOGRAPHY');")
 										i.fa.fa-arrow-left
 									button.btn.btn-default.btn-xs(ng-click="paginateBy('dirphotography','DIRECTED_PHOTOGRAPHY');")
+										i.fa.fa-arrow-right
+						.form-group
+							label.control-label.col-sm-5 Editor
+							.col-sm-7
+								label.switch.editor
+									input(type='checkbox', ng-model="selectedJobs.editor", ng-change="filterByEditor()")
+									span
+								.btn-group.graph-pagination-btn
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('editor','EDITED');")
+										i.fa.fa-arrow-left
+									button.btn.btn-default.btn-xs(ng-click="paginateBy('editor','EDITED');")
 										i.fa.fa-arrow-right
 						.form-group
 							label.control-label.col-sm-5 Music composer

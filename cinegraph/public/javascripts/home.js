@@ -487,12 +487,15 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             rendererStats.domElement.style.position = 'absolute';
             rendererStats.domElement.style.right = '0px';
             rendererStats.domElement.style.bottom = '0px';
-            document.body.appendChild( rendererStats.domElement );
+            rendererStats.domElement.style.display = "none";
+            rendererStats.domElement.id = "rendererStats";
+            document.body.appendChild(rendererStats.domElement);
             var stats = new Stats();
             stats.setMode(0); // 0: fps, 1: ms, 2: mb
             stats.domElement.style.position = 'absolute';
             stats.domElement.style.right = '80px';
             stats.domElement.style.bottom = '0px';
+            stats.domElement.style.display = "none";
             document.body.appendChild(stats.domElement);
 
             // Clean everything
@@ -512,13 +515,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $(document).unbind("keyup", switchRenderMode);
             })
 
-            /*window.addEventListener( 'resize', onWindowResize, false );
+/*            window.addEventListener( 'resize', onWindowResize, false );
 
             function onWindowResize(){
                 console.log('onWindowResize');
                 console.log("before", viewWidth, viewHeight);
                 viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
+                console.log("after", viewWidth, viewHeight);
                 camera.aspect = viewWidth / viewHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(viewWidth, viewHeight);
@@ -541,7 +545,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
             function switchRenderMode(e) {
                 switch(e.which) {
-                    case 82: // R
+                    case 112: // F1
                         renderMode = (renderMode + 1) % 5;
                         composerBackground.passes[composerBackground.passes.length - 1].renderToScreen = (renderMode == 1);
                         composerLines.passes[composerLines.passes.length - 1].renderToScreen = (renderMode == 2);
@@ -549,6 +553,9 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         gradientComposer.passes[gradientComposer.passes.length - 1].renderToScreen = (renderMode == 4);
                         blendComposer.passes[blendComposer.passes.length - 1].renderToScreen = (renderMode == 0);
                         renderNeedsUpdate = true;
+                        break;
+                    case 113: // F2
+                        $('#stats, #rendererStats').toggle();
                         break;
                     default: return;
                 }

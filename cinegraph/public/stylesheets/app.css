@@ -729,7 +729,7 @@ body.container {
     width: 300px;
   }
   .aside-xl {
-    width: 360px;
+    width: 330px;
   }
   .aside-xxl {
     width: 480px;
@@ -2195,7 +2195,7 @@ fieldset[disabled] .btn-dark.active {
   background-color: #171b24 !important;
 }
 .bg-black {
-  background-color: #030303;
+  background-color: #000000;
   color: #656b93;
 }
 .bg-black.lt,

@@ -235,6 +235,16 @@ i.fa-heart, i.fa-plus, i.fa-eye {
     color: #2580db;
 }
 
+.community-element {
+    height: calc(100% - 525px); /* Size of upper pannel (+ margin) */
+    position: absolute;
+}
+
+.community-list{
+  height: calc(100% - 35px); /* Size of 'Community' element */
+  overflow-y: scroll;
+}
+
 /* RIGHT PANEL - FILTER MENU */
 
 .filter-menu .panel-body {

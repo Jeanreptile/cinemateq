@@ -227,8 +227,8 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
         else {
             $scope.selectedJobs = {
-                actor: true,
-                director: true,
+                actor: false,
+                director: false,
                 producer: false,
                 writer: false,
                 dirphotography: false,
@@ -237,14 +237,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                 cosdesigner: false,
                 proddesigner: false
             };
-            for (var i = 0; i < $scope.currentDisplayedNodes.length; i++) {
-                for (var job in $scope.selectedJobs) {
-                    if ($scope.jobsRelationships[job] == $scope.currentDisplayedNodes[i].type) {
-                        $scope.selectedJobs[job] = true;
-                    }
-                }
-            };
         }
+        for (var i = 0; i < $scope.currentDisplayedNodes.length; i++) {
+            for (var job in $scope.selectedJobs) {
+                if ($scope.jobsRelationships[job] == $scope.currentDisplayedNodes[i].type) {
+                    $scope.selectedJobs[job] = true;
+                }
+            }
+        };
     };
 
     $scope.currentNode.id = selectedNodeId;

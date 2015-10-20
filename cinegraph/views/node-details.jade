@@ -66,34 +66,15 @@ div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 				div.col-xs-5.no-padder(ng-show='currentUser')
 					input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
 
-nav.nav-primary.hidden-xs
-	ul.nav.nav-main(data-ride='collapse')
-		li(ng-show="!currentCinegraph")
-			a.auto(ng-href='')
-				span.pull-right.text-muted
-					i.i.i-circle-sm-o.text
-					i.i.i-circle-sm.text-active
-				i.i.i-plus2.icon
-				span.font-bold Friends
-			ul.list-group.no-bg.no-borders.auto
-				li.list-group-item(ng-repeat="sentence in friendsTastes")
-					span.pull-left.thumb-sm.avatar
-						img.img-circle(src='images/a3.png', alt='...')
-						i.on.b-black.bottom
-					span.clear
-						| {{sentence}}
-				//li.list-group-item
-					span.pull-left.thumb-sm.avatar
-						img.img-circle(src='images/a3.png', alt='...')
-						i.on.b-black.bottom
-					span.clear
-						a(href='#') Camille Dollé
-						|  is online 
-						small.icon-muted 1 hour ago
-		li
-			a.auto(ng-href='')
-				span.pull-right.text-muted
-					i.i.i-circle-sm-o.text
-					i.i.i-circle-sm.text-active
-				i.i.i-plus2.icon
-				span.font-bold Suggestions
+nav.nav-primary.hidden-xs.community-element
+		ul.nav.nav-main(data-ride='collapse')
+			li(ng-show="!currentCinegraph" class="active")
+				a.auto(ng-href='')
+					span.font-bold Community
+		ul.list-group.auto.no-radius.m-b-none.m-t-n-xxs.list-group-lg.community-list
+			li.list-group-item(ng-repeat="sentence in friendsTastes")
+				span.pull-left.thumb-sm.avatar
+					img.img-circle(src='images/a3.png', alt='...')
+					i.on.b-black.bottom
+				span.clear
+					| {{sentence}}

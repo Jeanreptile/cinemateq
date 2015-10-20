@@ -952,14 +952,10 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function removeOneFromScene(array, idToRemove, excludedId) {
             var length = linesScene.children.length;
-            console.log("idToRemove: " + idToRemove);
-            console.log("linesScene: " +  JSON.stringify(linesScene.children));
             for (var i = length - 1; i >= 0; i--)
             {
                 var line = linesScene.children[i];
-                console.log("endNodeId: " +line.endNodeId);
-                if (line.endNodeId == idToRemove) {
-                    console.log("line found");
+                if (line.endNodeId == idToRemove || line.startNodeId == idToRemove) {
                     linesScene.remove(line);
                 }
             }
@@ -981,7 +977,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 });
                 if (node._id != excludedId && index !== -1)
                 {
-                    console.log("node found");
                     array.splice(index, 1);
                     var n = node;
                     new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
@@ -996,7 +991,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function clearScene(array, targetId)
         {
-            console.log("targetId: " + targetId);
             // getting id of center node to keep
             var originId;
             for (var i = 0; i < linesScene.children.length; i++)
@@ -1007,15 +1001,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 else if (line.endNodeId == targetId)
                     originId = line.startNodeId;
             }
-            console.log("originId: " + originId);
             // removing lines
             var length = linesScene.children.length;
             for (var i = length - 1; i >= 0; i--)
             {
                 var line = linesScene.children[i];
                 if (line.type == "Line" && line.startNodeId != targetId && line.endNodeId != targetId){
-                    console.log("endNodeId removed: " + line.endNodeId);
-                    console.log("startNodeId removed: " + line.startNodeId);
                     line.geometry.dispose();
                     line.material.dispose();
                     linesScene.remove(line);
@@ -1053,8 +1044,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function getFriendsRatings(friends, index, node, currentUserRating) {
             $http.get('/api/user/'+ friends[index].id + '/rating/' + node.id).success(function (rating) {
-                //console.log("friend id: " + friends[index].id);
-                //console.log("rating: " + JSON.stringify(rating));
                 if (rating.message) {
                     scope.friendsTastes.push("Your mate " + friends[index].username + " didn't rate this movie. Want to send him a notification?");
                 }
@@ -1316,7 +1305,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 if (scope.cinegraphId != undefined)
                     lineMat.opacity = 0.1;
                 line = new THREE.Line(lineGeom, lineMat);
-                console.log("sprite id: " + sprite._id);
                 line.endNodeId = sprite._id;
                 line.startNodeId = startNodeSprite._id;
                 linesScene.add(line);

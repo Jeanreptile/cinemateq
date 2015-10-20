@@ -6,28 +6,15 @@ section.vbox.myCinegraphSingle
 				section.vbox
 					section.w-f.scrollable
 						.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
-							.clearfix.wrapper.dk.nav-user.hidden-xs
-								.row
-									.col-sm-12.avatar-center-xs
-										span.thumb.pull-left.avatar.m-r
-											img.dker(src="images/a0.png")
-											i.on.md.b-black
-										span.hidden-nav-xs.clear
-											span.block.m-t-xs
-												div(ng-if='currentUser')
-													strong.font-bold.text-lt {{currentUser.firstName}}
-													span.text-muted.text-xs.block Cinephile
-												div(ng-if='currentUser == undefined')
-													strong.font-bold.text-lt Invité
-													span.text-muted.text-xs.block Novice
+							.clearfix.wrapper.dk.nav-user.hidden-xs.pos-rlt.on-top
 								.row.m-t-sm.hidden-nav-xs.cinegraph-actions
 									.col-sm-12.text-center
-										h4 {{ currentCinegraph.title }}
+										h3.h3 {{ currentCinegraph.title }}
 											a(ng-click="openEditCinegraphTitleModal()")
-												i.fa.fa-edit
+												i.fa.fa-edit.cursor-pointer
 											a(ng-click="openDeleteCinegraphModal()")
-												i.fa.fa-trash-o
-								.row.m-t-sm.hidden-nav-xs
+												i.fa.fa-trash-o.cursor-pointer
+								//.row.m-t-sm.hidden-nav-xs
 									.col-sm-12.text-center
 										a.btn.btn-s-md.btn-info.btn-sm(href='/')
 											|Go to Discovery mode

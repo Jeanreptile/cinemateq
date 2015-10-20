@@ -8,7 +8,6 @@ div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 			a(href='#', ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
 				{{currentNode.title}}
 				i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
-			//div.col-xs-3.m-t-xs
 			.btn-group.m-l-sm(dropdown='', ng-controller="MyCinegraphCtrl")
 				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
 					i.fa.fa-plus.fa-lg
@@ -22,7 +21,7 @@ div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 			| {{genre}}
 			i.i.i-dot(ng-hide="$last")
 
-	div
+	a(href='#', ng-click="open('lg')")
 		div.m-t-lg(ng-show="currentNode.img != true")
 			img(src="images/default.jpg")
 		div.m-t-lg(ng-show="currentNode.type == 'Person' && currentNode.img == true")

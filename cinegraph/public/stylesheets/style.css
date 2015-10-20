@@ -31,6 +31,14 @@ body {
 
 /* LEFT PANEL */
 
+.on-top {
+  z-index: 1;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .bg-shadow-bottom, .bg-shadow-top {
   background-color: black;
   width: 100%;

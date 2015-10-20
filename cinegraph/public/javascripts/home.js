@@ -227,8 +227,8 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
         else {
             $scope.selectedJobs = {
-                actor: true,
-                director: true,
+                actor: false,
+                director: false,
                 producer: false,
                 writer: false,
                 dirphotography: false,

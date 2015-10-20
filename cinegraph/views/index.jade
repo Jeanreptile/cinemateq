@@ -4,8 +4,8 @@ section.vbox
 		section.hbox.stretch
 			aside#nav.aside-xl.bg-black.hidden-print.hidden-xs
 				section.vbox
-					section.scrollable
-						.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
+					//section.scrollable
+						//.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
 							//.clearfix.wrapper.dk.nav-user.hidden-xs
 								.row
 									.col-sm-12.avatar-center-xs
@@ -25,7 +25,7 @@ section.vbox
 										a.btn.btn-s-md.btn-info.btn-sm(href='/mycinegraph')
 											|See my cinegraphs
 											i.i.i-arrow-right.m-l-xs
-							include ./node-details.jade
+					include ./node-details.jade
 			section#content
 				section.hbox.stretch
 					section

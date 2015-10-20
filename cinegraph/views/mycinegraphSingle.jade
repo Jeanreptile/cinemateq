@@ -4,7 +4,7 @@ section.vbox.myCinegraphSingle
 		section.hbox.stretch
 			aside#nav.aside-lg.bg-black.hidden-print.hidden-xs
 				section.vbox
-					section.w-f.scrollable
+					section.scrollable
 						.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
 							.clearfix.wrapper.dk.nav-user.hidden-xs.pos-rlt.on-top
 								.row.m-t-sm.hidden-nav-xs.cinegraph-actions
@@ -20,7 +20,7 @@ section.vbox.myCinegraphSingle
 											|Go to Discovery mode
 											i.i.i-arrow-right.m-l-xs
 							include ./node-details.jade
-					footer.footer.hidden-xs.no-padder.text-center-nav-xs
+					//footer.footer.hidden-xs.no-padder.text-center-nav-xs
 						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(href='#nav', data-toggle='class:nav-xs')
 							i.i.i-circleleft.text
 								i.i.i-circleright.text-active

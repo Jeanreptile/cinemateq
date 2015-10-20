@@ -31,50 +31,48 @@ div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 
 	div.bg-shadow-bottom
 		div.col-xs-12.no-padder
-			div.row.small
-				div.col-xs-4.global-score(ng-show='currentUser')
+			div.row.small.m-n
+				div.col-xs-12(ng-show='currentUser == undefined || currentUser && currentCinegraph')
 					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
 						| {{currentNode.globalObjScore}}
 					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
 						| 0
 					small.text-muted
 						| Objective score
-				div.col-xs-12.global-score(ng-show='currentUser == undefined')
+				div.col-xs-6.global-score(ng-show='currentUser && !currentCinegraph')
 					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
 						| {{currentNode.globalObjScore}}
 					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
 						| 0
 					small.text-muted
 						| Objective score
-				div.col-xs-5.no-padder(ng-show='currentUser')
+				div.col-xs-6.text-left-align.no-padder(ng-show='currentUser && !currentCinegraph')
 					input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-2x', data-empty='fa fa-star-o fa-2x')
-			div.row.small
-				div.col-xs-4.global-score(ng-show='currentUser')
+			div.row.small.m-n
+				div.col-xs-12(ng-show='currentUser == undefined || currentUser && currentCinegraph')
 					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
 						| {{currentNode.globalLoveScore}}
 					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
 						| 0
 					small.text-muted
 						| Love score
-				div.col-xs-12.global-score(ng-show='currentUser == undefined')
+				div.col-xs-6.global-score(ng-show='currentUser && !currentCinegraph')
 					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
 						| {{currentNode.globalLoveScore}}
 					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
 						| 0
 					small.text-muted
 						| Love score
-				div.col-xs-5.no-padder(ng-show='currentUser')
+				div.col-xs-6.no-padder.text-left-align(ng-show='currentUser && !currentCinegraph')
 					input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
 
-nav.nav-primary.hidden-xs.community-element
-		ul.nav.nav-main(data-ride='collapse')
-			li(ng-show="!currentCinegraph" class="active")
-				a.auto(ng-href='')
-					span.font-bold Community
-		ul.list-group.auto.no-radius.m-b-none.m-t-n-xxs.list-group-lg.community-list
-			li.list-group-item(ng-repeat="sentence in friendsTastes")
-				span.pull-left.thumb-sm.avatar
-					img.img-circle(src='images/a3.png', alt='...')
-					i.on.b-black.bottom
-				span.clear
-					| {{sentence}}
+nav.nav-primary.m-t-xs.hidden-xs.community-element(ng-show="currentUser && !currentCinegraph")
+	div.left-panel-title
+		span.font-bold Community
+	ul.list-group.auto.no-radius.m-b-none.list-group-lg.community-list.no-borders
+		li.list-group-item(ng-repeat="sentence in friendsTastes")
+			span.pull-left.thumb-sm.avatar
+				img.img-circle(src='images/a3.png', alt='...')
+				i.on.b-black.bottom
+			span.clear
+				| {{sentence}}

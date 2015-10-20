@@ -237,6 +237,13 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                 cosdesigner: false,
                 proddesigner: false
             };
+            for (var i = 0; i < $scope.currentDisplayedNodes.length; i++) {
+                for (var job in $scope.selectedJobs) {
+                    if ($scope.jobsRelationships[job] == $scope.currentDisplayedNodes[i].type) {
+                        $scope.selectedJobs[job] = true;
+                    }
+                }
+            };
         }
     };
 
@@ -719,9 +726,9 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 if (i == Object.keys(positions)[0]) {
                     scope.currentNode = node;
                     scope.updateTypesAndLimits();
-                    scope.updateSelectedJobs();
                     updateBackground(node);
                     scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
+                    scope.updateSelectedJobs();
                 }
                 else {
                     drawNode(node, positions[i]);
@@ -945,10 +952,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function removeOneFromScene(array, idToRemove, excludedId) {
             var length = linesScene.children.length;
+            console.log("idToRemove: " + idToRemove);
+            console.log("linesScene: " +  JSON.stringify(linesScene.children));
             for (var i = length - 1; i >= 0; i--)
             {
                 var line = linesScene.children[i];
+                console.log("endNodeId: " +line.endNodeId);
                 if (line.endNodeId == idToRemove) {
+                    console.log("line found");
                     linesScene.remove(line);
                 }
             }
@@ -970,6 +981,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 });
                 if (node._id != excludedId && index !== -1)
                 {
+                    console.log("node found");
                     array.splice(index, 1);
                     var n = node;
                     new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
@@ -984,6 +996,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function clearScene(array, targetId)
         {
+            console.log("targetId: " + targetId);
             // getting id of center node to keep
             var originId;
             for (var i = 0; i < linesScene.children.length; i++)
@@ -994,12 +1007,15 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 else if (line.endNodeId == targetId)
                     originId = line.startNodeId;
             }
+            console.log("originId: " + originId);
             // removing lines
             var length = linesScene.children.length;
             for (var i = length - 1; i >= 0; i--)
             {
                 var line = linesScene.children[i];
                 if (line.type == "Line" && line.startNodeId != targetId && line.endNodeId != targetId){
+                    console.log("endNodeId removed: " + line.endNodeId);
+                    console.log("startNodeId removed: " + line.startNodeId);
                     line.geometry.dispose();
                     line.material.dispose();
                     linesScene.remove(line);
@@ -1082,12 +1098,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             if (id != scope.currentNode.id) {
                 clearScene(scope.currentDisplayedNodes, id);
             }
+
             $http.get('/api/common/' + id).success(function(node) {
                 var sprite = scope.currentNode.sprite;
                 scope.currentNode = node;
                 scope.currentNode.sprite = sprite;
                 scope.updateTypesAndLimits();
-                scope.updateSelectedJobs();
                 updateBackground(node);
                 displayFriendsTastes();
                 callback(node, nodePosition);
@@ -1100,9 +1116,9 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 scope.currentNode = node;
                 scope.currentNode.sprite = sprite;
                 scope.updateTypesAndLimits();
-                scope.updateSelectedJobs();
                 updateBackground(node);
                 callback(node, nodePosition, shouldDrawRelatedNodes);
+                scope.updateSelectedJobs();
             });
         }
 
@@ -1300,6 +1316,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 if (scope.cinegraphId != undefined)
                     lineMat.opacity = 0.1;
                 line = new THREE.Line(lineGeom, lineMat);
+                console.log("sprite id: " + sprite._id);
                 line.endNodeId = sprite._id;
                 line.startNodeId = startNodeSprite._id;
                 linesScene.add(line);
@@ -1378,6 +1395,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 occupiedPositions.push(relatedNodePosition);
                 var relatedNodeSprite = drawNode(relatedNodes[j], relatedNodePosition, startNodeSprite, type);
             }
+            scope.updateSelectedJobs();
         }
         scope.drawRelatedNodes = drawRelatedNodes;
 

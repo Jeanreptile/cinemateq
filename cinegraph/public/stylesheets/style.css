@@ -1,5 +1,5 @@
 body {
-  font: 13px "Open Sans", Helvetica, Arial, sans-serif;
+  font: 14px FuturaLT, "Open Sans", Helvetica, Arial, sans-serif;
   height: 100%;
 }
 
@@ -31,8 +31,24 @@ body {
 
 /* LEFT PANEL */
 
+.bg-shadow-bottom, .bg-shadow-top {
+  background-color: black;
+  width: 100%;
+  position: absolute;;
+}
+
+.bg-shadow-top {
+  top: -30px;
+  box-shadow: 0px 0px 25px 30px rgba(0,0,0,1);
+}
+
+.bg-shadow-bottom {
+  bottom: 0;
+  box-shadow: 0px 0px 25px 30px rgba(0,0,0,1);
+}
+
 .node-details img {
-	width: 128px;
+	width: 100%;
 }
 
 i.fa-heart, i.fa-plus, i.fa-eye {
@@ -60,7 +76,8 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 }
 
 .global-score {
-  padding-left: 30px;
+  margin-left: 35px;
+  padding-left: 15px;
   padding-right: 0;
 }
 
@@ -243,35 +260,35 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 }
 
 .filter-menu .switch.director input:checked + span {
-  background-color: #177bbb;
+  background-color: #8E44AD;
+}
+
+.filter-menu .switch.producer input:checked + span {
+  background-color: #27AE60;
 }
 
 .filter-menu .switch.writer input:checked + span {
-  background-color: #fcc633;
+  background-color: #F1C40F;
 }
 
 .filter-menu .switch.editor input:checked + span {
   background-color: #e33244;
 }
 
-.filter-menu .switch.producer input:checked + span {
-  background-color: #1aae88;
-}
-
 .filter-menu .switch.music-composer input:checked + span {
-  background-color: #27d4a8;
-}
-
-.filter-menu .switch.prod-designer input:checked + span {
-  background-color: #3ddcde;
+  background-color: #00D6CE;
 }
 
 .filter-menu .switch.dir-photography input:checked + span {
-  background-color: #f9d269;
+  background-color: #FC6E51;
 }
 
 .filter-menu .switch.cos-designer input:checked + span {
-  background-color: #e56371;
+  background-color: #EC87C0;
+}
+
+.filter-menu .switch.prod-designer input:checked + span {
+  background-color: #AC92EC;
 }
 
 .graph-pagination-btn {

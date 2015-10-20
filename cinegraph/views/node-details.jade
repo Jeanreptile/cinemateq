@@ -1,83 +1,72 @@
-div.node-details.text-center(ng-show="currentNode").hidden-nav-xs
-	div.m-t-sm(ng-show="currentNode.img != true")
-		img(src="images/default.jpg")
-	div.m-t-sm(ng-show="currentNode.type == 'Person' && currentNode.img == true")
-		img(ng-src="images/persons/{{sanitizeFileName(currentNode.fullname)}}.jpg")
-	div.m-t-sm(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
-		img(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
-	div.h4.m-t.m-b-xs.font-bold
-		a(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
-			{{currentNode.firstname}} {{currentNode.lastname}}
-			i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
-		a(href='#', ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
-			{{currentNode.title}}
-			i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
-		.btn-group.m-l-md(dropdown='', ng-controller="MyCinegraphCtrl")
-			button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
-				i.fa.fa-plus.fa-lg
-		|  
-		.btn-group(dropdown='', ng-click='sendNotifToKevin()')
-			button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle.btn-dark(type='button', dropdown-toggle='')
-				i.i.i-share.i-lg
-	small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
-		| {{job.name | JobNameFormatter }}
-		i.i.i-dot(ng-hide="$last")
-	small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
-		| {{genre}}
-		i.i.i-dot(ng-hide="$last")
-	div.row.m-t-sm
-		div.col-xs-5.global-score(ng-show='currentUser')
-			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
-				| {{currentNode.globalObjScore}}
-			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
-				| 0
-			small.text-muted
-				| Objective score
-		div.col-xs-12.global-score(ng-show='currentUser == undefined')
-			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
-				| {{currentNode.globalObjScore}}
-			div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
-				| 0
-			small.text-muted
-				| Objective score
-		div.col-xs-7(ng-show='currentUser')
-			input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-2x', data-empty='fa fa-star-o fa-2x')
-	div.row.m-t-sm
-		div.col-xs-5.global-score(ng-show='currentUser')
-			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
-				| {{currentNode.globalLoveScore}}
-			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
-				| 0
-			small.text-muted
-				| Love score
-		div.col-xs-12.global-score(ng-show='currentUser == undefined')
-			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
-				| {{currentNode.globalLoveScore}}
-			div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
-				| 0
-			small.text-muted
-				| Love score
-		div.col-xs-7(ng-show='currentUser')
-			input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
-		//div.col-xs-12.m-t-sm
-			button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark.dropdown-toggle(type='button')
-				i.fa.fa-heart.fa-lg
-			button.seen-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-show="currentNode.type == 'Movie'")
-				i.fa.fa-eye.fa-lg
-	//div.row
-		div.col-xs-12
-			div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Person' && currentNode.biography")
-				| Biography
-			p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Person' && currentNode.biography")
-				{{currentNode.biography | limitTo: 200}}...
-				a.m-l-xs(href='#', ng-click="open('lg')")
-					| Read more...
-			div.h5.font-bold.text-lt.m-t.m-b-xs(ng-show="currentNode.type == 'Movie' && currentNode.plot")
-				| Plot
-			p.m-l-sm.m-r-sm(ng-show="currentNode.type == 'Movie' && currentNode.plot")
-				{{currentNode.plot | limitTo: 200}}...
-				a.m-l-xs(href='#', ng-click="open('lg')")
-					| Read more...
+div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
+
+	div.bg-shadow-top
+		div.h4.m-t
+			a(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
+				{{currentNode.firstname}} {{currentNode.lastname}}
+				i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
+			a(href='#', ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
+				{{currentNode.title}}
+				i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
+			//div.col-xs-3.m-t-xs
+			.btn-group.m-l-sm(dropdown='', ng-controller="MyCinegraphCtrl")
+				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
+					i.fa.fa-plus.fa-lg
+			.btn-group.m-l-xs(dropdown='', ng-click='sendNotifToKevin()')
+				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle.btn-dark(type='button', dropdown-toggle='')
+					i.i.i-share.i-lg
+		small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
+			| {{job.name | JobNameFormatter }}
+			i.i.i-dot(ng-hide="$last")
+		small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
+			| {{genre}}
+			i.i.i-dot(ng-hide="$last")
+
+	div
+		div.m-t-lg(ng-show="currentNode.img != true")
+			img(src="images/default.jpg")
+		div.m-t-lg(ng-show="currentNode.type == 'Person' && currentNode.img == true")
+			img(ng-src="images/persons/{{sanitizeFileName(currentNode.fullname)}}.jpg")
+		div.m-t-lg(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
+			img(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
+
+	div.bg-shadow-bottom
+		div.col-xs-12.no-padder
+			div.row.small
+				div.col-xs-4.global-score(ng-show='currentUser')
+					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
+						| {{currentNode.globalObjScore}}
+					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
+						| 0
+					small.text-muted
+						| Objective score
+				div.col-xs-12.global-score(ng-show='currentUser == undefined')
+					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
+						| {{currentNode.globalObjScore}}
+					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
+						| 0
+					small.text-muted
+						| Objective score
+				div.col-xs-5.no-padder(ng-show='currentUser')
+					input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-2x', data-empty='fa fa-star-o fa-2x')
+			div.row.small
+				div.col-xs-4.global-score(ng-show='currentUser')
+					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
+						| {{currentNode.globalLoveScore}}
+					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
+						| 0
+					small.text-muted
+						| Love score
+				div.col-xs-12.global-score(ng-show='currentUser == undefined')
+					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
+						| {{currentNode.globalLoveScore}}
+					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
+						| 0
+					small.text-muted
+						| Love score
+				div.col-xs-5.no-padder(ng-show='currentUser')
+					input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
+
 nav.nav-primary.hidden-xs
 	ul.nav.nav-main(data-ride='collapse')
 		li(ng-show="!currentCinegraph")

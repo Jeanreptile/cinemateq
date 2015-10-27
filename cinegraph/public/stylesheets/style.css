@@ -1,6 +1,7 @@
 body {
   font: 14px FuturaLT, "Open Sans", Helvetica, Arial, sans-serif;
   height: 100%;
+  background-color: black;
 }
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }

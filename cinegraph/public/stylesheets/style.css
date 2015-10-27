@@ -257,6 +257,15 @@ i.fa-heart, i.fa-plus, i.fa-eye {
   overflow-y: scroll;
 }
 
+.no-results {
+  font-size: 15px;
+  margin: auto;
+  width: 50%;
+  text-align: center;
+  color: white;
+  margin-top: 5px;
+}
+
 /* RIGHT PANEL - FILTER MENU */
 
 .filter-menu .panel-body {

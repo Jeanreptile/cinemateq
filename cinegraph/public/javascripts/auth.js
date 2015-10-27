@@ -112,10 +112,10 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
       config.headers = config.headers || {};
       if ($window.localStorage.token) {
         config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
+        console.log('Bearer ' + JSON.stringify($window.localStorage.token));
       }
       else
       {
-        //console.log("MAIIIIS");
         config.headers.Authorization = '';
       }
       return config;
@@ -131,6 +131,7 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
       if (rejection.status === 401) {
         // handle the case where the user is not authenticated
         console.log("Not authenticated :/");
+        console.log(JSON.stringify(rejection));
         $location.path("/unauthorized");
       }
       return $q.reject(rejection);

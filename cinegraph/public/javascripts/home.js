@@ -487,6 +487,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var tweenCount = 0;
             const nodeSpacing = 200, nodeOpacity = 0.6, nodeSuggestionOpacity = 0.5;
             var renderMode = 0;
+            const nearDistance = 1;
 
             // monitoring panels
             var rendererStats = new THREEx.RendererStats();
@@ -572,7 +573,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
-                camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, 1, 1000);
+                camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, nearDistance, 1000);
                 renderer.setSize(viewWidth, viewHeight);
                 document.getElementById('graph').appendChild(renderer.domElement);
 
@@ -861,10 +862,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function getGradientLayer() {
+            //console.time('getGradientLayer');
             var canv = document.createElement('canvas');
             canv.width = viewWidth;
             canv.height = viewHeight;
             var ctx = canv.getContext('2d');
+
             // ordering objects by distance from camera
             var orderedScene = [];
             for (var i = scene.children.length - 1; i >= 0; i--)
@@ -875,9 +878,15 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 var elt = new Object();
                 elt.index = i;
                 elt.distance = sprite.position.distanceToSquared(camera.position);
-                orderedScene.push(elt);
+                var orientation = new THREE.Vector3().copy(sprite.position)
+                    .sub(camera.position).dot(camera.getWorldDirection());
+                // checking that the node is not too close or behind the camera
+                if (orientation > 0 && elt.distance > nearDistance * nearDistance)
+                    orderedScene.push(elt);
             }
             orderedScene.sort(compare);
+
+            var drawCount = 0;
 
             // drawing gradient circle for each node
             for (var i = 0; i < orderedScene.length; i++)
@@ -893,8 +902,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 spriteCanv.width = circleRadius * 2 + 1;
                 spriteCanv.height = spriteCanv.width;
                 var spriteCtx = spriteCanv.getContext('2d');
-                /*spriteCtx.fillStyle='rgba(255,255,255,0)';
-                spriteCtx.fillRect(0,0,spriteCanv.width,spriteCanv.height);*/
+
+                // if node is out the screen, skip
+                if (pos.x + circleRadius < 0 || pos.x - circleRadius > canv.width
+                    || pos.y + circleRadius < 0 || pos.y - circleRadius > canv.height)
+                    continue;
+
                 // getting lines related to node
                 for (var j = linesScene.children.length - 1; j >= 0; j--)
                 {
@@ -909,6 +922,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     else
                         continue;
                     var endIndex = startIndex == 0 ? 1 : 0;
+                    // if line is to small to be seen anyway, skip
                     if (line.geometry.vertices[startIndex].distanceToSquared(line.geometry.vertices[endIndex]) <= 16)
                         continue;
                     var color = line.geometry.colors[startIndex];
@@ -919,13 +933,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     var c = 'rgba(' + color.r * 255 + ',' + color.g * 255 + ',' + color.b * 255 +',1)';
                     if (gradients[c] == undefined)
                         generateGradient(c);
-                    var r = circleRadius * 2.5;
+                    var rad = circleRadius * 2.5;
                     spriteCtx.drawImage(
                         gradients[c],
-                        circleRadius + radgradPos.x - r / 2,
-                        circleRadius + radgradPos.y - r / 2,
-                        r, r
+                        circleRadius + radgradPos.x - rad / 2,
+                        circleRadius + radgradPos.y - rad / 2,
+                        rad, rad
                     );
+                    drawCount++;
                 }
                 // outer circle mask
                 spriteCtx.globalCompositeOperation = 'destination-in';
@@ -939,13 +954,17 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.drawImage(blackCircle, pos.x - r, pos.y - r, r2, r2);
             }
+            //console.log('DrawCount ', drawCount);
+            //console.timeEnd('getGradientLayer');
             return canv;
         }
 
         function updateGradientLayer() {
             var ctx = gradientBackground.gradientCanvas.getContext('2d');
             ctx.clearRect(0, 0, gradientBackground.gradientCanvas.width, gradientBackground.gradientCanvas.height);
-            ctx.drawImage(getGradientLayer(), 0, 0);
+            var newLayer = getGradientLayer();
+            if (newLayer != null)
+                ctx.drawImage(newLayer, 0, 0);
             gradientBackground.gradientTexture.needsUpdate = true;
         }
 

@@ -39,16 +39,6 @@ section.vbox
 											img.img-circle.m-b(src='images/a2.png', alt='...')
 									|                   
 									aside
-										p.pull-right.m-l.inline
-											a.btn.btn-sm.btn-icon.btn-info.rounded.m-b(href='#')
-												i.fa.fa-twitter
-											|                       
-											a.btn.btn-sm.btn-icon.btn-primary.rounded.m-b(href='#')
-												i.fa.fa-facebook
-											|                       
-											a.btn.btn-sm.btn-icon.btn-danger.rounded.m-b(href='#')
-												i.fa.fa-google-plus
-										|                     
 										div(ng-if='currentUser')
 											h3.font-bold.m-b-none.m-t-none {{currentUser.firstName}} {{currentUser.lastName}}
 											|                     
@@ -69,24 +59,17 @@ section.vbox
 										ul.nav.nav-pills.nav-stacked.aside-lg
 											li.bg-light.dk
 												a(href='#')
-													i.i.i-phone.m-r-sm
-													|  Call Drew
-											|                       
-											li.bg-light.dk
-												a(href='#')
-													i.i.i-mail.m-r-sm
-													|  Send Email
-											|                       
-											li.bg-light.dk
-												a(href='#')
-													i.i.i-chat.m-r-sm
-													|  Send Message
+													i.i.i-share.m-r-sm
+													|  See my cinegraphs
 							|               
 							ul.nav.nav-tabs.m-b-n-xxs.bg-light
 								li.active
 									a.m-l(data-target='#activities', data-toggle='tab')
 										| Activities
 										span.badge.bg-primary.badge-sm.m-l-xs 10
+								li
+									a(data-target="#notifications", data-toggle='tab') Notifications
+										span.badge.bg-danger.badge-sm.m-l-xs 10
 								li
 									a(data-target='#edit', data-toggle='tab') Edit profile
 								li
@@ -101,11 +84,11 @@ section.vbox
 											|                       
 											a.clear(href='#')
 												small.pull-right 3 minuts ago
-												|                         
+												|
 												strong.block Drew Wllon
-												|                         
+												|
 												small Wellcome and play this web application template ... 
-										|                     
+										|
 										li.list-group-item
 											a.thumb-sm.pull-left.m-r-sm(href='#')
 												img.img-circle(src='images/a1.png')
@@ -204,6 +187,18 @@ section.vbox
 												strong.block Jonathan George
 												|                         
 												small Morbi nec nunc condimentum...
+								#notifications.panel.tab-pane.active
+									ul.list-group.no-radius.m-b-none.m-t-n-xxs.list-group-lg.no-border
+										li.list-group-item
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a0.png')
+											|                       
+											a.clear(href='#')
+												small.pull-right 3 minutes ago
+												|                         
+												strong.block Drew Wllon
+												|                         
+												small invited you to be his friend 
 								|                 
 								#edit.tab-pane.wrapper-lg
 									form.form-horizontal

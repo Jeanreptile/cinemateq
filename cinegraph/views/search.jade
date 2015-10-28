@@ -43,7 +43,7 @@ section.vbox.allWindow
     section#content
         section.vbox
             section
-                form(ng-submit='submitSearchQuery()')
+                form(ng-submit='submitSearchQuery(false)')
                   .input-group.searchBarStyle.centerWidth.animated.fadeInUp
                     //.icon-addon.addon-lg
                     //  input#searchFormControl.form-control.input-lg(autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)

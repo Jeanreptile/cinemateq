@@ -66,8 +66,8 @@ angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $htt
     });
   };
 
-  $scope.submitSearchQuery = function() {
-    $rootScope.shouldReload = true;
+  $scope.submitSearchQuery = function(shouldReload) {
+    $rootScope.shouldReload = shouldReload;
     if (!$scope.noResults && !$scope.asyncSelected.thisId) {
       //console.log("asyncSelected thisId undefined: " + $scope.response[0].thisId);
       $http.get('/index', { params: $scope.response[0].thisId}).then(function() {

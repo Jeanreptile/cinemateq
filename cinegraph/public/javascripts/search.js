@@ -1,4 +1,4 @@
-angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $http, $window, $location, AuthService) {
+angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $http, $window, $location, AuthService, $rootScope) {
   $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
     $scope.isLoggedIn = isLoggedIn;
     $scope.currentUser = AuthService.currentUser();
@@ -67,6 +67,7 @@ angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $htt
   };
 
   $scope.submitSearchQuery = function() {
+    $rootScope.shouldReload = true;
     if (!$scope.noResults && !$scope.asyncSelected.thisId) {
       //console.log("asyncSelected thisId undefined: " + $scope.response[0].thisId);
       $http.get('/index', { params: $scope.response[0].thisId}).then(function() {

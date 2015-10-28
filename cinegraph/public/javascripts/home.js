@@ -73,7 +73,9 @@ cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
         }
     });
     $rootScope.$on("$routeUpdate", function() {
+        console.log("routeUpdate");
         if ($rootScope.shouldReload) {
+            console.log("shouldReload true");
             $rootScope.shouldReload = false;
             $route.reload();
         }
@@ -724,6 +726,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     });
                 }
                 else {
+                    console.log("INITTTTTTTT");
                     getNode(getParameterByName('id'), nodePosition, draw);
                 }
             }

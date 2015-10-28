@@ -41,7 +41,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
           access: { requiredAuthentication: true }
         })
         .when('/error', { templateUrl: '/partials/error' })
-        .when('/index', { templateUrl: '/partials/index', controller: 'cinegraphController' })
+        .when('/index', { templateUrl: '/partials/index', controller: 'cinegraphController', reloadOnSearch: false })
         .when('/friends', { templateUrl: '/partials/friends', controller: 'cinegraphController' })
         .when('/unauthorized', { templateUrl: '/partials/unauthorized', controller: 'restrictedController' })
         .when('/signout', {
@@ -165,7 +165,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         selectedNodeId = 719772;
     }
     $http.get('/api/common/' + selectedNodeId).success(function(node) {
-        $scope.currentNode = node;
+        //$scope.currentNode = node;
         $scope.updateTypesAndLimits();
         $scope.updateSelectedJobs();
     });
@@ -247,8 +247,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             }
         };
     };
-
-    $scope.currentNode.id = selectedNodeId;
 
     $scope.findLimitForJob = function(type) {
         for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {
@@ -719,7 +717,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     });
                 }
                 else {
-                    getNode(scope.currentNode.id, nodePosition, draw);
+                    getNode(getParameterByName('id'), nodePosition, draw);
                 }
             }
 
@@ -1106,17 +1104,17 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function getNode(id, nodePosition, callback) {
             if (id != scope.currentNode.id) {
                 clearScene(scope.currentDisplayedNodes, id);
+                $http.get('/api/common/' + id).success(function(node) {
+                    $location.search('id', id);
+                    var sprite = scope.currentNode.sprite;
+                    scope.currentNode = node;
+                    scope.currentNode.sprite = sprite;
+                    scope.updateTypesAndLimits();
+                    updateBackground(node);
+                    displayFriendsTastes();
+                    callback(node, nodePosition);
+                });
             }
-
-            $http.get('/api/common/' + id).success(function(node) {
-                var sprite = scope.currentNode.sprite;
-                scope.currentNode = node;
-                scope.currentNode.sprite = sprite;
-                scope.updateTypesAndLimits();
-                updateBackground(node);
-                displayFriendsTastes();
-                callback(node, nodePosition);
-            });
         }
 
         function getNodeCinegraphMode(id, nodePosition, callback, shouldDrawRelatedNodes) {
@@ -1815,7 +1813,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             if (intersection == undefined)
                 return;
             var id = intersection.object._id;
-            if (id != null) {
+            if (id != null && id != scope.currentNode.id) {
                 var relationship = null;
                 $.each(scope.suggestedNodes, function(i, obj) {
                     if (id == obj.start || id == obj.end) {

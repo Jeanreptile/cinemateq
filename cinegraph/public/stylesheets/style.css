@@ -1,7 +1,6 @@
 body {
   font: 14px FuturaLT, "Open Sans", Helvetica, Arial, sans-serif;
   height: 100%;
-  background-color: black;
 }
 
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
@@ -256,6 +255,15 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 .community-list{
   height: calc(100% - 35px); /* Size of 'Community' element */
   overflow-y: scroll;
+}
+
+.no-results {
+  font-size: 15px;
+  margin: auto;
+  width: 50%;
+  text-align: center;
+  color: white;
+  margin-top: 5px;
 }
 
 /* RIGHT PANEL - FILTER MENU */

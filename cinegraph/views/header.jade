@@ -7,7 +7,7 @@ header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 		a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
 			i.fa.fa-cog
 
-	form.navbar-form.navbar-left.m-t.m-l-n-xs.hidden-xs(role='search', ng-controller='TypeaheadCtrl', action="/index", method='GET')
+	form.navbar-form.navbar-left.m-t.m-l-n-xs.hidden-xs(role='search', ng-controller='TypeaheadCtrl', ng-submit='submitSearchQuery()')
 		.form-group
 			.input-group
 				span.input-group-btn
@@ -28,15 +28,15 @@ header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 							a(href='#')
 								input(type='radio', name='type')
 								| Persons
-				input.form-control.no-border.input-sm.search-top-menu(type='text', placeholder='Search for a {{selectedItem}}...',		autocomplete='off', ng-model='asyncSelected',
+				input.form-control.no-border.input-sm.search-top-menu(type='text', placeholder='Search for a {{selectedItem}}...', autocomplete='off', ng-model='asyncSelected',
 					typeahead='query as query.name for query in getLocation($viewValue)',
 					typeahead-wait-ms=350,
 					typeahead-loading='loadingLocations',
 					typeahead-min-length=2)
-	a.btn.btn-icon.b-2x.btn-info.btn-rounded.right-menu.btn-sm(data-target='#sidebar', data-toggle='class:show')
+	a.hidden-sm.hidden-xs.btn.btn-icon.b-2x.btn-info.btn-rounded.right-menu.btn-sm(data-target='#sidebar', data-toggle='class:show')
 		i.fa.fa-bars
 	ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
-		li.hidden-xs(ng-controller='notificationsController')
+		li.hidden-sm.hidden-xs(ng-controller='notificationsController')
 			a.dropdown-toggle(href='#', data-toggle='dropdown')
 					i.i.i-chat3
 					span.badge.badge-sm.up.bg-danger.count 0
@@ -67,14 +67,17 @@ header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 				li(ng-if='currentUser')
 					a(href='/friends') Friends
 				li(ng-if='currentUser')
+					a(href='#') Notifications
+						span.badge.bg-danger.pull-right 0
+				li(ng-if='currentUser')
 					a(href='/mycinegraph') My Cinegraphs
 				li.divider
 				li
 					a(ng-click='logout()' ng-if='currentUser') Logout
 					a(href='/signin' ng-if="currentUser == undefined") Sign in
-	a.btn.btn-s-md.btn-info.btn-sm.right-menu(ng-if='currentUser', href='/mycinegraph', ng-show="!currentCinegraph")
+	a.hidden-md.hidden-xs.hidden-sm.btn.btn-s-md.btn-info.btn-sm.right-menu(ng-if='currentUser', href='/mycinegraph', ng-show="!currentCinegraph")
 		|See my cinegraphs
 		i.i.i-arrow-right.m-l-xs
-	a.btn.btn-s-md.btn-info.btn-sm.right-menu(href='/', ng-show="currentCinegraph")
+	a.hidden-xs.btn.btn-s-md.btn-info.btn-sm.right-menu(href='/', ng-show="currentCinegraph")
 		|Go to Discovery mode
 		i.i.i-arrow-right.m-l-xs

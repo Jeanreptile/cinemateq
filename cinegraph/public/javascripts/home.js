@@ -573,7 +573,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
-                console.log(viewWidth, viewHeight);
+                //console.log(viewWidth, viewHeight);
                 camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, nearDistance, 1000);
                 renderer.setSize(viewWidth, viewHeight);
                 document.getElementById('graph').appendChild(renderer.domElement);
@@ -658,7 +658,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     format: THREE.RGBAFormat,
                     stencilBuffer: false
                 };
-                console.log(sampleRatio, viewWidth, viewHeight);
+                //console.log(sampleRatio, viewWidth, viewHeight);
                 // background
                 var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * 0.5, viewHeight * 0.5, parameters);
                 var renderBackgroundScene = new THREE.RenderPass(bgScene, bgCam);
@@ -735,10 +735,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 }
                 lineGeom.colors.push(new THREE.Color(startColor));
                 lineGeom.colors.push(new THREE.Color(endColor));
-                var lineMat = new THREE.LineBasicMaterial({
-                    linewidth: 1,
-                    vertexColors: true
-                });
+                var lineMat = new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true });
                 line = new THREE.Line(lineGeom, lineMat);
                 line.endNodeId = relation.end;
                 line.startNodeId = relation.start;
@@ -751,32 +748,32 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var positions = getCinegraphPositions(cinegraphNodes);
             // drawing nodes
             for (var i in positions){
-                (function (i) {
-                    $http.get('/api/common/' + i).success(function(node) {
-                        if (i == Object.keys(positions)[0]) {
-                            scope.currentNode = node;
-                            scope.updateTypesAndLimits();
-                            updateBackground(node);
-                            scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
-                            scope.updateSelectedJobs();
-                        }
-                        else
-                            drawNode(node, positions[i]);
-                    });
-                })(i);
+                if (findNode(i) == undefined) {
+                    (function (i) {
+                        $http.get('/api/common/' + i).success(function(node) {
+                            if (i == Object.keys(positions)[0]) {
+                                scope.currentNode = node;
+                                scope.updateTypesAndLimits();
+                                updateBackground(node);
+                                scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
+                                scope.updateSelectedJobs();
+                            }
+                            else
+                                drawNode(node, positions[i]);
+                        });
+                    })(i);
+                }
             }
             // drawing lines
-            for (var i = 0; i < cinegraphNodes.length; i++)
-            {
+            for (var i = 0; i < cinegraphNodes.length; i++){
                 var relation = cinegraphNodes[i];
-                if (relation.start != null && relation.end != null)
-                {
-                    // drawing line
-                    var lineGeom = new THREE.Geometry();
-                    lineGeom.vertices.push(positions[relation.end], positions[relation.start]);
-                    var startColor, endColor;
-                    var type = relation.type;
-                    displayLines(i, cinegraphNodes, type, lineGeom);
+                if (relation.start != null && relation.end != null
+                    && findRelationship(relation.start, relation.end) == undefined){
+                        var lineGeom = new THREE.Geometry();
+                        lineGeom.vertices.push(positions[relation.end], positions[relation.start]);
+                        var startColor, endColor;
+                        var type = relation.type;
+                        displayLines(i, cinegraphNodes, type, lineGeom);
                 }
             }
             // setting camera target on first node
@@ -1376,16 +1373,16 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function handleRelation(relation, positions, occupiedPositions)
         {
             var start = relation.start, end = relation.end;
-            if (start != null && positions[start] == undefined)
-            {
+            if (start != null && positions[start] == undefined){
                 var centerPos = positions[end] != undefined ? positions[end] : new THREE.Vector3(0,0,0);
-                positions[start] = getNextPosition(occupiedPositions, centerPos);
+                var n = findNode(start);
+                positions[start] = n != undefined ? n.position : getNextPosition(occupiedPositions, centerPos);
                 occupiedPositions.push(positions[start]);
             }
-            if (end != null && positions[end] == undefined)
-            {
+            if (end != null && positions[end] == undefined) {
                 var centerPos = positions[start] != undefined ? positions[start] : new THREE.Vector3(0,0,0);
-                positions[end] = getNextPosition(occupiedPositions, centerPos);
+                var n = findNode(end);
+                positions[end] = n != undefined ? n.position : getNextPosition(occupiedPositions, centerPos);
                 occupiedPositions.push(positions[end]);
             }
         }
@@ -1702,7 +1699,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function onMouseMove(event) {
-            console.log('mouse move');
+            //console.log('mouse move');
             setMousePosition(event);
             if (!mouseIsDown)
                 updateIntersection();
@@ -1720,7 +1717,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function onMouseDown(event) {
-            console.log("mousedown");
+            //console.log("mousedown");
             setMousePosition(event);
             mouseClickStart.x = mouse.x;
             mouseClickStart.y = mouse.y;
@@ -1743,7 +1740,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function onMouseUp(event) {
-            console.log("onMouseUp");
+            //console.log("onMouseUp");
             mouseIsDown = false;
             cameraControls.enabled = true;
 
@@ -1911,10 +1908,20 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             return undefined;
         }
 
+        function findRelationship(start, end)
+        {
+            for (var i = 0; i < linesScene.children.length; i++) {
+                var line = linesScene.children[i];
+                if (line.type == "Line")
+                    if (start == line.startNodeId && end == line.endNodeId
+                        || end == line.startNodeId && start == line.endNodeId)
+                        return line;
+            }
+            return undefined;
+        }
+
         function findCinegraphPath()
         {
-            console.log("findCinegraphPath");
-
             // getting path first and last node
             var startNode = findNode(mouseClickStart.cinegraphPath[0]);
             var endNode = findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);
@@ -1939,7 +1946,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     for (var j = 0; j < path.length; j++)
                         path[j] = JSON.parse(path[j]);
                 }
-                console.log(paths);
 
                 // displaying path
                 displayCinegraphNodes(paths[0]);

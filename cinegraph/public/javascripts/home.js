@@ -418,7 +418,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         scope.jobsOffset[job] = Math.max(scope.jobsOffset[job], 0);
                     }
                     // getting new nodes
-                    console.log(job, relationship, direction, scope.jobsOffset);
+                    //console.log(job, relationship, direction, scope.jobsOffset);
                     scope.getRelatedNodesForType(scope.currentNode, relationship, scope.findLimitForJob(relationship),
                         scope.jobsOffset[job], nodes.length, scope.currentNode.sprite, scope.drawRelatedNodes);
                 }
@@ -462,12 +462,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, autoClear: false });
             var raycaster = new THREE.Raycaster();
             var mouse = new THREE.Vector2();
-            var mouseClickStart = new THREE.Vector2();
+            var mouseClickStart = new Object();
             var mouseIsDown = false;
             var old = null;
             var current = null;
             var defaultImg = new Image();
-            defaultImg.src = 'images/default.jpg';
+            defaultImg.src = 'images/default_bg2.jpg';
             var nodePosition = new THREE.Vector3(0, 0, 0);
             var randomVector = new THREE.Vector3(Math.random() * 60 - 20, Math.random() * 60 - 20, Math.random() * 60 - 20);
             var currentDisplayedNodes = [];
@@ -573,6 +573,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
+                console.log(viewWidth, viewHeight);
                 camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, nearDistance, 1000);
                 renderer.setSize(viewWidth, viewHeight);
                 document.getElementById('graph').appendChild(renderer.domElement);
@@ -657,6 +658,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     format: THREE.RGBAFormat,
                     stencilBuffer: false
                 };
+                console.log(sampleRatio, viewWidth, viewHeight);
                 // background
                 var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * 0.5, viewHeight * 0.5, parameters);
                 var renderBackgroundScene = new THREE.RenderPass(bgScene, bgCam);
@@ -703,7 +705,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 document.getElementById('graph').addEventListener('change', render, false);
                 $('#graph').mousedown(onMouseDown);
                 $('#graph').mouseup(onMouseUp);
-                document.getElementById('graph').addEventListener('mousemove', onMouseHover, false);
+                $('#graph').mousemove(onMouseMove);
                 cameraControls.addEventListener('change', function() {renderNeedsUpdate = true;});
                 $(document).keyup(switchRenderMode);
 
@@ -1673,45 +1675,114 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             return 'rgb('+ r +','+ g +','+ b +')';
         };
 
-        function setMousePosition(event)
-        {
+
+        /* -------------- */
+        /* INPUT HANDLING */
+        /* -------------- */
+
+        function setMousePosition(event) {
             event = event || window.event;
-            var target = event.target || event.srcElement,
-                rect = target.getBoundingClientRect(),
-                offsetX = event.clientX - rect.left,
-                offsetY = event.clientY - rect.top;
+            var target = event.target || event.srcElement, rect = target.getBoundingClientRect(),
+                offsetX = event.clientX - rect.left, offsetY = event.clientY - rect.top;
             mouse.x = (offsetX / viewWidth) * 2 - 1;
             mouse.y = -(offsetY / viewHeight) * 2 + 1;
+            mouse.clientX = offsetX;
+            mouse.clientY = offsetY;
         }
 
-        function onMouseHover(event) {
+        function linedraw(x1,y1,x2,y2) {
+            if (x2 < x1){
+                var temp = x1;
+                x1 = x2;
+                x2 = temp;
+                temp = y1;
+                y1 = y2;
+                y2 = temp;
+            }
+            var line;
+            if ($('#line').length <= 0)
+            {
+                line = document.createElement("div");
+                line.style.borderBottom = "8px solid";
+                line.style.borderColor = "red";
+                line.style.position = "absolute";
+                line.style.zIndex = "99999";
+                line.id = 'line';
+                $("#graph").before(line);
+                $('#line').mouseup(function () {
+                    $('#graph').trigger('mouseup');
+                });
+            }
+            else
+                line = $('#line')[0];
+            var length = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+            line.style.width = length + "px";
+            if(navigator.userAgent.indexOf("MSIE") > -1){
+                line.style.top = (y2 > y1) ? y1 + "px" : y2 + "px";
+                line.style.left = x1 + "px";
+                var nCos = (x2-x1)/length;
+                var nSin = (y2-y1)/length;
+                line.style.filter = "progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand', M11=" + nCos + ", M12=" + -1*nSin + ", M21=" + nSin + ", M22=" + nCos + ")";
+            } else {
+                var angle = Math.atan((y2-y1)/(x2-x1));
+                line.style.top = y1 + 0.5*length*Math.sin(angle) + "px";
+                line.style.left = x1 - 0.5*length*(1 - Math.cos(angle)) + "px";
+                line.style.transform = line.style.MozTransform = line.style.WebkitTransform = line.style.msTransform = line.style.OTransform= "rotate(" + angle + "rad)";
+            }
+        }
+
+        function onMouseMove(event) {
+            console.log('mouse move');
             setMousePosition(event);
             if (!mouseIsDown)
                 updateIntersection();
+            else if (scope.cinegraphId != undefined && mouseClickStart.onNode)
+            {
+                var intersected = getIntersection();
+                if (intersected.length > 0)
+                {
+                    var id = intersected[0].object._id;
+                    if ($.inArray(id, mouseClickStart.cinegraphPath) == -1)
+                        mouseClickStart.cinegraphPath.push(id);
+                }
+                linedraw(mouseClickStart.clientX, mouseClickStart.clientY, mouse.clientX, mouse.clientY);
+            }
         }
 
         function onMouseDown(event) {
-            if (scope.cinegraphId != undefined) {
-                if (event.which == 1) {
-                    setMousePosition(event);
-                    mouseClickStart.x = mouse.x;
-                    mouseClickStart.y = mouse.y;
+            console.log("mousedown");
+            setMousePosition(event);
+            mouseClickStart.x = mouse.x;
+            mouseClickStart.y = mouse.y;
+            mouseClickStart.clientX = mouse.clientX;
+            mouseClickStart.clientY = mouse.clientY;
+            mouseClickStart.onNode = false;
+            mouseClickStart.cinegraphPath = [];
+            if (scope.cinegraphId != undefined) { // cinegraph mode
+                if (event.which == 1) { // left click
+                    var intersected = getIntersection();
+                    if (intersected.length > 0) {
+                        mouseClickStart.onNode = true;
+                        cameraControls.enabled = false;
+                    }
                     mouseIsDown = true;
-                }
-                else if (event.which == 3) {
+                } else if (event.which == 3) // right click
                     onRightClick(event);
-                }
-            }
-            else {
-                setMousePosition(event);
-                mouseClickStart.x = mouse.x;
-                mouseClickStart.y = mouse.y;
+            } else // explore mode
                 mouseIsDown = true;
-            }
         }
 
         function onMouseUp(event) {
+            console.log("onMouseUp");
             mouseIsDown = false;
+            cameraControls.enabled = true;
+
+            // cinegraph path handling
+            $('#line').remove();
+            if (mouseClickStart.onNode && mouseClickStart.cinegraphPath.length > 1)
+                findCinegraphPath();
+            mouseClickStart.onNode = false;
+
             if (mouse.x != mouseClickStart.x || mouse.y != mouseClickStart.y)
                 return;
             raycaster.setFromCamera(mouse, camera);
@@ -1762,47 +1833,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         else
                             getNode(id, nodePosition, draw);
                 }).start();
-            }
-        }
-
-        function updateBackground(node) {
-            var crossFade = new Object();
-            var backgroundImage;
-            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
-            if (node.img == undefined || node.img == false) {
-                backgroundImage = defaultImg;
-                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, blurAmount);
-                crossFade.percentage = 0;
-                var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
-                    .easing(TWEEN.Easing.Linear.None)
-                    .onUpdate(function (){
-                        crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
-                            crossFade.endCanvas, crossFade.percentage);
-                        background.bgTexture.needsUpdate = true;
-                    }).start();
-            }
-            else {
-                backgroundImage = new Image();
-                if (node.title == undefined)
-                    backgroundImage.src = 'images/persons/' + sanitizeFileName(node.fullname) + '.jpg';
-                else
-                    backgroundImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/backdrop.jpg';
-                backgroundImage.onerror = function () {
-                    // fallback if no backdrop
-                    this.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/poster.jpg';
-                    backgroundImage.onerror = function () { this.src = 'images/default.jpg'; };
-                };
-                backgroundImage.onload = function () {
-                    crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, blurAmount);
-                    crossFade.percentage = 0;
-                    var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
-                        .easing(TWEEN.Easing.Linear.None)
-                        .onUpdate(function (){
-                            crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
-                                crossFade.endCanvas, crossFade.percentage);
-                            background.bgTexture.needsUpdate = true;
-                        }).start();
-                };
             }
         }
 
@@ -1864,6 +1894,120 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        function getIntersection() {
+            raycaster.setFromCamera(mouse, camera);
+            return raycaster.intersectObjects(scene.children);
+        }
+
+        function updateIntersection() {
+            // getting intersected object
+            var intersects = getIntersection();
+            if (intersects.length > 0 && intersects[0].object != current){
+                var INTERSECTED = intersects[0].object;
+                if (INTERSECTED._id !== undefined) {
+                    // restoring node state when leaving it
+                    if (current && (current._id != INTERSECTED._id)) {
+                        if (scope.cinegraphId != undefined && current.material.opacity == 0.99)
+                            current.material.opacity = nodeSuggestionOpacity;
+                        updateTexture(current.mainJob, current.nodeImage, current.canvas, current.name, nodeOpacity);
+                        current.texture.needsUpdate = true;
+                        old = current;
+                    }
+                    // updating intersected node and animating opacity
+                    current = INTERSECTED;
+                    updateHoverLabel(current.name);
+                    current.animationOpacity = nodeOpacity;
+                    if (scope.cinegraphId != undefined && current.material.opacity == nodeSuggestionOpacity)
+                        current.material.opacity = 0.99;
+                    var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
+                    .easing(TWEEN.Easing.Linear.None)
+                    .onUpdate(function (){
+                        updateTexture(current.mainJob, current.nodeImage, current.canvas, current.name, current.animationOpacity);
+                        current.texture.needsUpdate = true;
+                    }).start();
+                }
+            }
+        }
+
+        /* ----------------------- */
+        /* CINEGRAPH PATH HANDLING */
+        /* ----------------------- */
+
+        function findNode(id)
+        {
+            for (var i = 0; i < scene.children.length; i++)
+                if (scene.children[i]._id == id)
+                    return scene.children[i];
+            return undefined;
+        }
+
+        function findCinegraphPath()
+        {
+            console.log("findCinegraphPath");
+
+            // getting path first and last node
+            var startNode = findNode(mouseClickStart.cinegraphPath[0]);
+            var endNode = findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);
+            var centerPoint = new THREE.Vector3().copy(endNode.position).add(startNode.position).divideScalar(2);
+            var pathDistSquared = startNode.position.distanceToSquared(endNode.position);
+            var camDist = Math.sqrt(pathDistSquared - pathDistSquared / 4) * 3;
+
+            // animating camera
+            var duration = 500;
+            new TWEEN.Tween(camera.position).to({ x: centerPoint.x, y: centerPoint.y, z: centerPoint.z + camDist}, duration)
+                .easing(TWEEN.Easing.Linear.None).start();
+            new TWEEN.Tween(cameraControls.target).to({ x: centerPoint.x, y: centerPoint.y, z: centerPoint.z}, duration)
+                .easing(TWEEN.Easing.Linear.None)
+                .onComplete(function() {
+                }).start();
+        }
+
+
+        /* ------------------- */
+        /* BACKGROUND HANDLING */
+        /* ------------------- */
+
+        function updateBackground(node) {
+            var crossFade = new Object();
+            var backgroundImage;
+            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
+            if (node.img == undefined || node.img == false) {
+                backgroundImage = defaultImg;
+                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, blurAmount);
+                crossFade.percentage = 0;
+                var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
+                    .easing(TWEEN.Easing.Linear.None)
+                    .onUpdate(function (){
+                        crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
+                            crossFade.endCanvas, crossFade.percentage);
+                        background.bgTexture.needsUpdate = true;
+                    }).start();
+            }
+            else {
+                backgroundImage = new Image();
+                if (node.title == undefined)
+                    backgroundImage.src = 'images/persons/' + sanitizeFileName(node.fullname) + '.jpg';
+                else
+                    backgroundImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/backdrop.jpg';
+                backgroundImage.onerror = function () {
+                    // fallback if no backdrop
+                    this.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/poster.jpg';
+                    backgroundImage.onerror = function () { this.src = 'images/default.jpg'; };
+                };
+                backgroundImage.onload = function () {
+                    crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, blurAmount);
+                    crossFade.percentage = 0;
+                    var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
+                        .easing(TWEEN.Easing.Linear.None)
+                        .onUpdate(function (){
+                            crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
+                                crossFade.endCanvas, crossFade.percentage);
+                            background.bgTexture.needsUpdate = true;
+                        }).start();
+                };
+            }
+        }
+
         // draw an image proportionally to fit inside a container
         function drawImageProp(ctx, img, x, y, w, h, offsetX, offsetY) {
             if (arguments.length === 2) {
@@ -1904,40 +2048,16 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             ctx.drawImage(img, cx, cy, cw, ch,  x, y, w, h);
         }
 
-        function updateIntersection() {
-            raycaster.setFromCamera(mouse, camera);
-            var intersects = raycaster.intersectObjects(scene.children);
-            // getting intersected object
-            if (intersects.length > 0 && intersects[0].object != current){
-                var INTERSECTED = intersects[0].object;
-                if (INTERSECTED._id !== undefined) {
-                    // restoring node state when leaving it
-                    if (current && (current._id != INTERSECTED._id)) {
-                        if (scope.cinegraphId != undefined && current.material.opacity == 0.99)
-                            current.material.opacity = nodeSuggestionOpacity;
-                        updateTexture(current.mainJob, current.nodeImage, current.canvas, current.name, nodeOpacity);
-                        current.texture.needsUpdate = true;
-                        old = current;
-                    }
-                    // updating intersected node and animating opacity
-                    current = INTERSECTED;
-                    updateHoverLabel(current.name);
-                    current.animationOpacity = nodeOpacity;
-                    if (scope.cinegraphId != undefined && current.material.opacity == nodeSuggestionOpacity)
-                        current.material.opacity = 0.99;
-                    var tween = new TWEEN.Tween(current).to({animationOpacity : 1}, 200)
-                    .easing(TWEEN.Easing.Linear.None)
-                    .onUpdate(function (){
-                        updateTexture(current.mainJob, current.nodeImage, current.canvas, current.name, current.animationOpacity);
-                        current.texture.needsUpdate = true;
-                    }).start();
-                }
-            }
-        }
 
+        /* --------- */
+        /* INIT CALL */
+        /* --------- */
+
+        $('#graph').css('opacity', 0);
         defaultImg.onload = function () {
             init();
             animate();
+            $('#graph').animate({"opacity":1}, 1000);
         }
     }
 }

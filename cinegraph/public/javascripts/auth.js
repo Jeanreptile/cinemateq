@@ -11,7 +11,7 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
         $window.localStorage.user = JSON.stringify(data.user);
         AuthService.login();
         $scope.message2 = "Signed and Token created";
-        $location.path('/');
+        $location.url('/');
       })
       .error(function (data, status, headers, config) {
         // Erase the token if the user fails to log in
@@ -89,8 +89,7 @@ angular.module('cinegraphApp').factory('AuthService', function($window, $locatio
       socket.emit('unsubscribe', {channel:'notifs.' + user.username});
       delete $window.localStorage.user;
       delete $window.localStorage.token;
-      $location.path('/');
-      $window.location.reload();
+      $location.url('/');
     },
     isLoggedIn: function() {
       return ($window.localStorage.user != undefined);
@@ -131,7 +130,7 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
       if (rejection.status === 401) {
         // handle the case where the user is not authenticated
         console.log("Not authenticated :/");
-        $location.path("/unauthorized");
+        $location.url("/unauthorized");
       }
       return $q.reject(rejection);
     }

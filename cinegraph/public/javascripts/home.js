@@ -63,12 +63,21 @@ function getParameterByName(name) {
     return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-cinegraphApp.run(function($rootScope, $location, $window, AuthService) {
+cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
+    $rootScope.shouldReload = false;
     $rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
         //redirect only if both isAuthenticated is false and no token is set
         if (nextRoute != null && nextRoute.access != null && nextRoute.access.requiredAuthentication
             && !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
             $location.path("/unauthorized");
+        }
+    });
+    $rootScope.$on("$routeUpdate", function() {
+        console.log("routeUpdate");
+        if ($rootScope.shouldReload) {
+            console.log("shouldReload true");
+            $rootScope.shouldReload = false;
+            $route.reload();
         }
     });
 });
@@ -719,6 +728,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     });
                 }
                 else {
+                    console.log("INITTTTTTTT");
                     getNode(getParameterByName('id'), nodePosition, draw);
                 }
             }

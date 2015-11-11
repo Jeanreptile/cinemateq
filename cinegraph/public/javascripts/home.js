@@ -723,21 +723,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 }
             }
 
-        function displayNodeAtPosition(i, positions) {
-            $http.get('/api/common/' + i).success(function(node) {
-                if (i == Object.keys(positions)[0]) {
-                    scope.currentNode = node;
-                    scope.updateTypesAndLimits();
-                    updateBackground(node);
-                    scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
-                    scope.updateSelectedJobs();
-                }
-                else {
-                    drawNode(node, positions[i]);
-                }
-            });
-        }
-
         function displayLines(i, cinegraphNodes, type, lineGeom) {
             var relation = cinegraphNodes[i];
             $http.get('/api/common/' + relation.end).success(function(endNode) {
@@ -765,9 +750,20 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             //getting positions
             var positions = getCinegraphPositions(cinegraphNodes);
             // drawing nodes
-            for (var i in positions)
-            {
-                displayNodeAtPosition(i, positions);
+            for (var i in positions){
+                (function (i) {
+                    $http.get('/api/common/' + i).success(function(node) {
+                        if (i == Object.keys(positions)[0]) {
+                            scope.currentNode = node;
+                            scope.updateTypesAndLimits();
+                            updateBackground(node);
+                            scope.currentNode.sprite = drawNode(node, positions[i]).sprite;
+                            scope.updateSelectedJobs();
+                        }
+                        else
+                            drawNode(node, positions[i]);
+                    });
+                })(i);
             }
             // drawing lines
             for (var i = 0; i < cinegraphNodes.length; i++)
@@ -787,36 +783,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var firstPos = positions[Object.keys(positions)[0]];
             camera.position.set(firstPos.x, firstPos.y, firstPos.z + 55);
             cameraControls.target.set(firstPos.x, firstPos.y, firstPos.z);
-        }
-
-        // animation loop
-        function animate() {
-            idAnimationFrame = requestAnimationFrame(animate);
-            stats.begin();
-            rendererStats.update(renderer);
-            TWEEN.update();
-            cameraControls.update();
-            var oldTweenCount = tweenCount;
-            tweenCount = TWEEN.getAll().length;
-            if (renderNeedsUpdate || tweenCount > 0 || oldTweenCount > 0 && tweenCount == 0)
-            {
-                render();
-                renderNeedsUpdate = false;
-            }
-            stats.end();
-        }
-
-        // render the scene
-        function render() {
-            renderer.clear();
-            composerBackground.render();
-            composerLines.render();
-            updateHoverLabelPosition();
-            updateFilters();
-            composer.render();
-            updateGradientLayer();
-            gradientComposer.render();
-            blendComposer.render();
         }
 
         function compare(a,b) {
@@ -1555,6 +1521,10 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             return newCanvas;
         }
 
+        /* --------------------- */
+        /* NODE BUTTONS HANDLING */
+        /* --------------------- */
+
         function updateHoverLabel(text)
         {
             $('#canvasNodeLabel .labelText').text(text);
@@ -1960,6 +1930,20 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 .easing(TWEEN.Easing.Linear.None)
                 .onComplete(function() {
                 }).start();
+
+            // getting paths
+            $http.get('/api/mycinegraph/path/' + startNode._id + "/" + endNode._id).success(function(paths) {
+                for (var i = 0; i < paths.length; i++)
+                {
+                    var path = paths[i];
+                    for (var j = 0; j < path.length; j++)
+                        path[j] = JSON.parse(path[j]);
+                }
+                console.log(paths);
+
+                // displaying path
+                displayCinegraphNodes(paths[0]);
+            });
         }
 
 
@@ -2049,9 +2033,36 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
 
-        /* --------- */
-        /* INIT CALL */
-        /* --------- */
+        /* ---------- */
+        /* MAIN LOOPS */
+        /* ---------- */
+
+        function animate() {
+            idAnimationFrame = requestAnimationFrame(animate);
+            stats.begin();
+            rendererStats.update(renderer);
+            TWEEN.update();
+            cameraControls.update();
+            var oldTweenCount = tweenCount;
+            tweenCount = TWEEN.getAll().length;
+            if (renderNeedsUpdate || tweenCount > 0 || oldTweenCount > 0 && tweenCount == 0){
+                render();
+                renderNeedsUpdate = false;
+            }
+            stats.end();
+        }
+
+        function render() {
+            renderer.clear();
+            composerBackground.render();
+            composerLines.render();
+            updateHoverLabelPosition();
+            updateFilters();
+            composer.render();
+            updateGradientLayer();
+            gradientComposer.render();
+            blendComposer.render();
+        }
 
         $('#graph').css('opacity', 0);
         defaultImg.onload = function () {

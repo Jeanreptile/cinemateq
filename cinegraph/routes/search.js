@@ -57,7 +57,7 @@ var getMoviePoster = function(name, year, callback){
 
     res.on('end', function() {
         var resp = JSON.parse(body)
-        if (resp.total_results != 0 && resp.results[0] && resp.results[0].poster_path != null)
+        if (resp.total_results != 0 && resp.results != undefined && resp.results[0] && resp.results[0].poster_path != null)
         {
         var request = require('request'),
             fs      = require('fs'),

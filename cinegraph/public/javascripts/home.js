@@ -1438,6 +1438,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             cameraControls.target.set(firstPos.x, firstPos.y, firstPos.z);
         }
 
+        function refreshGraph() {
+            displayCinegraphNodes([], true);
+        }
+        scope.refreshGraph = refreshGraph;
+
 
         function generateTexture(job, img, text) {
             var canvas = document.createElement('canvas');
@@ -1979,9 +1984,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         path[j] = JSON.parse(path[j]);
                 }
                 displayCinegraphNodes(paths[0], true); // displaying first path
-                console.log(scope.currentCinegraph.nodes.length, paths[0].length);
                 scope.currentCinegraph.nodes = scope.currentCinegraph.nodes.concat(paths[0]);
-                console.log(scope.currentCinegraph.nodes.length, scope.currentCinegraph.nodes);
             });
         }
 

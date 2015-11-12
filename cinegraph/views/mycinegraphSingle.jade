@@ -10,6 +10,8 @@ section.vbox.myCinegraphSingle
 								.row.m-t-sm.hidden-nav-xs.cinegraph-actions
 									.col-sm-12.text-center
 										h3.h3 {{ currentCinegraph.title }}
+											a(ng-click="refreshGraph()")
+												i.fa.fa-refresh.cursor-pointer
 											a(ng-click="openEditCinegraphTitleModal()")
 												i.fa.fa-edit.cursor-pointer
 											a(ng-click="openDeleteCinegraphModal()")

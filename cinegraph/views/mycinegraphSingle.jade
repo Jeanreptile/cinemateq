@@ -10,6 +10,8 @@ section.vbox.myCinegraphSingle
 								.row.m-t-sm.hidden-nav-xs.cinegraph-actions
 									.col-sm-12.text-center
 										h3.h3 {{ currentCinegraph.title }}
+											a(ng-click="refreshGraph()")
+												i.fa.fa-refresh.cursor-pointer
 											a(ng-click="openEditCinegraphTitleModal()")
 												i.fa.fa-edit.cursor-pointer
 											a(ng-click="openDeleteCinegraphModal()")
@@ -24,7 +26,7 @@ section.vbox.myCinegraphSingle
 						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(href='#nav', data-toggle='class:nav-xs')
 							i.i.i-circleleft.text
 								i.i.i-circleright.text-active
-			section#content
+			section#content(style="background-color:black;")
 				section.hbox.stretch
 					section
 						#graph(cinegraph="")

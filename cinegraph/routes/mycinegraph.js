@@ -14,6 +14,22 @@ router.get('/query', function(req, res) {
 	});
 });
 
+/* GET a path between two nodes */
+router.get('/path/:idStart/:idEnd', function(req, res) {
+	var cypher = 'MATCH (n1) WHERE id(n1)={startId} MATCH (n2) WHERE id(n2)={endId}\
+				  MATCH p = allShortestPaths((n1)-[*0..5]-(n2))\
+				  RETURN extract(r IN relationships(p) | "{\\"id\\":"+ id(r) + ",\\"type\\":\\"" + type(r)\
+				  + "\\",\\"start\\":" + id(startNode(r)) + ",\\"end\\":" + id(endNode(r)) + "}") LIMIT 2';
+	dbLocal.query(cypher, {
+		startId : parseInt(req.params.idStart),
+		endId : parseInt(req.params.idEnd)
+	}, function(err, result) {
+		if (err) throw err;
+		res.json(result);
+	});
+	// TODO: Handle errors
+});
+
 /* DELETE a cinegraph */
 router.delete('/:id', function(req, res) {
 	var cypher = "MATCH (n:MyCinegraph)-[r]-() WHERE id(n) = {idCinegraph} DELETE n, r";

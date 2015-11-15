@@ -465,11 +465,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
 
 			// global vars
-            var scene = new THREE.Scene();
-            var linesScene = new THREE.Scene();
-            var camera, cameraControls, bgScene, bgCam, viewWidth, viewHeight, background, gradientBackground;
-            var renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, autoClear: false });
-            var raycaster = new THREE.Raycaster();
+            var scene, linesScene, camera, cameraControls, bgScene, bgCam, viewWidth, viewHeight, background, gradientBackground;
+            var renderer, raycaster;
             var mouse = new THREE.Vector2();
             var mouseClickStart = new Object();
             var mouseIsDown = false;
@@ -496,6 +493,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             const nodeSpacing = 200, nodeOpacity = 0.6, nodeSuggestionOpacity = 0.5;
             var renderMode = 0;
             const nearDistance = 1;
+            const sampleRatio = 2;
+            const lineThickness = 5;
 
             // monitoring panels
             var rendererStats = new THREEx.RendererStats();
@@ -519,44 +518,48 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 scene = null;
                 linesScene = null;
                 cameraControls = null;
-                renderer = null;
+                //renderer = null;
                 raycaster = null;
                 mouse = null;
                 document.body.removeChild(stats.domElement);
                 document.body.removeChild(rendererStats.domElement)
-                composer = null;
+                //composer = null;
                 stats = null;
                 rendererStats = null;
                 $(document).unbind("keyup", switchRenderMode);
             })
 
-/*            window.addEventListener( 'resize', onWindowResize, false );
-
             function onWindowResize(){
-                console.log('onWindowResize');
-                console.log("before", viewWidth, viewHeight);
-                viewWidth = $('#graph').width();
-                viewHeight = $('#graph').height();
-                console.log("after", viewWidth, viewHeight);
+                console.log("onWindowResize");
+                viewWidth = $('#graph').find('canvas').width(0).parent().width();
+                viewHeight = $('#graph').find('canvas').height(0).parent().height();
                 camera.aspect = viewWidth / viewHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(viewWidth, viewHeight);
+                var vW = viewWidth * sampleRatio, vH = viewHeight * sampleRatio;
 
-                composerBackground.setSize(viewWidth * 0.5, viewHeight * 0.5);
-                composerLines.setSize(viewWidth * 2, viewHeight * 2);
-                composer.setSize(viewWidth * 2, viewHeight * 2);
-                gradientComposer.setSize(viewWidth * 1, viewHeight * 1);
-                console.log(blendComposer);
-                blendComposer.setSize(viewWidth * 1, viewHeight * 1);
+                composerBackground.setSize(vW / 4, vH / 4);
+                background.bgCanvas.width = vW / 4;
+                background.bgCanvas.height = vH / 4;
+                composerLines.setSize(vW, vH);
+                var lineShader = composerLines.passes[1];
+                lineShader.uniforms.totalWidth.value = vW;
+                lineShader.uniforms.totalHeight.value = vH;
+                lineShader.uniforms['edgeWidth'].value = lineThickness * sampleRatio;
+                composer.setSize(vW, vH);
+                gradientComposer.setSize(viewWidth, viewHeight);
+                blendComposer.setSize(viewWidth, viewHeight);
+
                 var blendPass = blendComposer.passes[0];
                 blendPass.uniforms['tBase'].value = composerBackground.renderTarget1;
                 blendPass.uniforms['tAdd'].value = composerLines.renderTarget1;
                 blendPass.uniforms['tAdd2'].value = composer.renderTarget1;
                 blendPass.uniforms['tAdd3'].value = gradientComposer.renderTarget1;
 
-                renderNeedsUpdate = true;
+                //console.log(viewWidth, viewHeight, blendComposer.renderTarget1.width);
 
-            }*/
+                renderNeedsUpdate = true;
+            }
 
             function switchRenderMode(e) {
                 switch(e.which) {
@@ -578,10 +581,16 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
 
             function init() {
+                // global variables init
+                scene = new THREE.Scene();
+                linesScene = new THREE.Scene();
+                renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, autoClear: false });
+                console.log(renderer);
+                raycaster = new THREE.Raycaster();
+
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
-                //console.log(viewWidth, viewHeight);
                 camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, nearDistance, 1000);
                 renderer.setSize(viewWidth, viewHeight);
                 document.getElementById('graph').appendChild(renderer.domElement);
@@ -658,7 +667,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $('#graph').after(label);
 
                 // over sampling for antialiasing
-                var sampleRatio = 2;
                 var parameters = {
                     minFilter: THREE.LinearFilter,
                     magFilter: THREE.LinearFilter,
@@ -667,20 +675,19 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 };
                 //console.log(sampleRatio, viewWidth, viewHeight);
                 // background
-                var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * 0.5, viewHeight * 0.5, parameters);
+                var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * sampleRatio / 4, viewHeight * sampleRatio / 4, parameters);
                 var renderBackgroundScene = new THREE.RenderPass(bgScene, bgCam);
                 var effectCopyBackground = new THREE.ShaderPass(THREE.CopyShader);
                 composerBackground = new THREE.EffectComposer(renderer, renderTargetBackground);
                 composerBackground.addPass(renderBackgroundScene);
                 composerBackground.addPass(effectCopyBackground);
                 // lines
-                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * 2, viewHeight * 2, parameters);
+                var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
                 var renderLinesScene = new THREE.RenderPass(linesScene, camera);
                 var lineShader = new THREE.ShaderPass(THREE.ThickLineShader);
-                var lineThickness = 5;
-                lineShader.uniforms.totalWidth.value = viewWidth * 2;
-                lineShader.uniforms.totalHeight.value = viewHeight * 2;
-                lineShader.uniforms['edgeWidth'].value = lineThickness * 2;
+                lineShader.uniforms.totalWidth.value = viewWidth * sampleRatio;
+                lineShader.uniforms.totalHeight.value = viewHeight * sampleRatio;
+                lineShader.uniforms['edgeWidth'].value = lineThickness * sampleRatio;
                 composerLines = new THREE.EffectComposer(renderer, renderLinesTarget);
                 composerLines.addPass(renderLinesScene);
                 composerLines.addPass(lineShader);
@@ -715,6 +722,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $('#graph').mousemove(onMouseMove);
                 cameraControls.addEventListener('change', function() {renderNeedsUpdate = true;});
                 $(document).keyup(switchRenderMode);
+                window.addEventListener('resize', onWindowResize, false);
 
                 // first node or cinegraph init
                 if (scope.cinegraphId != undefined) {
@@ -871,8 +879,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function updateGradientLayer() {
-            var ctx = gradientBackground.gradientCanvas.getContext('2d');
-            ctx.clearRect(0, 0, gradientBackground.gradientCanvas.width, gradientBackground.gradientCanvas.height);
+            var c = gradientBackground.gradientCanvas;
+            var ctx = c.getContext('2d');
+            if (c.width != viewWidth || c.height != viewHeight){
+                c.width = viewWidth;
+                c.height = viewHeight;
+            }
+            ctx.clearRect(0, 0, viewWidth, viewHeight);
             var newLayer = getGradientLayer();
             if (newLayer != null)
                 ctx.drawImage(newLayer, 0, 0);
@@ -2083,6 +2096,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             idAnimationFrame = requestAnimationFrame(animate);
             stats.begin();
             rendererStats.update(renderer);
+            var startTime = new Date().getTime();
             TWEEN.update();
             cameraControls.update();
             var oldTweenCount = tweenCount;
@@ -2090,6 +2104,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             if (renderNeedsUpdate || tweenCount > 0 || oldTweenCount > 0 && tweenCount == 0){
                 render();
                 renderNeedsUpdate = false;
+                var endTime = new Date().getTime();
             }
             stats.end();
         }

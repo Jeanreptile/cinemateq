@@ -494,6 +494,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var renderMode = 0;
             const nearDistance = 1;
             const sampleRatio = 2;
+            var qualityScale = 1;
             const lineThickness = 5;
 
             // monitoring panels
@@ -529,14 +530,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $(document).unbind("keyup", switchRenderMode);
             })
 
-            function onWindowResize(){
-                console.log("onWindowResize");
+            function onWindowResize() {
                 viewWidth = $('#graph').find('canvas').width(0).parent().width();
                 viewHeight = $('#graph').find('canvas').height(0).parent().height();
                 camera.aspect = viewWidth / viewHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(viewWidth, viewHeight);
-                var vW = viewWidth * sampleRatio, vH = viewHeight * sampleRatio;
+                var vW = viewWidth * sampleRatio * qualityScale, vH = viewHeight * sampleRatio * qualityScale;
 
                 composerBackground.setSize(vW / 4, vH / 4);
                 background.bgCanvas.width = vW / 4;
@@ -545,18 +545,16 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 var lineShader = composerLines.passes[1];
                 lineShader.uniforms.totalWidth.value = vW;
                 lineShader.uniforms.totalHeight.value = vH;
-                lineShader.uniforms['edgeWidth'].value = lineThickness * sampleRatio;
+                lineShader.uniforms['edgeWidth'].value = lineThickness * sampleRatio * qualityScale;
                 composer.setSize(vW, vH);
-                gradientComposer.setSize(viewWidth, viewHeight);
-                blendComposer.setSize(viewWidth, viewHeight);
+                gradientComposer.setSize(vW / sampleRatio, vH / sampleRatio);
+                blendComposer.setSize(vW / sampleRatio, vH / sampleRatio);
 
                 var blendPass = blendComposer.passes[0];
                 blendPass.uniforms['tBase'].value = composerBackground.renderTarget1;
                 blendPass.uniforms['tAdd'].value = composerLines.renderTarget1;
                 blendPass.uniforms['tAdd2'].value = composer.renderTarget1;
                 blendPass.uniforms['tAdd3'].value = gradientComposer.renderTarget1;
-
-                //console.log(viewWidth, viewHeight, blendComposer.renderTarget1.width);
 
                 renderNeedsUpdate = true;
             }
@@ -585,7 +583,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 scene = new THREE.Scene();
                 linesScene = new THREE.Scene();
                 renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, autoClear: false });
-                console.log(renderer);
                 raycaster = new THREE.Raycaster();
 
                 $('#graph').css('height','100%');
@@ -2092,6 +2089,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         /* MAIN LOOPS */
         /* ---------- */
 
+        var performance = [];
+
         function animate() {
             idAnimationFrame = requestAnimationFrame(animate);
             stats.begin();
@@ -2104,7 +2103,28 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             if (renderNeedsUpdate || tweenCount > 0 || oldTweenCount > 0 && tweenCount == 0){
                 render();
                 renderNeedsUpdate = false;
+                // getting average frame render time to dynamically adjust quality
                 var endTime = new Date().getTime();
+                if (performance.length < 180) // 180-frame sample
+                    performance.push(endTime - startTime);
+                else {
+                    var total = 0;
+                    for (var i = 0; i < performance.length; i++)
+                        total += performance[i];
+                    var avg = total / performance.length;
+                    //console.log("average is: ", avg);
+                    if (avg > 33.33 && qualityScale >= 0.67) { // < 30 fps
+                        qualityScale *= 0.75;
+                        onWindowResize();
+                        //console.log('decreasing quality: ', qualityScale);
+                    }
+                    else if (avg < 16.67 && quality <= 0.8){ // > 60 fps
+                        qualityScale *= 1.25;
+                        onWindowResize();
+                        //console.log('increasing quality: ', qualityScale);
+                    }
+                    performance = [];
+                }
             }
             stats.end();
         }

@@ -476,11 +476,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             defaultImg.src = 'images/default_bg2.jpg';
             var nodePosition = new THREE.Vector3(0, 0, 0);
             var randomVector = new THREE.Vector3(Math.random() * 60 - 20, Math.random() * 60 - 20, Math.random() * 60 - 20);
-            var orangeColor = '#FFA226';
+            var orangeColor = '#ffa226';
             var colors = [];
-            colors['ACTED_IN'] = '#319ef1'; colors['PRODUCED'] = '#27AE60'; colors['DIRECTED'] = '#8E44AD';
-            colors['WROTE'] = '#F1C40F'; colors['EDITED'] = '#E33244'; colors['DIRECTED_PHOTOGRAPHY'] = '#FC6E51';
-            colors['COMPOSED_MUSIC'] = '#00D6CE'; colors['DESIGNED_COSTUMES'] = '#EC87C0'; colors['DESIGNED_PRODUCTION'] = '#AC92EC';
+            colors['ACTED_IN'] = '#319ef1'; colors['PRODUCED'] = '#27ae60'; colors['DIRECTED'] = '#8e44ad';
+            colors['WROTE'] = '#f1c40f'; colors['EDITED'] = '#e33244'; colors['DIRECTED_PHOTOGRAPHY'] = '#fc6e51';
+            colors['COMPOSED_MUSIC'] = '#00d6ce'; colors['DESIGNED_COSTUMES'] = '#ec87c0'; colors['DESIGNED_PRODUCTION'] = '#ac92ec';
             var composerBackground, composerLines, composer, gradientComposer, blendComposer;
             const PI2 = 2 * Math.PI;
             const blurAmount = 25;
@@ -802,27 +802,26 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
             orderedScene.sort(compare);
 
-            var drawCount = 0;
-
             // drawing gradient circle for each node
-            for (var i = 0; i < orderedScene.length; i++)
+            var drawCount = 0;
+            var orderedSceneLength = orderedScene.length;
+            for (var i = 0; i < orderedSceneLength; i++)
             {
                 var sprite = scene.children[orderedScene[i].index];
                 // calculating circle radius
-                var pos = toScreenPosition(sprite.position);
                 var circleRadius = getSpriteRadius(sprite.position, sprite.scale.x);
                 if (circleRadius <= 2)
+                    continue;
+                // if node is out the screen, skip
+                var pos = toScreenPosition(sprite.position);
+                if (pos.x + circleRadius < 0 || pos.x - circleRadius > canv.width
+                    || pos.y + circleRadius < 0 || pos.y - circleRadius > canv.height)
                     continue;
                 var innerRadius = Math.abs(circleRadius * ((borderFraction - 2) / borderFraction));
                 var spriteCanv = document.createElement('canvas');
                 spriteCanv.width = circleRadius * 2 + 1;
                 spriteCanv.height = spriteCanv.width;
                 var spriteCtx = spriteCanv.getContext('2d');
-
-                // if node is out the screen, skip
-                if (pos.x + circleRadius < 0 || pos.x - circleRadius > canv.width
-                    || pos.y + circleRadius < 0 || pos.y - circleRadius > canv.height)
-                    continue;
 
                 // getting lines related to node
                 for (var j = linesScene.children.length - 1; j >= 0; j--)
@@ -841,12 +840,15 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     // if line is to small to be seen anyway, skip
                     if (line.geometry.vertices[startIndex].distanceToSquared(line.geometry.vertices[endIndex]) <= 16)
                         continue;
-                    var color = line.geometry.colors[startIndex];
+                    // if line and node have same color, skip
+                    var c = '#' + line.geometry.colors[startIndex].getHexString();
+                    if (sprite.mainJob == undefined && c == orangeColor || c == colors[sprite.mainJob])
+                        continue;
+
+                    // drawing radial gradient
                     var startPos = toScreenPosition(line.geometry.vertices[startIndex]);
                     var endPos = toScreenPosition(line.geometry.vertices[endIndex]);
-                    // drawing radial gradient
                     var radgradPos = endPos.sub(startPos).setLength(circleRadius);
-                    var c = 'rgba(' + color.r * 255 + ',' + color.g * 255 + ',' + color.b * 255 +',1)';
                     if (gradients[c] == undefined)
                         generateGradient(c);
                     var rad = circleRadius * 2.5;
@@ -2089,7 +2091,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         /* MAIN LOOPS */
         /* ---------- */
 
-        var performance = [];
+        var performanceTotal = 0;
+        var performanceSampleCount = 0;
 
         function animate() {
             idAnimationFrame = requestAnimationFrame(animate);
@@ -2105,25 +2108,25 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 renderNeedsUpdate = false;
                 // getting average frame render time to dynamically adjust quality
                 var endTime = new Date().getTime();
-                if (performance.length < 180) // 180-frame sample
-                    performance.push(endTime - startTime);
+                if (performanceSampleCount < 120) { // 120-frame sample
+                    performanceSampleCount++;
+                    performanceTotal += (endTime - startTime);
+                }
                 else {
-                    var total = 0;
-                    for (var i = 0; i < performance.length; i++)
-                        total += performance[i];
-                    var avg = total / performance.length;
+                    var avg = performanceTotal / 120;
                     //console.log("average is: ", avg);
                     if (avg > 33.33 && qualityScale >= 0.67) { // < 30 fps
                         qualityScale *= 0.75;
                         onWindowResize();
                         //console.log('decreasing quality: ', qualityScale);
                     }
-                    else if (avg < 16.67 && quality <= 0.8){ // > 60 fps
+                    else if (avg < 16.67 && qualityScale <= 0.8){ // > 60 fps
                         qualityScale *= 1.25;
                         onWindowResize();
                         //console.log('increasing quality: ', qualityScale);
                     }
-                    performance = [];
+                    performanceTotal = 0;
+                    performanceSampleCount = 0;
                 }
             }
             stats.end();

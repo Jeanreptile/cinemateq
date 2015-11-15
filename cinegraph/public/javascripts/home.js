@@ -174,9 +174,9 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         selectedNodeId = 719772;
     }
     $http.get('/api/common/' + selectedNodeId).success(function(node) {
-        //$scope.currentNode = node;
-        $scope.updateTypesAndLimits();
+        $scope.currentNode = node;
         $scope.updateSelectedJobs();
+        $scope.updateTypesAndLimits();
     });
 
     $scope.updateTypesAndLimits = function() {
@@ -194,32 +194,63 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             $('#noteObj').rating('rate', 0);
             $('#noteLove').rating('rate', 0);
         });
+
         var craziness = 1;
         if ($scope.currentNode.type == "Person")
         {
-            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},
-                                    { type: 'PRODUCED', limit: 2 * craziness},
-                                    { type: 'DIRECTED', limit: 2 * craziness},
-                                    { type: 'COMPOSED_MUSIC', limit: 1 * craziness},
-                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
-                                    { type: 'WROTE', limit: 5 * craziness},
-                                    { type: 'EDITED', limit: 3 * craziness},
-                                    { type: 'DESIGNED_PRODUCTION', limit: 3 * craziness},
-                                    { type: 'DESIGNED_COSTUMES', limit: 2 * craziness} ];
+            $scope.typesAndLimits = [];
+            for (var i = 0; i < $scope.currentNode.jobs.length; i++) {
+                var obj = {
+                    type: $scope.currentNode.jobs[i].name,
+                    limit: (i == 0 ? 10 : 0)
+                };
+                $scope.typesAndLimits.push(obj);
+            };
         }
         else
         {
-            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4 * craziness},
-                                    { type: 'DIRECTED', limit: 1 * craziness},
-                                    { type: 'PRODUCED', limit: 1 * craziness},
-                                    { type: 'COMPOSED_MUSIC', limit: 1 * craziness},
-                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
-                                    { type: 'WROTE', limit: 1 * craziness},
-                                    { type: 'EDITED', limit: 1 * craziness},
-                                    { type: 'DESIGNED_PRODUCTION', limit: 1 * craziness},
-                                    { type: 'DESIGNED_COSTUMES', limit: 1 * craziness} ];
+            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 10 * craziness},
+                                    { type: 'DIRECTED', limit: 0 * craziness},
+                                    { type: 'PRODUCED', limit: 0 * craziness},
+                                    { type: 'COMPOSED_MUSIC', limit: 0 * craziness},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 0 * craziness},
+                                    { type: 'WROTE', limit: 0 * craziness},
+                                    { type: 'EDITED', limit: 0 * craziness},
+                                    { type: 'DESIGNED_PRODUCTION', limit: 0 * craziness},
+                                    { type: 'DESIGNED_COSTUMES', limit: 0 * craziness} ];
         }
     };
+
+    $scope.updateTypesAndLimitsFromFilter = function() {
+        $scope.typesAndLimits = [];
+        var max = 10;
+        var numberOfSelectedJobs = 0;
+        for (var job in $scope.selectedJobs) {
+            if ($scope.selectedJobs[job]) {
+                numberOfSelectedJobs++;
+            }
+        }
+
+        for (var job in $scope.selectedJobs) {
+            if ($scope.selectedJobs[job]) {
+                if ($scope.currentNode.type == "Person") {
+                    var obj = {
+                        type: $scope.jobsRelationships[job],
+                        limit: ($scope.jobsRelationships[job] == $scope.currentNode.jobs[0].name ?
+                            Math.round(max / numberOfSelectedJobs) : Math.floor(max / numberOfSelectedJobs))
+                    };
+                }
+                else {
+                    var obj = {
+                        type: $scope.jobsRelationships[job],
+                        limit: ($scope.jobsRelationships[job] == "ACTED_IN" ?
+                            Math.round(max / numberOfSelectedJobs) : Math.floor(max / numberOfSelectedJobs))
+                    };
+                }
+                $scope.typesAndLimits.push(obj);
+            }
+        }
+    }
 
     $scope.updateSelectedJobs = function() {
         if ($scope.currentNode.type == 'Person') {
@@ -434,9 +465,10 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             };
 
             scope.filterBy = function filterBy(job, relationship) {
-                console.log('filterBy');
                 var nodes = scope.cinegraphId != undefined ? scope.suggestedNodes : scope.currentDisplayedNodes;
                 if (scope.selectedJobs[job]) {
+                    scope.updateTypesAndLimitsFromFilter();
+                    removeByJobType(scope.currentDisplayedNodes);
                     scope.getRelatedNodesForType(scope.currentNode, relationship, scope.findLimitForJob(relationship), 0,
                         nodes.length, scope.currentNode.sprite, scope.drawRelatedNodes);
                 }
@@ -889,6 +921,34 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             if (newLayer != null)
                 ctx.drawImage(newLayer, 0, 0);
             gradientBackground.gradientTexture.needsUpdate = true;
+        }
+
+        function removeByJobType(array) {
+            var jobs = {
+                'ACTED_IN': [],
+                'WROTE': [],
+                'PRODUCED': [],
+                'DIRECTED': [],
+                'EDITED': [],
+                'DIRECTED_PHOTOGRAPHY': [],
+                'COMPOSED_MUSIC': [],
+                'DESIGNED_COSTUMES': [],
+                'DESIGNED_PRODUCTION': []
+            }
+            for (var i = 0; i < array.length; i++) {
+                jobs[array[i].type].push(array[i]);
+            };
+            for (var job in jobs) {
+                if (scope.findLimitForJob(job) < jobs[job].length) {
+                    for (var i = scope.findLimitForJob(job); i < jobs[job].length; i++) {
+                        var endpoint = jobs[job][i].end;
+                        if (scope.currentNode.type != 'Person') {
+                            endpoint = jobs[job][i].start;
+                        }
+                        removeOneFromScene(scope.currentDisplayedNodes, endpoint, scope.currentNode.id);
+                    };
+                }
+            }
         }
 
         function removeOneFromScene(array, idToRemove, excludedId) {

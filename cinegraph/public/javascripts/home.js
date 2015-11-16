@@ -835,7 +835,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             orderedScene.sort(compare);
 
             // drawing gradient circle for each node
-            var drawCount = 0;
             var orderedSceneLength = orderedScene.length;
             for (var i = 0; i < orderedSceneLength; i++)
             {
@@ -849,13 +848,15 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 if (pos.x + circleRadius < 0 || pos.x - circleRadius > canv.width
                     || pos.y + circleRadius < 0 || pos.y - circleRadius > canv.height)
                     continue;
-                var innerRadius = Math.abs(circleRadius * ((borderFraction - 2) / borderFraction));
+                const circleDiameter = circleRadius * 2;
+                const innerRadius = Math.abs(circleRadius * ((borderFraction - 2) / borderFraction));
                 var spriteCanv = document.createElement('canvas');
-                spriteCanv.width = circleRadius * 2 + 1;
-                spriteCanv.height = spriteCanv.width;
+                spriteCanv.width = circleDiameter;
+                spriteCanv.height = circleDiameter;
                 var spriteCtx = spriteCanv.getContext('2d');
 
                 // getting lines related to node
+                var drawCount = 0;
                 for (var j = linesScene.children.length - 1; j >= 0; j--)
                 {
                     var line = linesScene.children[j];
@@ -876,14 +877,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     var c = '#' + line.geometry.colors[startIndex].getHexString();
                     if (sprite.mainJob == undefined && c == orangeColor || c == colors[sprite.mainJob])
                         continue;
-
+                    if (gradients[c] == undefined)
+                        generateGradient(c);
                     // drawing radial gradient
                     var startPos = toScreenPosition(line.geometry.vertices[startIndex]);
                     var endPos = toScreenPosition(line.geometry.vertices[endIndex]);
                     var radgradPos = endPos.sub(startPos).setLength(circleRadius);
-                    if (gradients[c] == undefined)
-                        generateGradient(c);
-                    var rad = circleRadius * 2.5;
+                    const rad = circleRadius * 2.5;
                     spriteCtx.drawImage(
                         gradients[c],
                         circleRadius + radgradPos.x - rad / 2,
@@ -892,19 +892,23 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     );
                     drawCount++;
                 }
-                // outer circle mask
-                spriteCtx.globalCompositeOperation = 'destination-in';
-                spriteCtx.drawImage(blackCircle, 0, 0, circleRadius * 2, circleRadius * 2);
-                // drawing sprite
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.drawImage(spriteCanv, pos.x - circleRadius, pos.y - circleRadius, spriteCanv.width, spriteCanv.height);
-                // inner circle mask
-                var r = innerRadius - 0.75;
-                var r2 = r * 2;
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.drawImage(blackCircle, pos.x - r, pos.y - r, r2, r2);
+                // clearing outer circle
+                if (ctx.globalCompositeOperation == 'source-over')
+                    ctx.globalCompositeOperation = 'destination-out';
+                ctx.drawImage(blackCircle, pos.x - circleRadius, pos.y - circleRadius, circleDiameter, circleDiameter);
+                if (drawCount > 0) {
+                    // outer circle mask
+                    spriteCtx.globalCompositeOperation = 'destination-in';
+                    spriteCtx.drawImage(blackCircle, 0, 0, circleDiameter, circleDiameter);
+                    // inner circle mask
+                    const r = innerRadius - 0.75, r2 = r * 2;
+                    spriteCtx.globalCompositeOperation = 'destination-out';
+                    spriteCtx.drawImage(blackCircle, circleRadius - r, circleRadius - r, r2, r2);
+                    // drawing sprite
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.drawImage(spriteCanv, pos.x - circleRadius, pos.y - circleRadius, circleDiameter, circleDiameter);
+                }
             }
-            //console.log('DrawCount ', drawCount);
             //console.timeEnd('getGradientLayer');
             return canv;
         }
@@ -2175,13 +2179,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 else {
                     var avg = performanceTotal / 120;
                     //console.log("average is: ", avg);
-                    if (avg > 33.33 && qualityScale >= 0.67) { // < 30 fps
-                        qualityScale *= 0.75;
+                    if (avg > 33.33 && qualityScale > 0.5) { // < 30 fps
+                        qualityScale = Math.max(0.5, qualityScale * 0.75);
                         onWindowResize();
                         //console.log('decreasing quality: ', qualityScale);
                     }
-                    else if (avg < 16.67 && qualityScale <= 0.8){ // > 60 fps
-                        qualityScale *= 1.25;
+                    else if (avg < 20 && qualityScale < 1){ // > 50 fps
+                        qualityScale = Math.min(1, qualityScale * 1.25);
                         onWindowResize();
                         //console.log('increasing quality: ', qualityScale);
                     }

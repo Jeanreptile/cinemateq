@@ -169,7 +169,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     $scope.friendsTastes = [];
     $scope.currentNode = {};
-    var selectedNodeId = getParameterByName('id');
+    /*var selectedNodeId = getParameterByName('id');
     if (selectedNodeId == undefined) {
         selectedNodeId = 719772;
     }
@@ -178,7 +178,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         $scope.updateSelectedJobs();
         $scope.updateTypesAndLimits();
     });
-
+*/
     $scope.updateTypesAndLimits = function() {
     $http.get("/api/user/rating/" + $scope.currentNode.id)
         .success(function(payload){
@@ -848,8 +848,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 if (pos.x + circleRadius < 0 || pos.x - circleRadius > canv.width
                     || pos.y + circleRadius < 0 || pos.y - circleRadius > canv.height)
                     continue;
-                const circleDiameter = circleRadius * 2;
-                const innerRadius = Math.abs(circleRadius * ((borderFraction - 2) / borderFraction));
+                var circleDiameter = circleRadius * 2;
+                var innerRadius = Math.abs(circleRadius * ((borderFraction - 2) / borderFraction));
                 var spriteCanv = document.createElement('canvas');
                 spriteCanv.width = circleDiameter;
                 spriteCanv.height = circleDiameter;
@@ -883,7 +883,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     var startPos = toScreenPosition(line.geometry.vertices[startIndex]);
                     var endPos = toScreenPosition(line.geometry.vertices[endIndex]);
                     var radgradPos = endPos.sub(startPos).setLength(circleRadius);
-                    const rad = circleRadius * 2.5;
+                    var rad = circleRadius * 2.5;
                     spriteCtx.drawImage(
                         gradients[c],
                         circleRadius + radgradPos.x - rad / 2,
@@ -893,7 +893,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     drawCount++;
                 }
                 // clearing outer circle
-                if (ctx.globalCompositeOperation == 'source-over')
+                if (ctx.globalCompositeOperation != 'destination-out')
                     ctx.globalCompositeOperation = 'destination-out';
                 ctx.drawImage(blackCircle, pos.x - circleRadius, pos.y - circleRadius, circleDiameter, circleDiameter);
                 if (drawCount > 0) {
@@ -901,7 +901,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     spriteCtx.globalCompositeOperation = 'destination-in';
                     spriteCtx.drawImage(blackCircle, 0, 0, circleDiameter, circleDiameter);
                     // inner circle mask
-                    const r = innerRadius - 0.75, r2 = r * 2;
+                    var r = innerRadius - 0.75, r2 = r * 2;
                     spriteCtx.globalCompositeOperation = 'destination-out';
                     spriteCtx.drawImage(blackCircle, circleRadius - r, circleRadius - r, r2, r2);
                     // drawing sprite

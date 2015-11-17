@@ -49,7 +49,8 @@ router.get('/:userName', function(req, res) {
       }
     });
   }
-  res.json([]);
+  else
+    res.json([]);
 });
 
 

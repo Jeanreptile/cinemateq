@@ -24,7 +24,7 @@ router.get('/movie', function(req, res) {
     var requestMovie2 = requestMovie.replace(/ /g, "* AND ");
     requestMovie2 = requestMovie2 + "*";
     console.log("request is " + requestMovie2);
-    var cypher = "START movie=node:node_auto_index(\"title:(" + requestMovie2 + "*)\") WHERE NOT (ANY ( x IN [\"Short\", \"Documentary\"] WHERE x in movie.genre)) RETURN movie ORDER BY length(movie.title) LIMIT 10";
+    var cypher = "START movie=node:node_auto_index('title:(" + requestMovie2 + "*)') WHERE NOT (ANY ( x IN [\"Short\", \"Documentary\"] WHERE x in movie.genre)) RETURN movie ORDER BY length(movie.title) LIMIT 10";
     dbLocal.query(cypher,
         function(err, result)
         {
@@ -57,6 +57,8 @@ var getMoviePoster = function(name, year, callback){
 
     res.on('end', function() {
         var resp = JSON.parse(body)
+        if (resp.error == undefined)
+        {
         if (resp.total_results != 0 && resp.results[0] && resp.results[0].poster_path != null)
         {
         var request = require('request'),
@@ -80,6 +82,8 @@ var getMoviePoster = function(name, year, callback){
         }
         callback(resp.results[0]);
         }
+      }
+
         else {
           callback(null);
         }

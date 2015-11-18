@@ -320,6 +320,14 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
       $http.post( "/api/user/rateObj", {movieId: $scope.currentNode.id, noteObj: noteObj})
         .success(function(updatedNode) {
         $scope.currentNode.globalObjScore = updatedNode.globalObjScore;
+
+        $http.post("/api/actions/", { actionType: 'ratingObj', username:$scope.currentUser.username,
+            idToRate: $scope.currentNode.id, rate: noteObj }).success(function() {
+            console.log("success! action added!");
+        }).
+          error(function() {
+
+        });
       }).
         error(function() {
       });
@@ -328,9 +336,17 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
     $('#noteLove').on('change', function () {
       var noteLove = $(this).val();
-      $http.post( "/api/user/rateLove", {movieId: $scope.currentNode.id, noteLove : noteLove})
+      $http.post( "/api/user/rateLove", {movieId: $scope.currentNode.id, noteLove: noteLove})
         .success(function(updatedNode) {
         $scope.currentNode.globalLoveScore = updatedNode.globalLoveScore;
+
+        $http.post("/api/actions/", { actionType: 'ratingLove', username:$scope.currentUser.username,
+            idToRate: $scope.currentNode.id, rate: noteLove }).success(function() {
+            console.log("success! action added!");
+        }).
+          error(function() {
+
+        });
       }).
         error(function() {
       });

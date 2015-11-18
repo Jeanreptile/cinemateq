@@ -44,7 +44,7 @@ router.post('/rateObj', authenticate, function(req, res) {
 
 	var movieId = parseInt(req.body.movieId);
 
-	var queryHasAlreadyRatedObj = "MATCH (u:User)-[r:RATED]->(m:Movie) \
+	var queryHasAlreadyRatedObj = "MATCH (u:User)-[r:RATED]->(m) \
 																	WHERE id(m) = {movieId} AND u.username = {username} AND HAS (r.obj) \
 																	RETURN r";
 
@@ -83,7 +83,7 @@ router.post('/rateLove', authenticate, function(req, res) {
 
 	var movieId = parseInt(req.body.movieId);
 
-	var queryHasAlreadyRatedLove = "MATCH (u:User)-[r:RATED]->(m:Movie) \
+	var queryHasAlreadyRatedLove = "MATCH (u:User)-[r:RATED]->(m) \
 																	WHERE id(m) = {movieId} AND u.username = {username} AND HAS (r.love) \
 																	RETURN r";
 
@@ -121,8 +121,8 @@ function updateGlobalScore(type, id, score, alreadyRatedByUser, oldScore, callba
 		if (err) throw err;
 
 		var cypherRatings;
-		var cypherLoveRatings = "MATCH (u:User)-[r:RATED]->(m:Movie) WHERE id(m) = {movieId} AND HAS (r.love) RETURN r";
-		var cypherObjRatings = "MATCH (u:User)-[r:RATED]->(m:Movie) WHERE id(m) = {movieId} AND HAS (r.obj) RETURN r";
+		var cypherLoveRatings = "MATCH (u:User)-[r:RATED]->(m) WHERE id(m) = {movieId} AND HAS (r.love) RETURN r";
+		var cypherObjRatings = "MATCH (u:User)-[r:RATED]->(m) WHERE id(m) = {movieId} AND HAS (r.obj) RETURN r";
 
 		if (type == "love") {
 			cypherRatings = cypherLoveRatings;

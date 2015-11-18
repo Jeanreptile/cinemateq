@@ -525,7 +525,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             const nodeSpacing = 200, nodeOpacity = 0.6, nodeSuggestionOpacity = 0.5;
             var renderMode = 0;
             const nearDistance = 1;
-            const sampleRatio = 2;
+            const sampleRatio = 1;
             var qualityScale = 1;
             const lineThickness = 5;
 
@@ -627,6 +627,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 // background scene
                 var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, defaultImg, blurAmount);
                 var bgTexture = new THREE.Texture(bgCanvas);
+                bgTexture.minFilter = THREE.LinearFilter;
                 background = new THREE.Mesh(
                     new THREE.PlaneBufferGeometry(2, 2, 0),
                     new THREE.MeshBasicMaterial({map: bgTexture})
@@ -644,6 +645,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 //gradient scene
                 var gradientCanvas = getGradientLayer();
                 var gradientTexture = new THREE.Texture(gradientCanvas);
+                gradientTexture.minFilter = THREE.LinearFilter;
                 gradientBackground = new THREE.Mesh(
                     new THREE.PlaneBufferGeometry(2, 2, 0),
                     new THREE.MeshBasicMaterial({map: gradientTexture})
@@ -1254,7 +1256,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title
             var canvas = generateTexture(node.jobs != undefined ? node.jobs[0].name : undefined, defaultImg, text);
             var texture = new THREE.Texture(canvas);
-            THREE.LinearFilter = THREE.NearestFilter = texture.minFilter;
+            texture.minFilter = THREE.LinearFilter
             texture.needsUpdate = true;
             var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
             sprite._id = node.id;

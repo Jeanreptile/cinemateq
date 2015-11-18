@@ -41,7 +41,7 @@ cinegraphApp.controller('ActionsController', ['$scope', '$http', 'AuthService', 
             console.log(error);
           });
         }
-        else { // ratingObj
+        else if (action.type == "ratingObj") {
           $http.get("/api/common/" + action.idToRate).success(function(node) {
             if (node.type == "Person") {
               message = "rated " + action.rate + " stars " + node.fullname;
@@ -62,6 +62,14 @@ cinegraphApp.controller('ActionsController', ['$scope', '$http', 'AuthService', 
           }).error(function (error) {
             console.log(error);
           });
+        }
+        else { // friendship
+          message = "became friend with " + action.friend_username;
+          var actionToAdd = {
+            username: action.username,
+            message: message
+          };
+          $scope.actions.push(actionToAdd);
         }
       }
   	}, function errorCallback(error) {

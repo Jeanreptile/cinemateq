@@ -61,12 +61,17 @@ router.post('/', function(req, res) {
 			actionData = '{"type":"' + req.body.actionType + '", "idToRate":"' + req.body.idToRate +
 				'", "rate": "' + req.body.rate + '", "username": "' + req.body.username + '", "id" : "' + idAction + '"}';
 		}
+		else if (req.body.actionType == "friendship") {
+			actionData = '{"type": "' + req.body.actionType + '", "username": "' + req.body.username +
+				'", "friend_username": "' + req.body.friendUsername + '", "id": "' + idAction + '"}';
+		}
+		else {
+			// TODO: Handle errors.
+			actionData = null;
+		}
 
-	//redisClient.set();
 		redisClient.set("action." + req.body.username + ":" + idAction, actionData);
 		redisClient.sadd("actions." + req.body.username, idAction);
-		//publish notif
-		//redisClient.publish("notifs."+req.body.friendName, notifData);
 	});
 	res.json(true);
 });

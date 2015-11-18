@@ -37,9 +37,6 @@ var io           = socket_io();
 app.io           = io;
 
 
-
-
-
 var routes = require('./routes');
 var users = require('./routes/users');
 var user = require('./routes/user');
@@ -107,6 +104,10 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
+    if (err.message === "jwt expired")
+    {
+      //Refresh token
+    }
     res.render('error', {
       message: err.message,
       error: err
@@ -118,6 +119,7 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
+  console.log("on est al");
   res.render('error', {
     message: err.message,
     error: {}

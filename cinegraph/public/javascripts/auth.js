@@ -111,10 +111,10 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
       config.headers = config.headers || {};
       if ($window.localStorage.token) {
         config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
+        console.log('Bearer ' + JSON.stringify($window.localStorage.token));
       }
       else
       {
-        //console.log("MAIIIIS");
         config.headers.Authorization = '';
       }
       return config;

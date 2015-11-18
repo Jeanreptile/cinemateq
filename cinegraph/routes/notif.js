@@ -51,6 +51,8 @@ router.get('/:userName', function(req, res) {
       }
     });
   }
+  else
+    res.json([]);
 });
 
 

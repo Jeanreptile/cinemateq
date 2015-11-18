@@ -13,12 +13,9 @@ cinegraphApp.controller('ActionsController', ['$scope', '$http', 'AuthService', 
     AuthService.logout();
   }
 
-  $scope.getAllActions = function() {
-  	$http.get('/api/actions/' + AuthService.currentUser().username).then(function successCallback(actions) {
-      console.log("actions: " + actions.data);
-      for (var i = 0; i < actions.data.length; i++) {
-        var action = actions.data[i];
-        var message = "";
+  addAction = function(array, index) {
+    var action = array[index];
+    var message = "";
         if (action.type == "ratingLove") {
           $http.get("/api/common/" + action.idToRate).success(function(node) {
             if (node.type == "Person") {
@@ -28,6 +25,7 @@ cinegraphApp.controller('ActionsController', ['$scope', '$http', 'AuthService', 
                 message: message
               };
               $scope.actions.push(actionToAdd);
+              console.log("scope.actions2: " + JSON.stringify($scope.actions));
             }
             else {
               message = "rated " + action.rate + " hearts " + node.title;
@@ -71,6 +69,17 @@ cinegraphApp.controller('ActionsController', ['$scope', '$http', 'AuthService', 
           };
           $scope.actions.push(actionToAdd);
         }
+  };
+
+  $scope.getAllActions = function() {
+    $http.get('/api/actions/' + AuthService.currentUser().username).then(function successCallback(actions) {
+      console.log("actions: " + JSON.stringify(actions.data));
+      var actionsArray = [];
+      for (var i = actions.data.length - 1; i >= 0; i--) {
+        var action = actions.data[i];
+        console.log("action: " + JSON.stringify(action));
+        console.log("scope.actions: " + JSON.stringify($scope.actions));
+        addAction(actions.data, i);
       }
   	}, function errorCallback(error) {
     // called asynchronously if an error occurs

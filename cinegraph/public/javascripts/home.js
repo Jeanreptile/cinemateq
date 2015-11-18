@@ -1272,7 +1272,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var text = node.name ? (node.firstname + " " + node.lastname) : node.title
             var canvas = generateTexture(node.jobs != undefined ? node.jobs[0].name : undefined, defaultImg, text);
             var texture = new THREE.Texture(canvas);
-            texture.minFilter = THREE.LinearFilter
+            texture.minFilter = THREE.LinearFilter;
             texture.needsUpdate = true;
             var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
             sprite._id = node.id;

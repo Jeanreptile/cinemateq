@@ -37,8 +37,10 @@ router.get('/:userName', function(req, res) {
               if((i+1) === replies.length)
                 res.json(result);
             }
-            else
+            else {
               console.log("Redis error: " + err.toString());
+              res.json([]);
+            }
           })
         })
         redisClient.quit();
@@ -49,7 +51,6 @@ router.get('/:userName', function(req, res) {
       }
     });
   }
-  res.json([]);
 });
 
 

@@ -113,6 +113,19 @@ angular.module('cinegraphApp').controller('notificationsController', function($s
 
     $scope.addFriend = function(data, friendName){
       $http.post('/api/friends/add', { user: AuthService.currentUser().username, friend: friendName}).success(function(res) {
+        $http.post("/api/actions/", { actionType: 'friendship', username: $scope.currentUser.username,
+            friendUsername: friendName }).success(function() {
+              console.log("success! action added!");
+              $http.post("/api/actions/", { actionType: 'friendship', username: friendName,
+                friendUsername: $scope.currentUser.username }).success(function() {
+                  console.log("success! action added!");
+
+              }).error(function() {
+
+              });
+        }).error(function() {
+
+        });
       });
       $scope.removeNotif(data);
     }

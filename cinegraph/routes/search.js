@@ -48,7 +48,6 @@ var sanitizeFileName = function(filename)
 
 
 var getMoviePoster = function(name, year, callback){
-  console.log("http://api.themoviedb.org/3/search/movie?api_key=c3c017954845b8a2c648fd4fafd6cda0&query=" + name + "&year=" + year);
   http.get("http://api.themoviedb.org/3/search/movie?api_key=c3c017954845b8a2c648fd4fafd6cda0&query=" + name + "&year=" + year, function(res)
   {
     var body = '';
@@ -58,10 +57,7 @@ var getMoviePoster = function(name, year, callback){
 
     res.on('end', function() {
         var resp = JSON.parse(body)
-	if (resp.error == undefined)
-	{
-	console.log("resp is" + JSON.stringify(resp));
-        if (resp.total_results != 0 && resp.results[0] && resp.results[0].poster_path != null)
+        if (resp.total_results != 0 && resp.results != undefined && resp.results[0] && resp.results[0].poster_path != null)
         {
         var request = require('request'),
             fs      = require('fs'),

@@ -430,3 +430,13 @@ i.fa-heart, i.fa-plus, i.fa-eye {
 .canvasNodeFilterRight{
   border-radius: 0 18px 18px 0;
 }
+
+#canvasPathPanel {
+  position: absolute;
+  z-index: 2;
+  width: 100%;
+  background-color: #E7E7E7;
+  color: #4B4B4B;
+  top:0;
+  padding-left: 15px;
+}

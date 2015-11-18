@@ -252,7 +252,7 @@ cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService
 
     $scope.editCinegraphTitle = function() {
         var currentUser = AuthService.currentUser();
-        $http.put('/api/mycinegraph/' + currentCinegraph.id, { titleCinegraph: $scope.cinegraphTitle, cinegraphNodes: currentCinegraph.nodes }).success(function(res) {
+        $http.put('/api/mycinegraph/' + currentCinegraph.id, { titleCinegraph: $scope.cinegraphTitle, cinegraphNodes: JSON.stringify(currentCinegraph.nodes) }).success(function(res) {
             $modalInstance.close(res);
         });
     };

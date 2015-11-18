@@ -64,100 +64,16 @@ section.vbox
 							|               
 							ul.nav.nav-tabs.m-b-n-xxs.bg-light
 								li.active
-									a.m-l(data-target='#activities', data-toggle='tab')
-										| Activities
-										span.badge.bg-primary.badge-sm.m-l-xs 10
-								li
 									a(data-target="#notifications", data-toggle='tab') Notifications
 										span.badge.bg-danger.badge-sm.m-l-xs 10
+								li
+									a(data-target='#activities', data-toggle='tab') Activities
 								li
 									a(data-target='#edit', data-toggle='tab') Edit profile
 								li
 									a(data-target='#friends', data-toggle='tab') Friends
 							|               
 							.tab-content
-								#activities.panel.tab-pane.active
-									ul.list-group.no-radius.m-b-none.m-t-n-xxs.list-group-lg.no-border
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a0.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right 3 minutes ago
-												strong.block Drew Wllon
-												small Wellcome and play this web application template ... 
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a1.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right 1 hour ago
-												strong.block Jonathan George
-												small Morbi nec nunc condimentum...
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a2.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right 2 hours ago
-												strong.block Josh Long
-												small Vestibulum ullamcorper sodales nisi nec...
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a3.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right 1 day ago
-												strong.block Jack Dorsty
-												small Morbi nec nunc condimentum...
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a4.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right 3 days ago
-												strong.block Morgen Kntooh
-												small Mobile first web app for startup...
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a5.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right Jun 21
-												strong.block Yoha Omish
-												small Morbi nec nunc condimentum...
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a6.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right May 10
-												strong.block Gole Lido
-												small Vestibulum ullamcorper sodales nisi nec...
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a7.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right Jan 2
-												strong.block Jonthan Snow
-												small Morbi nec nunc condimentum...
-										li.list-group-item(href='#email-content', data-toggle='class:show')
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a8.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right 3 minuts ago
-												strong.block Drew Wllon
-												small Vestibulum ullamcorper sodales nisi nec sodales nisi nec sodales nisi nec...
-										li.list-group-item
-											a.thumb-sm.pull-left.m-r-sm(href='#')
-												img.img-circle(src='images/a9.png')
-											|                       
-											a.clear(href='#')
-												small.pull-right 1 hour ago
-												strong.block Jonathan George
-												small Morbi nec nunc condimentum...
 								#notifications.panel.tab-pane.active
 									ul.list-group.no-radius.m-b-none.m-t-n-xxs.list-group-lg.no-border
 										li.list-group-item
@@ -167,7 +83,16 @@ section.vbox
 											a.clear(href='#')
 												small.pull-right 3 minutes ago
 												strong.block Drew Wllon
-												small invited you to be his friend 
+												small invited you to be his friend
+								#activities.panel.tab-pane(ng-controller='ActionsController')
+									ul.list-group.no-radius.m-b-none.m-t-n-xxs.list-group-lg.no-border
+										li.list-group-item(ng-repeat="action in actions")
+											a.thumb-sm.pull-left.m-r-sm(href='#')
+												img.img-circle(src='images/a0.png')
+											|                       
+											a.clear(href='#')
+												strong.block {{action.username}}
+												small {{action.message}}
 								|                 
 								#edit.tab-pane.wrapper-lg
 									form.form-horizontal

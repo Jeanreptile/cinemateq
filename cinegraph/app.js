@@ -47,6 +47,7 @@ var commons = require('./routes/common');
 var mycinegraph = require('./routes/mycinegraph');
 var friends = require('./routes/friends');
 var notif = require('./routes/notif');
+var actions = require('./routes/actions');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -77,6 +78,7 @@ app.use('/api/mycinegraph', mycinegraph);
 app.use('/api/user',  user);
 app.use('/api/friends',  friends);
 app.use('/api/notif', notif);
+app.use('/api/actions', actions);
 
 
 //app.get('/partials/mycinegraphSingle', expressJwt({secret : 'SecretStory'}), routes.partials);

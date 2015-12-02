@@ -57,31 +57,31 @@ var getMoviePoster = function(name, year, callback){
 
     res.on('end', function() {
         var resp = JSON.parse(body)
-        if (resp.error == undefined)
+        if (resp && resp.results && resp.results.length)
         {
-        if (resp.total_results != 0 && resp.results[0] && resp.results[0].poster_path != null)
-        {
-        var request = require('request'),
-            fs      = require('fs'),
-            url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
-            dir     = path.join('public','images','movies', sanitizeFileName(name + year));
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
-        }
-        request(url, {encoding: 'binary'}, function(error, response, body) {
-          fs.writeFile(path.join(dir, 'poster.jpg'), body, 'binary', function (err) {});
-        });
-        if (resp.results[0].backdrop_path != null)
-        {
-          var request2= require('request'),
-              fs2     = require('fs'),
-              url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
-              request2(url2, {encoding: 'binary'}, function(error, response, body) {
-            fs2.writeFile(path.join(dir, 'backdrop.jpg'), body, 'binary', function (err) {});
+          if (resp.total_results != 0 && resp.results[0] && resp.results[0].poster_path != null)
+          {
+          var request = require('request'),
+              fs      = require('fs'),
+              url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
+              dir     = path.join('public','images','movies', sanitizeFileName(name + year));
+          if (!fs.existsSync(dir)){
+              fs.mkdirSync(dir);
+          }
+          request(url, {encoding: 'binary'}, function(error, response, body) {
+            fs.writeFile(path.join(dir, 'poster.jpg'), body, 'binary', function (err) {});
           });
-        }
-        callback(resp.results[0]);
-        }
+          if (resp.results[0].backdrop_path != null)
+          {
+            var request2= require('request'),
+                fs2     = require('fs'),
+                url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
+                request2(url2, {encoding: 'binary'}, function(error, response, body) {
+              fs2.writeFile(path.join(dir, 'backdrop.jpg'), body, 'binary', function (err) {});
+            });
+          }
+          callback(resp.results[0]);
+          }
       }
 
         else {

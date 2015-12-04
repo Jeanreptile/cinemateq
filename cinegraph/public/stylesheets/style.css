@@ -117,6 +117,33 @@ i.fa-heart, i.fa-plus, i.fa-eye {
   height: 100%;
   position: absolute;
   background: black;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
+video#bgvid {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    -webkit-transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%) translateY(-50%);
+    background: url(polina.jpg) no-repeat;
+    background-size: cover;
+    opacity: 0;
+
+
+}
+
+#blackBG {
+  width: 100%;
+  height: 100%
+  background-color: black;
 }
 
 #bg {

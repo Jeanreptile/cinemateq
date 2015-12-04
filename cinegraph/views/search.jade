@@ -1,7 +1,14 @@
-.bgTest
-  figure#bg
+//.bgTest
+//  figure#bg
+div.bgTest
+  video#bgvid(autoplay='', loop='', poster="data:image/gif,AAAA")
+    source#sourcevid(src='shining.webm', type='video/webm')
 script(src='javascripts/Vague.js')
-script(src='javascripts/randomBG.js')    
+script(src='javascripts/randomBG.js')
+script.
+  $(document).ready(function(){
+    $("#bgvid").animate({opacity: 1}, 2000);  
+  });
 script(type='text/ng-template', id='templateAuto').
   <a>
     <img ng-src="http://images.cinefacts.de/Inception-Cover-200120.jpg" width="64">
@@ -39,6 +46,9 @@ section.vbox.allWindow
           li
             a(ng-click='logout()' ng-if='currentUser') Logout
             a(href='/signin' ng-if="currentUser == undefined") Sign in
+  //div.bg-black(style="width:100%; height:100%;")
+  //  video#bgvid(autoplay='', loop='', poster='')
+  //    source#sourcevid(src='shining.webm', type='video/webm')
   section#searchBarPosition.hbox.stretch
     section#content
         section.vbox

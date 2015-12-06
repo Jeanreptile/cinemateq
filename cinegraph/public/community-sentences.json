@@ -1,0 +1,46 @@
+{
+	"bothWellRated": [
+		{ "sentence": "Hey, your buddy {parameter1} dig {parameter2} too ! Maybe grab a beer together ?",
+			"parameters": [
+				{ "parameter1": "friendName" },
+				{ "parameter2": "nodeName" }
+			]
+		},
+		{ "sentence": "You and {parameter1} love the same {nodeType}, are you soulmates?",
+			"parameters": [
+				{ "parameter1": "friendName" },
+				{ "parameter2": "nodeType" }
+			]
+		}
+	],
+
+	"oppositeRates": [
+		{ "sentence": "Woh, there is a big difference of opinion between you and {parameter1}. Unlike you {parameter2} just hates this movie !",
+			"parameters": [
+				{ "parameter1": "friendName" },
+				{ "parameter2": "friendName" }
+			]
+		},
+		{ "sentence": "You have totally different opinions",
+			"parameters": []
+		}
+	],
+
+	"friendHasNotRated": [
+		{ "sentence": "Your mate {parameter1} didn't rate this {parameter2}. Want to send him a notification ?",
+			"parameters": [
+				{ "parameter1": "friendName" },
+				{ "parameter2": "nodeType" }
+			]
+		}
+	],
+
+	"friendHasNotWellRated": [
+		{ "sentence": "Damn, your friend {friendName} is not really a big fan of {parameter2}",
+			"parameters": [
+				{ "parameter1": "friendName" },
+				{ "parameter2": "nodeName" }
+			]
+		}
+	]
+}

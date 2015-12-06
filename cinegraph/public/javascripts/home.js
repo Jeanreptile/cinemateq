@@ -73,9 +73,7 @@ cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
         }
     });
     $rootScope.$on("$routeUpdate", function() {
-        console.log("routeUpdate");
         if ($rootScope.shouldReload) {
-            console.log("shouldReload true");
             $rootScope.shouldReload = false;
             $route.reload();
         }
@@ -323,7 +321,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
         $http.post("/api/actions/", { actionType: 'ratingObj', username:$scope.currentUser.username,
             idToRate: $scope.currentNode.id, rate: noteObj }).success(function() {
-            console.log("success! action added!");
         }).
           error(function() {
 
@@ -342,7 +339,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
         $http.post("/api/actions/", { actionType: 'ratingLove', username:$scope.currentUser.username,
             idToRate: $scope.currentNode.id, rate: noteLove }).success(function() {
-            console.log("success! action added!");
         }).
           error(function() {
 
@@ -1068,27 +1064,50 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function getFriendsRatings(friends, index, node, currentUserRating) {
             $http.get('/api/user/'+ friends[index].id + '/rating/' + node.id).success(function (rating) {
-                if (rating.message) {
-                    scope.friendsTastes.push("Your mate " + friends[index].username + " didn't rate this movie. Want to send him a notification?");
+              $http.get('community-sentences.json').success(function(data) {
+                var nodeName = (node.type == 'Person' ? node.name : node.title);
+                var friendName = friends[index].username;
+                var nodeType = node.type.toLowerCase();
+
+                var sentences;
+                if (rating.message) { // Friend did not rate the node.
+                  sentences = data.friendHasNotRated;
                 }
                 else {
-                    if (rating.love >= 4 && currentUserRating.love >= 4) {
-                        if (node.type == 'Person') {
-                            scope.friendsTastes.push("You and " + friends[index].username + " love the same person, are you movie soulmates?");
-                        }
-                        else {
-                            scope.friendsTastes.push("Hey, your buddy " + friends[index].username + " dig " + node.title + " too ! Maybe grab a beer together?");
-                        }
-                    }
-                    else if (rating.love >= 4 && currentUserRating.love <= 1) {
-                        scope.friendsTastes.push("Woh, there is a big difference of opinion between you and " +
-                            friends[index].username + ". Unlike you, " + friends[index].username + " just hates this movie !");
-                    }
-                    else if (rating.love <= 1 && currentUserRating.love >= 3) {
-                        scope.friendsTastes.push("Damn, your friend " + friends[index].username + " is not really a big fan of " + (node.type == 'Person' ? node.name : node.title));
-                    }
+                  if (rating.love >= 4 && currentUserRating.love >= 4) { // bothWellRated
+                    sentences = data.bothWellRated;
+                  }
+                  else if (rating.love >= 4 && currentUserRating.love <= 1) { // oppositeRates
+                    sentences = data.oppositeRates;
+                  }
+                  else if (rating.love <= 1 && currentUserRating.love >= 3) { // friendHasNotWellRated
+                    sentences = data.friendHasNotWellRated;
+                  }
                 }
+                pushCommunitySentences(sentences,  friendName, nodeName, nodeType);
+              });
             });
+        }
+
+        function pushCommunitySentences(sentences, friendName, nodeName, nodeType) {
+          var JSONsentence = sentences[Math.floor(Math.random() * sentences.length)];
+          var sentence = JSONsentence.sentence;
+          var sentenceParameters = JSONsentence.parameters;
+          for (var i = 0; i < sentenceParameters.length; i++) {
+            var parameter = sentenceParameters[i];
+            var parameterKey = "parameter" + (i+1);
+            var completedSentence = null;
+            if (parameter[parameterKey] == "friendName") {
+                sentence = sentence.replace("{" + parameterKey + "}", friendName);
+            }
+            else if (parameter[parameterKey] == "nodeName") {
+                sentence = sentence.replace("{" + parameterKey + "}", nodeName);
+            }
+            else { // parameter[parameterKey] == "nodeType"
+                sentence = sentence.replace("{" + parameterKey + "}", nodeType);
+            }
+          };
+          scope.friendsTastes.push(sentence);
         }
 
         function displayFriendsTastes() {

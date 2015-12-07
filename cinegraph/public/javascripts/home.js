@@ -209,15 +209,24 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
         else
         {
-            $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 10 * craziness},
-                                    { type: 'DIRECTED', limit: 0 * craziness},
-                                    { type: 'PRODUCED', limit: 0 * craziness},
-                                    { type: 'COMPOSED_MUSIC', limit: 0 * craziness},
-                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 0 * craziness},
-                                    { type: 'WROTE', limit: 0 * craziness},
-                                    { type: 'EDITED', limit: 0 * craziness},
-                                    { type: 'DESIGNED_PRODUCTION', limit: 0 * craziness},
-                                    { type: 'DESIGNED_COSTUMES', limit: 0 * craziness} ];
+            // $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 10 * craziness},
+            //                         { type: 'DIRECTED', limit: 0 * craziness},
+            //                         { type: 'PRODUCED', limit: 0 * craziness},
+            //                         { type: 'COMPOSED_MUSIC', limit: 0 * craziness},
+            //                         { type: 'DIRECTED_PHOTOGRAPHY', limit: 0 * craziness},
+            //                         { type: 'WROTE', limit: 0 * craziness},
+            //                         { type: 'EDITED', limit: 0 * craziness},
+            //                         { type: 'DESIGNED_PRODUCTION', limit: 0 * craziness},
+            //                         { type: 'DESIGNED_COSTUMES', limit: 0 * craziness} ];
+             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4 * craziness},
+                                    { type: 'DIRECTED', limit: 1 * craziness},
+                                    { type: 'PRODUCED', limit: 1 * craziness},
+                                    { type: 'COMPOSED_MUSIC', limit: 1 * craziness},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
+                                    { type: 'WROTE', limit: 1 * craziness},
+                                    { type: 'EDITED', limit: 1 * craziness},
+                                    { type: 'DESIGNED_PRODUCTION', limit: 1 * craziness},
+                                    { type: 'DESIGNED_COSTUMES', limit: 1 * craziness} ];
         }
     };
 
@@ -481,7 +490,9 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             scope.filterBy = function filterBy(job, relationship) {
                 var nodes = scope.cinegraphId != undefined ? scope.suggestedNodes : scope.currentDisplayedNodes;
                 if (scope.selectedJobs[job]) {
-                    scope.updateTypesAndLimitsFromFilter();
+                    if (scope.currentNode.type == "Person") {
+                      scope.updateTypesAndLimitsFromFilter();
+                    }
                     removeByJobType(scope.currentDisplayedNodes);
                     scope.getRelatedNodesForType(scope.currentNode, relationship, scope.findLimitForJob(relationship), 0,
                         nodes.length, scope.currentNode.sprite, scope.drawRelatedNodes);

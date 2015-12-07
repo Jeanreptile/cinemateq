@@ -9,7 +9,12 @@ body {
   color: #00B7FF;
 }*/
 
-/* HEADER MENU BUTTON */
+/* HEADER */
+
+.header-md .navbar-brand img {
+    max-height: 50px !important;
+    width: 200px !important;
+}
 
 .header .right-menu {
   float: right;

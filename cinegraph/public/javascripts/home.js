@@ -1489,16 +1489,15 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             return positions;
         }
 
-        function displayLines(i, cinegraphNodes, type, lineGeom) {
-            var relation = cinegraphNodes[i];
+        function displayLines(i, cinegraphNodes, lineGeom) {
+            var relation = cinegraphNodes[i], type = relation.type;
             $http.get('/api/common/' + relation.end).success(function(endNode) {
-                if (endNode.name) {
-                    startColor = colors[type];
-                    endColor = orangeColor;
-                } else {
-                    startColor = orangeColor;
-                    endColor = colors[type];
-                }
+                if (findRelationship(relation.start, relation.end) != undefined)
+                    return;
+                if (endNode.name)
+                    var startColor = colors[type], endColor = orangeColor;
+                else
+                    var startColor = orangeColor, endColor = colors[type];
                 lineGeom.colors.push(new THREE.Color(startColor));
                 lineGeom.colors.push(new THREE.Color(endColor));
                 var lineMat = new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true });
@@ -1544,9 +1543,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     if (line == undefined) { // create line if not present
                         var lineGeom = new THREE.Geometry();
                         lineGeom.vertices.push(positions[relation.end], positions[relation.start]);
-                        var startColor, endColor;
-                        var type = relation.type;
-                        displayLines(i, cinegraphNodes, type, lineGeom);
+                        displayLines(i, cinegraphNodes, lineGeom);
                     } else if (refreshScene) { // update line position if present
                         (function (line) {
                             var pStart = positions[relation.start];
@@ -2174,7 +2171,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             // displaying commands panel
             var pathPanel = $('<div id="canvasPathPanel"><h3 class="inline">Searching for paths...</h3></div>');
             $('#graph').after(pathPanel.hide().slideDown(500));
-
             // getting paths
             var startNode = findNode(mouseClickStart.cinegraphPath[0]);
             var endNode = findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);

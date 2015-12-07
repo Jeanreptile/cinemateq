@@ -252,9 +252,16 @@ i.fa-heart, i.fa-plus, i.fa-eye {
     width: 100%;
 }
 
+/* COMMUNITY PANEL */
+
 .community-list{
   height: calc(100% - 35px); /* Size of 'Community' element */
   overflow-y: scroll;
+}
+
+.btn-sm.btn-icon.btn-invite-rate {
+  width: 24px;
+  line-height: 1;
 }
 
 .no-results {

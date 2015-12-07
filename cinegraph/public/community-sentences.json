@@ -6,10 +6,16 @@
 				{ "parameter2": "nodeName" }
 			]
 		},
-		{ "sentence": "You and {parameter1} love the same {nodeType}, are you soulmates?",
+		{ "sentence": "You and {parameter1} love the same {parameter2}, are you soulmates?",
 			"parameters": [
 				{ "parameter1": "friendName" },
 				{ "parameter2": "nodeType" }
+			]
+		},
+		{ "sentence": "Wow, you really think like {parameter1} about this {parameter2}!",
+			"parameters": [
+				{ "parameter1": "friendName" },
+				{ "parameter2": "nodeType"}
 			]
 		}
 	],
@@ -30,7 +36,8 @@
 		{ "sentence": "Your mate {parameter1} didn't rate this {parameter2}. Want to send him a notification ?",
 			"parameters": [
 				{ "parameter1": "friendName" },
-				{ "parameter2": "nodeType" }
+				{ "parameter2": "nodeType" },
+				{ "parameter3": "showButton" }
 			]
 		}
 	],

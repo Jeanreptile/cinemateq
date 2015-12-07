@@ -11,7 +11,7 @@ div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 			.btn-group.m-l-sm(dropdown='', ng-controller="MyCinegraphCtrl")
 				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
 					i.fa.fa-plus.fa-lg
-			.btn-group.m-l-xs(dropdown='', ng-click='sendNotifToKevin()')
+			.btn-group.m-l-xs(dropdown='', ng-click='sendInvitationToRate()')
 				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle.btn-dark(type='button', dropdown-toggle='')
 					i.i.i-share.i-lg
 		small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
@@ -75,4 +75,11 @@ nav.nav-primary.m-t-xs.hidden-xs.community-element(ng-show="currentUser && !curr
 				img.img-circle(src='images/a3.png', alt='...')
 				i.on.b-black.bottom
 			span.clear
-				| {{sentence}}
+				| {{sentence.sentence}}
+				a.btn.btn-rounded.btn-sm.btn-icon.btn-info.m-l-xs.btn-invite-rate(ng-show="sentence.showButton", ng-click="sendInvitationToRate(sentence.friendName)")
+					i.fa.fa-hand-o-right
+				span(ng-repeat="alert in alerts")
+					span.badge.bg-success.m-l-xs(ng-show="alert.success")
+						i.fa.fa-check
+					span.badge.bg-warning.m-l-xs(ng-show="alert.error")
+						i.fa.fa-times

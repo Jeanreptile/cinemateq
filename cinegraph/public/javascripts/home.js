@@ -128,24 +128,38 @@ var cinegraphController = cinegraphApp.controller('restrictedController',
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
     function($scope, $http, $window, $location, AuthService, $modal, socket) {
-    $scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {
+
+      /* Variables initialization */
+
+      $scope.friendsTastes = [];
+      $scope.currentNode = {};
+      $scope.alerts = [];
+      /*var selectedNodeId = getParameterByName('id');
+      if (selectedNodeId == undefined) {
+          selectedNodeId = 719772;
+      }
+      $http.get('/api/common/' + selectedNodeId).success(function(node) {
+          $scope.currentNode = node;
+          $scope.updateSelectedJobs();
+          $scope.updateTypesAndLimits();
+      });
+      */
+
+    $scope.$watch(AuthService.isLoggedIn, function (isLoggedIn) {
         $scope.isLoggedIn = isLoggedIn;
         $scope.currentUser = AuthService.currentUser();
         $scope.currentUserToEdit = angular.copy($scope.currentUser);
     });
 
-
-
-    $scope.sendNotifToKevin = function() {
-      if ($scope.currentNode.type == 'Person') {
-        dataOfNode = $scope.currentNode.firstname + " " + $scope.currentNode.lastname;
-      }
-      else{
-        dataOfNode = $scope.currentNode.title;
-      }
-      $http.post( "/api/notif/inviteToRate", {userName: $scope.currentUser.username , friendName: "kevin42", idToRate: $scope.currentNode.id, dataOfNode: dataOfNode})
+    $scope.sendInvitationToRate = function(friendName) {
+      var dataOfNode = $scope.currentNode.type == 'Person' ? $scope.currentNode.firstname + " " + $scope.currentNode.lastname : $scope.currentNode.title;
+      $http.post( "/api/notif/inviteToRate", {userName: $scope.currentUser.username , friendName: friendName, idToRate: $scope.currentNode.id, dataOfNode: dataOfNode})
         .success(function(res) {
-         console.log("Notif To Rate send to friend !");
+          if (res == true)
+            $scope.alerts.push({success: 'true', msg:'You sent ' + friendName + ' an invitation to rate ' + dataOfNode + '!'});
+          else
+            $scope.alerts.push({error: 'true', msg:'An error occurred. Please try again.'});
+          console.log("Notif to rate sent to friend " + friendName);
       }).
         error(function() {
       });
@@ -165,18 +179,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
       AuthService.logout();
     }
 
-    $scope.friendsTastes = [];
-    $scope.currentNode = {};
-    /*var selectedNodeId = getParameterByName('id');
-    if (selectedNodeId == undefined) {
-        selectedNodeId = 719772;
-    }
-    $http.get('/api/common/' + selectedNodeId).success(function(node) {
-        $scope.currentNode = node;
-        $scope.updateSelectedJobs();
-        $scope.updateTypesAndLimits();
-    });
-*/
     $scope.updateTypesAndLimits = function() {
     $http.get("/api/user/rating/" + $scope.currentNode.id)
         .success(function(payload){
@@ -1084,7 +1086,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     sentences = data.friendHasNotWellRated;
                   }
                 }
-                pushCommunitySentences(sentences,  friendName, nodeName, nodeType);
+                pushCommunitySentences(sentences, friendName, nodeName, nodeType);
               });
             });
         }
@@ -1093,6 +1095,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
           var JSONsentence = sentences[Math.floor(Math.random() * sentences.length)];
           var sentence = JSONsentence.sentence;
           var sentenceParameters = JSONsentence.parameters;
+          var showButton = false;
+
           for (var i = 0; i < sentenceParameters.length; i++) {
             var parameter = sentenceParameters[i];
             var parameterKey = "parameter" + (i+1);
@@ -1103,11 +1107,24 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             else if (parameter[parameterKey] == "nodeName") {
                 sentence = sentence.replace("{" + parameterKey + "}", nodeName);
             }
-            else { // parameter[parameterKey] == "nodeType"
+            else if (parameter[parameterKey] == "showButton") {
+                showButton = true;
+            }
+            else if (parameter[parameterKey] == "nodeType") {
                 sentence = sentence.replace("{" + parameterKey + "}", nodeType);
             }
+            else {
+
+            }
+
+            var sentenceObj = {
+              showButton: showButton,
+              sentence: sentence,
+              friendName: friendName
+            }
+
           };
-          scope.friendsTastes.push(sentence);
+          scope.friendsTastes.push(sentenceObj);
         }
 
         function displayFriendsTastes() {

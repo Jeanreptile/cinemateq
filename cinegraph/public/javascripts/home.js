@@ -1168,7 +1168,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 scope.currentNode.sprite = sprite;
                 scope.updateTypesAndLimits();
                 updateBackground(node);
-                callback(node, nodePosition, shouldDrawRelatedNodes);
+                if (!scope.lightMode)
+                  callback(node, nodePosition, shouldDrawRelatedNodes);
                 scope.updateSelectedJobs();
             });
         }

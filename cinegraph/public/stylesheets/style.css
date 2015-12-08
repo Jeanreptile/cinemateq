@@ -12,8 +12,8 @@ body {
 /* HEADER */
 
 .header-md .navbar-brand img {
-    max-height: 50px !important;
-    width: 200px !important;
+    max-height: 40px !important;
+    /*width: 200px !important;*/
 }
 
 .header .right-menu {

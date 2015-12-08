@@ -1361,7 +1361,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 lineGeom.colors.push(new THREE.Color(endColor));
                 var lineMat = new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true });
                 if (scope.cinegraphId != undefined)
-                    lineMat.opacity = 0.1;
+                    lineMat.opacity = 0.3;
                 line = new THREE.Line(lineGeom, lineMat);
                 line.endNodeId = sprite._id;
                 line.startNodeId = startNodeSprite._id;
@@ -1512,6 +1512,16 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function displayCinegraphNodes(cinegraphNodes, refreshScene) {
+            // getting path's nodes id to tag them later
+            var originalPathNodes = [];
+            for (var i = 0; i < cinegraphNodes.length; i++)
+            {
+                var r = cinegraphNodes[i];
+                if (r.start != null && originalPathNodes.indexOf(r.start) == -1)
+                    originalPathNodes.push(r.start);
+                if (r.end != null && originalPathNodes.indexOf(r.end) == -1)
+                    originalPathNodes.push(r.end);
+            }
             // if refreshScene current nodes positions will be recalculated
             if (refreshScene && scope.currentCinegraph.nodes != undefined)
                 cinegraphNodes = cinegraphNodes.concat(scope.currentCinegraph.nodes);
@@ -1531,12 +1541,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                             }
                             else
                                 drawNode(node, positions[i]);
+                            // tagging the node as suggestion
+                            if (refreshScene && originalPathNodes.indexOf(parseInt(i)) != -1)
+                                setNodeAsSuggestion(i);
                         });
                     })(i);
-                } else if (refreshScene) {
+                } else if (refreshScene)
                     new TWEEN.Tween(n.position).to({x: positions[i].x, y: positions[i].y, z: positions[i].z}, 1000)
                         .easing(TWEEN.Easing.Linear.None).start();
-                }
             }
             // drawing lines
             for (var i = 0; i < cinegraphNodes.length; i++){
@@ -2054,7 +2066,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     opacity: 0.5,
                     depthWrite: false
                 });
-                n.add(new THREE.Mesh(new THREE.CircleGeometry(0.65, 32), material));
+                var c = new THREE.Mesh(new THREE.CircleGeometry(0.65, 32), material);
+                c.scale.set(0.9,0.9,0.9);
+                c.tween = new TWEEN.Tween(c.scale).to({x: 1, y:1, z:1}, 1300)
+                    .easing(TWEEN.Easing.Quartic.InOut).onComplete(function (){
+                }).yoyo(true).repeat(Infinity);
+                c.tween.start();
+                n.add(c);
             }
         }
 
@@ -2063,6 +2081,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             if (n != undefined)
             {
                 var c = n.children[0];
+                c.tween.stop();
                 new TWEEN.Tween(c.scale).to({x: 0, y:0, z:0}, 500)
                     .easing(TWEEN.Easing.Linear.None).onComplete(function (){
                         c.geometry.dispose();

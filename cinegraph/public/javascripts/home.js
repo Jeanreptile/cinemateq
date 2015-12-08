@@ -1489,6 +1489,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             return positions;
         }
 
+
+        /* ----------- */
+        /*   DISPLAY   */
+        /* ----------- */
+
         function displayLines(i, cinegraphNodes, lineGeom) {
             var relation = cinegraphNodes[i], type = relation.type;
             $http.get('/api/common/' + relation.end).success(function(endNode) {
@@ -1561,9 +1566,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 }
             }
             // setting camera target on first node
-            var firstPos = positions[Object.keys(positions)[0]];
-            camera.position.set(firstPos.x, firstPos.y, firstPos.z + 55);
-            cameraControls.target.set(firstPos.x, firstPos.y, firstPos.z);
+            cameraLookAtPosition(positions[Object.keys(positions)[0]]);
         }
 
         function refreshGraph() {
@@ -1947,24 +1950,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 // clearing pagination offsets
                 scope.clearOffsets();
                 // animating camera
-                var duration = 500;
-                new TWEEN.Tween(camera.position).to({
-                    x: intersection.object.position.x,
-                    y: intersection.object.position.y,
-                    z: intersection.object.position.z + 55}, duration)
-                    .easing(TWEEN.Easing.Linear.None).start();
-                new TWEEN.Tween(cameraControls.target).to({
-                    x: intersection.object.position.x,
-                    y: intersection.object.position.y,
-                    z: intersection.object.position.z}, duration).easing(TWEEN.Easing.Linear.None)
-                  .onComplete(function() {
-                        scope.currentNode.sprite = intersection.object;
-                        nodePosition = intersection.object.position;
-                        if (scope.cinegraphId != undefined)
-                            getNodeCinegraphMode(id, nodePosition, draw, true);
-                        else
-                            getNode(id, nodePosition, draw);
-                }).start();
+                cameraLookAtNode(id);
+                // updating current node
+                scope.currentNode.sprite = intersection.object;
+                nodePosition = intersection.object.position;
+                if (scope.cinegraphId != undefined)
+                    getNodeCinegraphMode(id, nodePosition, draw, true);
+                else
+                    getNode(id, nodePosition, draw);
             }
         }
 
@@ -2302,6 +2295,24 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             ctx.drawImage(img, cx, cy, cw, ch,  x, y, w, h);
         }
 
+        /* ---------- */
+        /*   CAMERA   */
+        /* ---------- */
+
+        function cameraLookAtPosition(pos){
+            var p = new THREE.Vector3().copy(camera.position).sub(pos).setLength(55).add(pos);
+            new TWEEN.Tween(camera.position).to({x: p.x, y: p.y, z: p.z}, 500)
+                .easing(TWEEN.Easing.Linear.None).start();
+            new TWEEN.Tween(cameraControls.target).to({x: pos.x, y: pos.y, z: pos.z}, 500)
+                .easing(TWEEN.Easing.Linear.None).start();
+        }
+
+        function cameraLookAtNode(id){
+            var n = findNode(id);
+            if (n != undefined)
+                cameraLookAtPosition(n.position);
+        }
+
 
         /* ---------- */
         /* MAIN LOOPS */
@@ -2364,7 +2375,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         defaultImg.onload = function () {
             init();
             animate();
-            $('#graph').animate({"opacity":1}, 1000);
+            $('#graph').animate({"opacity":1}, 2000);
         }
     }
 }

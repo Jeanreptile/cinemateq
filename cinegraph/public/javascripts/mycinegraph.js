@@ -215,9 +215,37 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
             console.log("Error");
         });
     };
+
+    $scope.openShareCinegraphModal = function() {
+        var shareCinegraphModal = $modal.open({
+            animation: $scope.animationsEnabled,
+            templateUrl: 'partials/share-cinegraph',
+            controller: 'CRUDCinegraphCtrl',
+            size: 'sm',
+            scope: $scope,
+            resolve: {
+                mycinegraphs: function() {
+                    return $scope.mycinegraphs;
+                },
+                currentCinegraph: function() {
+                    return $scope.currentCinegraph;
+                },
+                currentNode: function() {
+                    return $scope.currentNode;
+                }
+            }
+        });
+
+        shareCinegraphModal.result.then(function() {
+
+            //$location.path('/mycinegraph');
+        }, function () {
+            console.log("Error");
+        });
+    };
 });
 
-cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, mycinegraphs, currentCinegraph, currentNode) {
+cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService, $modalInstance, $location, mycinegraphs, currentCinegraph, currentNode) {
 
     $scope.mycinegraphs = mycinegraphs;
     $scope.currentCinegraph = currentCinegraph;
@@ -285,5 +313,9 @@ cinegraphApp.controller('CRUDCinegraphCtrl', function($scope, $http, AuthService
                 $modalInstance.close();
         });
 
+    };
+
+    $scope.getShareLink = function() {
+        $scope.cinegraphShareLink = $location.protocol() + "://" + $location.host() + "/light/cinegraph/" + $scope.cinegraphId;
     };
 });

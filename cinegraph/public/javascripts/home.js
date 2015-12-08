@@ -33,6 +33,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
         .when('/profile', { templateUrl: 'partials/profile', controller: 'cinegraphController' })
         .when('/home', { templateUrl: 'partials/home', controller: 'UserCtrl' })
         .when('/light', { templateUrl: 'partials/light', controller: 'cinegraphController' })
+        .when('/light/cinegraph/:testId', { templateUrl: 'partials/light', controller: 'MyCinegraphCtrl' })
         .when('/restricted', { templateUrl: '/partials/restricted' })
         .when('/mycinegraph', { templateUrl: '/partials/mycinegraph', controller: 'MyCinegraphCtrl',
             access: { requiredAuthentication: true }})
@@ -79,16 +80,6 @@ cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
         }
     });
 });
-
-cinegraphApp.service('ModelDataService', ['$http', function ($http) {
-    this.getData = function () {
-        return {
-            async: function() {
-                return $http.get('/api/persons/all');
-            }
-        };
-    }
-}]);
 
 cinegraphApp.filter('JobNameFormatter', function() {
     return function(input) {

@@ -1534,7 +1534,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             // drawing nodes
             for (var i in positions){
                 var n = findNode(i);
-                if (n == undefined) {
+                if (n == undefined || n.IsSuggested) {
                     (function (i) {
                         $http.get('/api/common/' + i).success(function(node) {
                             if (i == Object.keys(positions)[0]) {
@@ -1596,6 +1596,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function refreshGraph() {
+            removeSuggestions();
             displayCinegraphNodes([], true);
         }
         scope.refreshGraph = refreshGraph;
@@ -1885,7 +1886,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function onMouseMove(event) {
-            //console.log('mouse move');
             setMousePosition(event);
             if (!mouseIsDown)
                 updateIntersection();
@@ -1903,7 +1903,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function onMouseDown(event) {
-            //console.log("mousedown");
             setMousePosition(event);
             mouseClickStart.x = mouse.x;
             mouseClickStart.y = mouse.y;
@@ -1926,22 +1925,23 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function onMouseUp(event) {
-            //console.log("onMouseUp");
+            setMousePosition(event);
             mouseIsDown = false;
             cameraControls.enabled = true;
-
             // cinegraph path handling
             $('#line').remove();
             if (mouseClickStart.onNode && mouseClickStart.cinegraphPath.length > 1)
                 findCinegraphPath();
             mouseClickStart.onNode = false;
-
             if (mouse.x != mouseClickStart.x || mouse.y != mouseClickStart.y)
                 return;
-            raycaster.setFromCamera(mouse, camera);
-            var intersection = raycaster.intersectObjects(scene.children)[0];
-            if (intersection == undefined)
+            // no intersection
+            var intersection = getIntersection()[0];
+            if (intersection == undefined){
+                removeSuggestions();
                 return;
+            }
+            // intersection with a node
             var id = intersection.object._id;
             if (id != null) {
                 if (scope.cinegraphId != undefined) {
@@ -1954,21 +1954,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     });
                     if (alreadySuggestedNodes)
                         return;
-                    else {
-                        if (scope.suggestedNodes.length > 0) {
-                            for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
-                                var point = scope.suggestedNodes[i].start;
-                                if (scope.currentNode.type == 'Person')
-                                    point = scope.suggestedNodes[i].end;
-                                removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
-                            }
-                        }
-                    }
+                    else
+                        removeSuggestions();
                 }
-                // clearing pagination offsets
-                scope.clearOffsets();
-                // animating camera
-                cameraLookAtNode(id);
+                scope.clearOffsets(); // clearing pagination offsets
+                cameraLookAtNode(id); // animating camera
                 // updating current node
                 scope.currentNode.sprite = intersection.object;
                 nodePosition = intersection.object.position;
@@ -2036,6 +2026,17 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        function removeSuggestions() {
+            if (scope.suggestedNodes.length > 0) {
+                for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
+                    var point = scope.suggestedNodes[i].start;
+                    if (scope.currentNode.type == 'Person')
+                        point = scope.suggestedNodes[i].end;
+                    removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
+                }
+            }
+        }
+
         function getIntersection() {
             raycaster.setFromCamera(mouse, camera);
             return raycaster.intersectObjects(scene.children);
@@ -2074,8 +2075,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function setNodeAsSuggestion(id) {
             var n = findNode(id);
-            if (n != undefined)
-            {
+            if (n != undefined){
                 var material = new THREE.MeshBasicMaterial({
                     color: new THREE.Color(n.mainJob != undefined ? colors[n.mainJob] : orangeColor),
                     transparent: true,
@@ -2088,14 +2088,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     .easing(TWEEN.Easing.Quartic.InOut).onComplete(function (){
                 }).yoyo(true).repeat(Infinity);
                 c.tween.start();
+                n.IsSuggested = true;
                 n.add(c);
             }
         }
 
         function unsetNodeAsSuggestion(id) {
             var n = findNode(id);
-            if (n != undefined)
-            {
+            if (n != undefined){
                 var c = n.children[0];
                 c.tween.stop();
                 new TWEEN.Tween(c.scale).to({x: 0, y:0, z:0}, 500)
@@ -2104,6 +2104,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         c.material.dispose();
                         n.remove(c);
                     }).start();
+                n.IsSuggested = false;
             }
         }
 

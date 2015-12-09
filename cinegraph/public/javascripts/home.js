@@ -1548,7 +1548,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                                 drawNode(node, positions[i]);
                             // tagging the node as suggestion
                             if (focusOnPath && originalPathNodes.indexOf(parseInt(i)) != -1)
-                                setNodeAsSuggestion(i);
+                                setTimeout(function() {setNodeAsSuggestion(i);}, 800);
                         });
                     })(i);
                 } else if (refreshScene)

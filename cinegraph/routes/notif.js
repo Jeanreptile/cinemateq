@@ -75,7 +75,6 @@ router.post('/inviteToRate', function(req, res) {
 	//redisClient.set();
 		redisClient.set("notif." + req.body.friendName + ":" + idNotif, notifData);
 		redisClient.sadd("notifs." + req.body.friendName, idNotif);
-		//publish notif
 		redisClient.publish("notifs."+req.body.friendName, notifData);
 	});
 	res.json(true);

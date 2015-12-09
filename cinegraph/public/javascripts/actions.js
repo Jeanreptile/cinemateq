@@ -13,49 +13,48 @@ cinegraphApp.controller('ActionsController', ['$scope', '$http', 'AuthService', 
     AuthService.logout();
   }
 
-  addAction = function(array, index) {
+  addAction = function(array, index, resultArray, callback) {
     var action = array[index];
     var message = "";
         if (action.type == "ratingLove") {
+          var actionToAdd = {};
           $http.get("/api/common/" + action.idToRate).success(function(node) {
             if (node.type == "Person") {
               message = "rated " + action.rate + " hearts " + node.fullname;
-              var actionToAdd = {
-                username: action.username,
-                message: message
-              };
-              $scope.actions.push(actionToAdd);
-              console.log("scope.actions2: " + JSON.stringify($scope.actions));
             }
             else {
               message = "rated " + action.rate + " hearts " + node.title;
-              var actionToAdd = {
-                username: action.username,
-                message: message
-              };
-              $scope.actions.push(actionToAdd);
+            }
+            actionToAdd = {
+              username: action.username,
+              message: message,
+              id: index
+            };
+            resultArray.push(actionToAdd);
+            if (resultArray.length == array.length) {
+              callback(resultArray);
             }
           }).error(function (error) {
             console.log(error);
           });
         }
         else if (action.type == "ratingObj") {
+          var actionToAdd = {};
           $http.get("/api/common/" + action.idToRate).success(function(node) {
             if (node.type == "Person") {
               message = "rated " + action.rate + " stars " + node.fullname;
-              var actionToAdd = {
-                username: action.username,
-                message: message
-              };
-              $scope.actions.push(actionToAdd);
             }
             else {
               message = "rated " + action.rate + " stars " + node.title;
-              var actionToAdd = {
-                username: action.username,
-                message: message
-              };
-              $scope.actions.push(actionToAdd);
+            }
+            actionToAdd = {
+              username: action.username,
+              message: message,
+              id: index
+            };
+            resultArray.push(actionToAdd);
+            if (resultArray.length == array.length) {
+              callback(resultArray);
             }
           }).error(function (error) {
             console.log(error);
@@ -65,26 +64,33 @@ cinegraphApp.controller('ActionsController', ['$scope', '$http', 'AuthService', 
           message = "became friend with " + action.friend_username;
           var actionToAdd = {
             username: action.username,
-            message: message
+            message: message,
+            id: index
           };
-          $scope.actions.push(actionToAdd);
+          resultArray.push(actionToAdd);
+          if (resultArray.length == array.length) {
+            callback(resultArray);
+          }
         }
   };
 
   $scope.getAllActions = function() {
     $http.get('/api/actions/' + AuthService.currentUser().username).then(function successCallback(actions) {
-      console.log("actions: " + JSON.stringify(actions.data));
       var actionsArray = [];
       for (var i = actions.data.length - 1; i >= 0; i--) {
         var action = actions.data[i];
-        console.log("action: " + JSON.stringify(action));
-        console.log("scope.actions: " + JSON.stringify($scope.actions));
-        addAction(actions.data, i);
+        addAction(actions.data, i, actionsArray, sortAndPushActions);
       }
   	}, function errorCallback(error) {
-    // called asynchronously if an error occurs
-    // or server returns response with an error status.
+      // TODO: Handle errors.
 	  });
+  }
+
+  sortAndPushActions = function(resultArray) {
+    resultArray.sort(function(a, b) {
+      return b.id - a.id;
+    });
+    $scope.actions = resultArray;
   }
 
   if (AuthService.isLoggedIn()) {

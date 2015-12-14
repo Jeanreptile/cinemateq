@@ -54,14 +54,14 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 app.use(favicon(__dirname + '/public/favicon.png'));
 
-
-
-
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '/public')));
+
+app.use(express.static(path.join(__dirname, '/public/videos')));
+
 
 //app.use('/restricted', expressJwt({secret: 'SecretStory'}));
 
@@ -114,6 +114,9 @@ if (app.get('env') === 'development') {
     }
   });
 }
+
+
+
 
 // production error handler
 // no stacktraces leaked to user

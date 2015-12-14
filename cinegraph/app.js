@@ -9,8 +9,6 @@ var socket_io    = require( "socket.io" );
 
 var redisClient = require('./redis-db.js')
 
-
-
 var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
 
@@ -37,9 +35,6 @@ var io           = socket_io();
 app.io           = io;
 
 
-
-
-
 var routes = require('./routes');
 var users = require('./routes/users');
 var user = require('./routes/user');
@@ -59,14 +54,14 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 app.use(favicon(__dirname + '/public/favicon.png'));
 
-
-
-
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '/public')));
+
+app.use(express.static(path.join(__dirname, '/public/videos')));
+
 
 //app.use('/restricted', expressJwt({secret: 'SecretStory'}));
 
@@ -107,17 +102,27 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
+    if (err.message === "jwt expired")
+    {
+      //Refresh token
+    }
+    else {
     res.render('error', {
       message: err.message,
       error: err
     });
+    }
   });
 }
+
+
+
 
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
+  console.log("on est al");
   res.render('error', {
     message: err.message,
     error: {}

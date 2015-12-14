@@ -15,8 +15,13 @@ router.post('/login', authenticate, function(req, res) {
      return res.json(401, { message: 'no user' });
    }
    //user has authenticated correctly thus we create a JWT token
-   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresInMinutes : 1500 });
+   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresIn : "6 days"});
    res.json({ token : token, user : user });
+});
+
+router.get('/refreshToken', function(req, res) {
+   var token = jwt.sign({ username: req.query.username}, 'SecretStory', { expiresIn : "6 days"});
+   res.json({ token : token});
 });
 
 router.post('/register', findOrCreateUser, function(req, res) {
@@ -25,7 +30,7 @@ router.post('/register', findOrCreateUser, function(req, res) {
      return res.json(401, { error: 'no user' });
    }
    //user has authenticated correctly thus we create a JWT token
-   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresInMinutes : 1500 });
+   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresIn : "6 days"});
    res.json({ token : token, user : user });
 });
 

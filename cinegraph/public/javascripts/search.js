@@ -8,6 +8,12 @@ angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $htt
     AuthService.logout();
   }
 
+  $scope.putain = function() {
+    console.log(JSON.parse($window.localStorage.user).username);
+          $http.get('/api/users/refreshToken?username=' + $window.localStorage.username).success(function(res) {
+          console.log("res IS " + JSON.stringify(res))});
+  }
+
   if ($('#bg').length) {
     var vague = $('#bg').Vague({
       intensity:      0,      // Blur Intensity

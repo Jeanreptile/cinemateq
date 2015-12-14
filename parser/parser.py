@@ -54,6 +54,8 @@ def removeDuplicates():
   # writing relations.csv
   outputRel = codecs.open("CSV/relations.csv", "w", encoding='utf8')
   outputRel.write(":START_ID,:END_ID,:TYPE\n")
+  directedOutputRel = codecs.open("CSV/directors_relations.csv", "w", encoding='utf8')
+  directedOutputRel.write(":START_ID,:END_ID,:TYPE\n")
   for file in os.listdir("CSV/parts"):
     if file == "actors_rel.csv" or file == "actresses_rel.csv":
       continue
@@ -71,6 +73,8 @@ def removeDuplicates():
       with codecs.open("CSV/parts/" + file, "r", encoding='utf8') as f:
         for line in f:
           outputRel.write(line)
+          if (file == "directors_rel.csv"):
+             directedOutputRel.write(line)
   outputRel.close()
 
 

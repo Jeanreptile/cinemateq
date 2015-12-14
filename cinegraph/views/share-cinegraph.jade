@@ -1,0 +1,10 @@
+.modal-header
+	button.close(type="button", ng-click="close()") ×
+	h4.modal-title.font-bold Share this cinegraph
+.modal-body
+	p(ng-init="getShareLink()")
+		| You can share your cinegraph {{currentCinegraph.title}} to your friends by sending them the following link: 
+		a(href="", ng-href="{{cinegraphShareLink}}", target="_blank")
+			| {{cinegraphShareLink}}.
+.modal-footer
+	button.btn.btn-success(ng-click='close()') Ok

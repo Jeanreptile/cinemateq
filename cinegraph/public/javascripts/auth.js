@@ -105,16 +105,30 @@ angular.module('cinegraphApp').factory('AuthService', function($window, $locatio
   };
 });
 
-angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, $location, $q, $window) {
+angular.module('cinegraphApp').factory('authInterceptor', function ($injector, $rootScope, $location, $q, $window) {
   return {
     request: function (config) {
+      if (config.url.startsWith("/users/refreshToken?username="))
+      {
+        return config;
+      }
+      var $http = $injector.get("$http");
       config.headers = config.headers || {};
-      if ($window.localStorage.token) {
+      if ($window.localStorage.token && $window.localStorage.token !== "undefined") {
+        currentDate = Math.floor(Date.now() / 1000) - 120;;
+        if (parseInt((JSON.parse(Base64.decode($window.localStorage.token.split('.')[1]))).exp) < parseInt(currentDate)) {
+          $http.get('/users/refreshToken?username=' + JSON.parse($window.localStorage.user).username).success(function(res) {
+            console.log('ok');
+            $window.localStorage.token = res.token;
+            config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
+          });
+        }
+        else{
         config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
+        }
       }
       else
       {
-        //console.log("MAIIIIS");
         config.headers.Authorization = '';
       }
       return config;
@@ -130,6 +144,7 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($rootScope, 
       if (rejection.status === 401) {
         // handle the case where the user is not authenticated
         console.log("Not authenticated :/");
+        console.log(JSON.stringify(rejection));
         $location.url("/unauthorized");
       }
       return $q.reject(rejection);

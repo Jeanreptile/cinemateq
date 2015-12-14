@@ -24,7 +24,7 @@ router.get('/movie', function(req, res) {
     var requestMovie2 = requestMovie.replace(/ /g, "* AND ");
     requestMovie2 = requestMovie2 + "*";
     console.log("request is " + requestMovie2);
-    var cypher = "START movie=node:node_auto_index(\"title:(" + requestMovie2 + "*)\") WHERE NOT (ANY ( x IN [\"Short\", \"Documentary\"] WHERE x in movie.genre)) RETURN movie ORDER BY length(movie.title) LIMIT 10";
+    var cypher = "START movie=node:node_auto_index('title:(" + requestMovie2 + "*)') WHERE NOT (ANY ( x IN [\"Short\", \"Documentary\"] WHERE x in movie.genre)) RETURN movie ORDER BY length(movie.title) LIMIT 10";
     dbLocal.query(cypher,
         function(err, result)
         {
@@ -57,29 +57,33 @@ var getMoviePoster = function(name, year, callback){
 
     res.on('end', function() {
         var resp = JSON.parse(body)
-        if (resp.total_results != 0 && resp.results != undefined && resp.results[0] && resp.results[0].poster_path != null)
+        if (resp && resp.results && resp.results.length)
         {
-        var request = require('request'),
-            fs      = require('fs'),
-            url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
-            dir     = path.join('public','images','movies', sanitizeFileName(name + year));
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
-        }
-        request(url, {encoding: 'binary'}, function(error, response, body) {
-          fs.writeFile(path.join(dir, 'poster.jpg'), body, 'binary', function (err) {});
-        });
-        if (resp.results[0].backdrop_path != null)
-        {
-          var request2= require('request'),
-              fs2     = require('fs'),
-              url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
-              request2(url2, {encoding: 'binary'}, function(error, response, body) {
-            fs2.writeFile(path.join(dir, 'backdrop.jpg'), body, 'binary', function (err) {});
+          if (resp.total_results != 0 && resp.results[0] && resp.results[0].poster_path != null)
+          {
+          var request = require('request'),
+              fs      = require('fs'),
+              url     = "http://image.tmdb.org/t/p/w500" + resp.results[0].poster_path,
+              dir     = path.join('public','images','movies', sanitizeFileName(name + year));
+          if (!fs.existsSync(dir)){
+              fs.mkdirSync(dir);
+          }
+          request(url, {encoding: 'binary'}, function(error, response, body) {
+            fs.writeFile(path.join(dir, 'poster.jpg'), body, 'binary', function (err) {});
           });
-        }
-        callback(resp.results[0]);
-	}
+          if (resp.results[0].backdrop_path != null)
+          {
+            var request2= require('request'),
+                fs2     = require('fs'),
+                url2     = "http://image.tmdb.org/t/p/w1000" + resp.results[0].backdrop_path;
+                request2(url2, {encoding: 'binary'}, function(error, response, body) {
+              fs2.writeFile(path.join(dir, 'backdrop.jpg'), body, 'binary', function (err) {});
+            });
+          }
+          callback(resp.results[0]);
+          }
+      }
+
         else {
           callback(null);
         }

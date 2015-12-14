@@ -20,7 +20,7 @@ router.post('/login', authenticate, function(req, res) {
 });
 
 router.get('/refreshToken', function(req, res) {
-   var token = jwt.sign({ username: req.query.username}, 'SecretStory', { expiresIn : "6 days"}});
+   var token = jwt.sign({ username: req.query.username}, 'SecretStory', { expiresIn : "6 days"});
    res.json({ token : token});
 });
 

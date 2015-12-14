@@ -79,7 +79,6 @@ var getMoviePoster = function(name, year, callback){
           });
         }
         callback(resp.results[0]);
-        }
 	}
         else {
           callback(null);

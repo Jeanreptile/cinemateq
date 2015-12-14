@@ -18,9 +18,9 @@ $(document).ready(function(){
   {
     number = Math.floor(Math.random() * randombgs.length);
   }
-  $('#sourcevid').attr({'src': randombgs[number] + '.webm'});
+  $('#sourcevid').attr({'src':  'videos/' + randombgs[number] + '.webm'});
   //$('#bgvid').attr({'poster': randombgs[number] + '.jpg'});
-  $('#bgvid').css({'background-image': 'url(../' + randombgs[number] + '.jpg)'})
+  $('#bgvid').css({'background-image': 'url(../videos/' + randombgs[number] + '.jpg)'})
 
   $("#bgvid").animate({opacity: 1}, 2000);
 });

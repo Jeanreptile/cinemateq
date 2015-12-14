@@ -9,8 +9,6 @@ var socket_io    = require( "socket.io" );
 
 var redisClient = require('./redis-db.js')
 
-
-
 var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
 
@@ -108,10 +106,12 @@ if (app.get('env') === 'development') {
     {
       //Refresh token
     }
+    else {
     res.render('error', {
       message: err.message,
       error: err
     });
+    }
   });
 }
 

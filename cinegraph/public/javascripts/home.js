@@ -1,7 +1,7 @@
 var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
 cinegraphApp.factory('socket', function ($rootScope) {
-  var socket = io.connect();
+  var socket = io.connect('https://cinemateq.eu/');
   return {
     on: function (eventName, callback) {
       socket.on(eventName, function () {

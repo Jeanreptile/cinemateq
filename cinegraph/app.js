@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 var socket_io    = require( "socket.io" );
 
+
 var redisClient = require('./redis-db.js')
 
 var expressJwt = require('express-jwt');

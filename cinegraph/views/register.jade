@@ -1,11 +1,19 @@
+div
+  video#bgvid(autoplay='', loop='', poster="data:image/gif,AAAA")
+    source#sourcevid(src='shining.webm', type='video/webm')
+script(src='javascripts/randomBG.js')
+script.
+  $(document).ready(function(){
+    $("#bgvid").animate({opacity: 1}, 2000);  
+  });
 section.vbox.allWindow
   header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
     .navbar-header.aside-md.dk(style="display: inline-block;float: none")
       a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
         i.fa.fa-bars
       a.navbar-brand(href='/')
-        // img.m-r-sm(src='', alt='')
-        span.hidden-nav-xs
+        img.m-r-sm(src='images/logoRoueLibre.png', alt='logo')
+        // span.hidden-nav-xs
           | C I N E M A T E Q
   section#content.m-t-lg.wrapper-md.animated.fadeInDown
         .container.aside-xl
@@ -32,7 +40,7 @@ section.vbox.allWindow
                   input(type='checkbox')
                   |  Agree the 
                   a(href='#') terms and policy
-              button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign up
+              button.btn.btn-lg.btn-info.btn-block(type='submit') Sign up
               .line.line-dashed
               p.text-muted.text-center
                 small Already have an account?

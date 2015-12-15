@@ -13,7 +13,7 @@ $(document).ready(function(){
 var number = -1;
 
 $(document).ready(function(){
-  var randombgs=["shining", "starwarsepv", "starwarsepvii"];
+  var randombgs=["bladerunner", "shining", "starwarsepv", "starwarsepvii", "fromdusk", "bladerunner", "theavengers", "attacktheblock", "her"];
   if (number == -1)
   {
     number = Math.floor(Math.random() * randombgs.length);
@@ -22,5 +22,5 @@ $(document).ready(function(){
   //$('#bgvid').attr({'poster': randombgs[number] + '.jpg'});
   $('#bgvid').css({'background-image': 'url(../videos/' + randombgs[number] + '.jpg)'})
 
-  $("#bgvid").animate({opacity: 1}, 2000);
+  $("#bgvid").animate({opacity: 1}, 3000);
 });

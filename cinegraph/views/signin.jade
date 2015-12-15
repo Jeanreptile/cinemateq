@@ -1,3 +1,11 @@
+div
+  video#bgvid(autoplay='', loop='', poster="data:image/gif,AAAA")
+    source#sourcevid(src='shining.webm', type='video/webm')
+script(src='javascripts/randomBG.js')
+script.
+  $(document).ready(function(){
+    $("#bgvid").animate({opacity: 1}, 2000);  
+  });
 section.vbox.allWindow
   header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
     .navbar-header.aside-md.dk(style="display: inline-block;float: none")
@@ -11,7 +19,7 @@ section.vbox.allWindow
     .container.aside-xl
       section.m-b-lg
         header.wrapper.text-center
-          strong Sign in to get in touch
+          strong "I'm Going on an Adventure!" <br> – Bilbo Baggins, The Hobbit (2012)
           #message
             div(ng-if'message')
               h2.text-center.error-message {{message}}
@@ -22,7 +30,7 @@ section.vbox.allWindow
               |             
               .list-group-item
                 input.form-control.no-border(ng-model='user.password' name='password', type='password', placeholder='Password')
-            button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in
+            button.btn.btn-lg.btn-block.btn-info(type='submit') Sign in
           .text-center.m-t.m-b
             a(href='#')
               small Forgot password?

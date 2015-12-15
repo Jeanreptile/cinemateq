@@ -32,7 +32,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
         .when('/register', { templateUrl: 'partials/register', controller: "UserCtrl" })
         .when('/profile', { templateUrl: 'partials/profile', controller: 'cinegraphController' })
         .when('/home', { templateUrl: 'partials/home', controller: 'UserCtrl' })
-        .when('/light', { templateUrl: 'partials/light', controller: 'cinegraphController' })
+        .when('/light', { templateUrl: 'partials/light', controller: 'cinegraphController', reloadOnSearch: false })
         .when('/light/cinegraph/:testId', { templateUrl: 'partials/light', controller: 'MyCinegraphCtrl' })
         .when('/restricted', { templateUrl: '/partials/restricted' })
         .when('/mycinegraph', { templateUrl: '/partials/mycinegraph', controller: 'MyCinegraphCtrl',

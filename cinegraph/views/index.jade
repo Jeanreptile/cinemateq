@@ -1,8 +1,8 @@
-section.vbox
+section.vbox.full-height
 	include ./header.jade
-	section
-		section.hbox.stretch
-			aside#nav.aside-xl.bg-black.hidden-print.hidden-xs
+	section.full-height
+		section.hbox.stretch.full-height
+			aside#nav.aside-xl.bg-black.hidden-print.hidden-xs.full-height
 				section.vbox
 					//section.scrollable
 						//.slim-scroll(data-height="$('content').height()", data-disable-fade-out='true', data-distance='0', data-size='10px', data-railopacity='0.2')
@@ -26,8 +26,8 @@ section.vbox
 											|See my cinegraphs
 											i.i.i-arrow-right.m-l-xs
 					include ./node-details.jade
-			section#content(style="background-color:black;")
-				section.hbox.stretch
-					section
+			section#content.full-height(style="background-color:black;")
+				section.hbox.stretch.full-height
+					section.full-height
 						#graph(cinegraph="")
 			include ./filter-pane.jade

@@ -158,7 +158,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             $scope.friendsTastes[friendsTastesIndex].alerts.push({success: 'true', msg:'You sent ' + friendName + ' an invitation to rate ' + dataOfNode + '!'});
           else
             $scope.friendsTastes[friendsTastesIndex].alerts.push({error: 'true', msg:'An error occurred. Please try again.'});
-          console.log("Notif to rate sent to friend " + friendName);
+          //console.log("Notif to rate sent to friend " + friendName);
       }).
         error(function() {
       });

@@ -7,14 +7,15 @@ script.
     $("#bgvid").animate({opacity: 1}, 2000);  
   });
 section.vbox.allWindow
-  header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
-    .navbar-header.aside-md.dk(style="display: inline-block;float: none")
-      a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
-        i.fa.fa-bars
-      a.navbar-brand(href='/')
-        img.m-r-sm(src='images/logoRoueLibre.png', alt='logo')
-        // span.hidden-nav-xs
-          | C I N E M A T E Q
+  section.vbox.allWindow
+    header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
+      .navbar-header.aside-md.dk.centered-navbar
+        //a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
+          i.fa.fa-bars
+        a.navbar-brand(href='/')
+          img.m-r-sm(src='images/logoRoueLibre.png', alt='')
+          // span.hidden-nav-xs
+            | C I N E M A T E Q
   section#content.m-t-lg.wrapper-md.animated.fadeInUp
     .container.aside-xl
       section.m-b-lg

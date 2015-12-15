@@ -130,7 +130,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
       $scope.friendsTastes = [];
       $scope.currentNode = {};
-      $scope.alerts = [];
       /*var selectedNodeId = getParameterByName('id');
       if (selectedNodeId == undefined) {
           selectedNodeId = 719772;
@@ -293,9 +292,10 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                 proddesigner: false
             };
         }
-        for (var i = 0; i < $scope.currentDisplayedNodes.length; i++) {
+        var nodes = scope.cinegraphId != undefined ? $scope.suggestedNodes : $scope.currentDisplayedNodes;
+        for (var i = 0; i < nodes.length; i++) {
             for (var job in $scope.selectedJobs) {
-                if ($scope.jobsRelationships[job] == $scope.currentDisplayedNodes[i].type) {
+                if ($scope.jobsRelationships[job] == nodes[i].type) {
                     $scope.selectedJobs[job] = true;
                 }
             }
@@ -498,7 +498,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     if (scope.currentNode.type == "Person") {
                       scope.updateTypesAndLimitsFromFilter();
                     }
-                    removeByJobType(scope.currentDisplayedNodes);
+                    removeByJobType(nodes);
                     scope.getRelatedNodesForType(scope.currentNode, relationship, scope.findLimitForJob(relationship), 0,
                         nodes.length, scope.currentNode.sprite, scope.drawRelatedNodes);
                 }

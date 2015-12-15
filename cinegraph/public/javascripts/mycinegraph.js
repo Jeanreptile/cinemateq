@@ -57,33 +57,6 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 		}
 	};
 
-	$scope.updateSelectedJobs = function() {
-		if ($scope.currentNode.type == 'Person') {
-			$scope.selectedJobs = {
-				actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
-				writer: $scope.currentNode.jobs[0].name == 'WROTE',
-				producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
-				director: $scope.currentNode.jobs[0].name == 'DIRECTED',
-				editor: $scope.currentNode.jobs[0].name == 'EDITED',
-				dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
-				musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
-				cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
-				proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
-		}
-		else {
-			$scope.selectedJobs = {
-				actor: true,
-				writer: false,
-				producer: false,
-				director: true,
-				editor: false,
-				dirphotography: false,
-				musiccomposer: false,
-				cosdesigner: false,
-				proddesigner: false };
-		}
-	};
-
 	$scope.findLimitForJob = function(type) {
 		for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {
 			if ($scope.typesAndLimits[i].type == type) {

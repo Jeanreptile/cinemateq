@@ -24,5 +24,5 @@ $(document).ready(function(){
   $('#bgvid').get(0).load();
   $('#bgvid').get(0).play();
 
-  $("#bgvid").animate({opacity: 1}, 3500);
+  $("#bgvid").animate({opacity: 1}, 3000);
 });

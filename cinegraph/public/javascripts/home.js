@@ -142,14 +142,22 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         $scope.currentUserToEdit = angular.copy($scope.currentUser);
     });
 
-    $scope.sendInvitationToRate = function(friendName) {
+    $scope.sendInvitationToRate = function(sentence) {
+      var friendsTastesIndex = 0;
+      for (var i = 0; i < $scope.friendsTastes.length; i++) {
+        if ($scope.friendsTastes[i] == sentence) {
+          $scope.friendsTastes[i].alerts = [];
+          friendsTastesIndex = i;
+        }
+      };
+      var friendName = sentence.friendName;
       var dataOfNode = $scope.currentNode.type == 'Person' ? $scope.currentNode.firstname + " " + $scope.currentNode.lastname : $scope.currentNode.title;
       $http.post( "/api/notif/inviteToRate", {userName: $scope.currentUser.username , friendName: friendName, idToRate: $scope.currentNode.id, dataOfNode: dataOfNode})
         .success(function(res) {
           if (res == true)
-            $scope.alerts.push({success: 'true', msg:'You sent ' + friendName + ' an invitation to rate ' + dataOfNode + '!'});
+            $scope.friendsTastes[friendsTastesIndex].alerts.push({success: 'true', msg:'You sent ' + friendName + ' an invitation to rate ' + dataOfNode + '!'});
           else
-            $scope.alerts.push({error: 'true', msg:'An error occurred. Please try again.'});
+            $scope.friendsTastes[friendsTastesIndex].alerts.push({error: 'true', msg:'An error occurred. Please try again.'});
           console.log("Notif to rate sent to friend " + friendName);
       }).
         error(function() {
@@ -1140,7 +1148,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 }
                 else {
                     scope.friendsTastes = [];
-                    scope.friendsTastes.push("Hey buddy, rate this movie to compare it with your friends.");
+                    var sentenceObj = {
+                      showButton: false,
+                      sentence: "Hey buddy, rate this movie to compare it with your friends."
+                    }
+                    scope.friendsTastes.push(sentenceObj);
                 }
             });
         }

@@ -72,7 +72,13 @@ cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
             && !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
             $location.path("/unauthorized");
         }
+
+        if ($rootScope.shouldReload) {
+            $rootScope.shouldReload = false;
+            $route.reload();
+        }
     });
+
     $rootScope.$on("$routeUpdate", function() {
         if ($rootScope.shouldReload) {
             $rootScope.shouldReload = false;
@@ -1011,7 +1017,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 var friendName = friends[index].username;
                 var nodeType = node.type.toLowerCase();
 
-                var sentences;
+                var sentences = [];
                 if (rating.message) { // Friend did not rate the node.
                   sentences = data.friendHasNotRated;
                 }
@@ -1026,7 +1032,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     sentences = data.friendHasNotWellRated;
                   }
                 }
-                pushCommunitySentences(sentences, friendName, nodeName, nodeType);
+                if (sentences.length)
+                  pushCommunitySentences(sentences, friendName, nodeName, nodeType);
               });
             });
         }

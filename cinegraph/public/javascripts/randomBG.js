@@ -21,6 +21,8 @@ $(document).ready(function(){
   $('#sourcevid').attr({'src':  'videos/' + randombgs[number] + '.webm'});
   //$('#bgvid').attr({'poster': randombgs[number] + '.jpg'});
   $('#bgvid').css({'background-image': 'url(../videos/' + randombgs[number] + '.jpg)'})
+  $('#bgvid').get(0).load();
+  $('#bgvid').get(0).play();
 
   $("#bgvid").animate({opacity: 1}, 3000);
 });

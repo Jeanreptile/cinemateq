@@ -1706,37 +1706,42 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        var filterButtonSprites = [];
+
         function generateFilterButtonSprite(job) {
-            var canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            var borderThickness = canvas.width / borderFraction;
-            var halfWidth = canvas.width / 2;
-            var halfHeight = canvas.height / 2;
-            var context = canvas.getContext('2d');
-            // clipping to circle
-            context.beginPath();
-            context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
-            context.clip();
-            // background color
-            context.fillStyle = '#222222';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            // drawing text
-            context.fillStyle = colors[scope.jobsRelationships[job]];
-            context.font = "bold 100px Arial";
-            context.textAlign = "center";
-            context.textBaseline = 'middle';
-            context.fillText(scope.jobsNames[job].toUpperCase().substring(0,2), halfWidth, halfWidth);
-            // generating sprite
-            var texture = new THREE.Texture(canvas);
-            var material = new THREE.SpriteMaterial({ map: texture });
-            var sprite = new THREE.Sprite(material);
-            //texture.minFilter = THREE.LinearFilter;
-            texture.needsUpdate = true;
-            sprite.isFilterButton = true;
-            sprite.filterButtonJob = job;
-            sprite.gradientRemoveDisable = true;
-            return sprite;
+            if (filterButtonSprites[job] == undefined){
+                var canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                var borderThickness = canvas.width / borderFraction;
+                var halfWidth = canvas.width / 2;
+                var halfHeight = canvas.height / 2;
+                var context = canvas.getContext('2d');
+                // clipping to circle
+                context.beginPath();
+                context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
+                context.clip();
+                // background color
+                context.fillStyle = '#222222';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                // drawing text
+                context.fillStyle = colors[scope.jobsRelationships[job]];
+                context.font = "bold 100px Arial";
+                context.textAlign = "center";
+                context.textBaseline = 'middle';
+                context.fillText(scope.jobsNames[job].toUpperCase().substring(0,2), halfWidth, halfWidth);
+                // generating sprite
+                var texture = new THREE.Texture(canvas);
+                var material = new THREE.SpriteMaterial({ map: texture });
+                var sprite = new THREE.Sprite(material);
+                //texture.minFilter = THREE.LinearFilter;
+                texture.needsUpdate = true;
+                sprite.isFilterButton = true;
+                sprite.filterButtonJob = job;
+                sprite.gradientRemoveDisable = true;
+                filterButtonSprites[job] = sprite;
+            }
+            return filterButtonSprites[job];
         }
 
         function updateFilterButtonSprite(sprite, selected){
@@ -1759,37 +1764,43 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        var filterBackgroundButtonSprites = [];
+
         function generateFilterBackgroundButtonSprite(text) {
-            var canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            var borderThickness = canvas.width / borderFraction;
-            var halfWidth = canvas.width / 2;
-            var halfHeight = canvas.height / 2;
-            var context = canvas.getContext('2d');
-            // clipping to circle
-            context.beginPath();
-            context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
-            context.clip();
-            // background color
-            context.fillStyle = '#222222';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            // drawing text
-            context.fillStyle = '#ffffff';
-            context.font = "bold 100px Arial";
-            context.textAlign = "center";
-            context.textBaseline = 'middle';
-            context.fillText(text, halfWidth, halfWidth);
-            // generating sprite
-            var texture = new THREE.Texture(canvas);
-            var material = new THREE.SpriteMaterial({ map: texture });
-            var sprite = new THREE.Sprite(material);
-            //texture.minFilter = THREE.LinearFilter;
-            texture.needsUpdate = true;
-            sprite.isFilterBackgroundButton = true;
-            sprite.filterBackgroundButtonText = text;
-            sprite.gradientRemoveDisable = true;
-            return sprite;
+            if (filterBackgroundButtonSprites[text] == undefined){
+                var canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                var borderThickness = canvas.width / borderFraction;
+                var halfWidth = canvas.width / 2;
+                var halfHeight = canvas.height / 2;
+                var context = canvas.getContext('2d');
+                // clipping to circle
+                context.beginPath();
+                context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
+                context.clip();
+                // background color
+                context.fillStyle = '#222222';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                // drawing text
+                context.fillStyle = '#ffffff';
+                context.font = "bold 100px Arial";
+                context.textAlign = "center";
+                context.textBaseline = 'middle';
+                context.fillText(text, halfWidth, halfWidth);
+                // generating sprite
+                var texture = new THREE.Texture(canvas);
+                var material = new THREE.SpriteMaterial({ map: texture });
+                var sprite = new THREE.Sprite(material);
+                //texture.minFilter = THREE.LinearFilter;
+                texture.needsUpdate = true;
+                sprite.isFilterBackgroundButton = true;
+                sprite.filterBackgroundButtonText = text;
+                sprite.gradientRemoveDisable = true;
+                filterBackgroundButtonSprites[text] = sprite;
+                console.log("generating");
+            }
+            return filterBackgroundButtonSprites[text];
         }
 
         function updateFilterBackgroundButtonSprite(sprite, selected){
@@ -1812,34 +1823,39 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
-        function generateSpriteFilterBackground(job) {
-            var canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            var context = canvas.getContext('2d');
-            context.beginPath();
-            var halfWidth = canvas.width / 2;
-            var borderThickness = canvas.width / borderFraction;
-            context.arc(halfWidth, halfWidth, halfWidth, 0, PI2);
-            context.clip();
-            context.fillStyle = job != undefined ? colors[scope.jobsRelationships[job]] : orangeColor;
-            context.globalAlpha = 0.9;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            // drawing text
-            context.fillStyle = "#ffffff";
-            context.font = "bold " + (canvas.width / 9) + "px Arial";
-            context.textAlign = "center";
-            context.globalAlpha = 1;
-            wrapText(context, scope.jobsNames[job].toUpperCase(), halfWidth, canvas.height / 2.5,
-                canvas.width -  5 * borderThickness, canvas.height / 6);
+        var filterBackgroundSprites = [];
 
-            var texture = new THREE.Texture(canvas);
-            var material = new THREE.SpriteMaterial({ map: texture });
-            var sprite = new THREE.Sprite(material);
-            sprite.gradientRemoveDisable = true;
-            //texture.minFilter = THREE.LinearFilter;
-            texture.needsUpdate = true;
-            return sprite;
+        function generateSpriteFilterBackground(job) {
+            if (filterBackgroundSprites[job] == undefined){
+                var canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                var context = canvas.getContext('2d');
+                context.beginPath();
+                var halfWidth = canvas.width / 2;
+                var borderThickness = canvas.width / borderFraction;
+                context.arc(halfWidth, halfWidth, halfWidth, 0, PI2);
+                context.clip();
+                context.fillStyle = job != undefined ? colors[scope.jobsRelationships[job]] : orangeColor;
+                context.globalAlpha = 0.9;
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                // drawing text
+                context.fillStyle = "#ffffff";
+                context.font = "bold " + (canvas.width / 10) + "px Arial";
+                context.textAlign = "center";
+                context.globalAlpha = 1;
+                wrapText(context, scope.jobsNames[job].toUpperCase(), halfWidth, canvas.height / 2.5,
+                    canvas.width -  5 * borderThickness, canvas.height / 6);
+
+                var texture = new THREE.Texture(canvas);
+                var material = new THREE.SpriteMaterial({ map: texture });
+                var sprite = new THREE.Sprite(material);
+                sprite.gradientRemoveDisable = true;
+                //texture.minFilter = THREE.LinearFilter;
+                texture.needsUpdate = true;
+                filterBackgroundSprites[job] = sprite;
+            }
+            return filterBackgroundSprites[job];
         }
 
         function updateSpriteFilterBackground(context, job) {
@@ -1851,7 +1867,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             context.fillRect(0, 0, width, width);
             // drawing text
             context.fillStyle = "#ffffff";
-            context.font = "bold " + (width / 9) + "px Arial";
+            context.font = "bold " + (width / 10) + "px Arial";
             context.textAlign = "center";
             context.globalAlpha = 1;
             wrapText(context, scope.jobsNames[job].toUpperCase(), width / 2, width / 2.5,
@@ -2094,9 +2110,10 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function addFilters(id) {
             var n = findNode(id);
+            console.log(n);
             var slice = PI2 / 12;
             if (n != undefined){
-                var i = 0;
+                var i = 4;
                 for (job in scope.selectedJobs){
                     i++;
                     var found = false;
@@ -2119,6 +2136,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         n.add(buttonSprite);
                     }
                 }
+                unsetNodeAsFilter(id);
             }
         }
 
@@ -2229,6 +2247,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 }
                 n.isSetAsFilter = true;
             }
+            renderNeedsUpdate = true;
         }
 
         // overriding Sprite raycasting with custom values
@@ -2657,8 +2676,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             tweenCount = TWEEN.getAll().length;
             if (renderNeedsUpdate || tweenCount > 0 || oldTweenCount > 0 && tweenCount == 0){
                 for (var i = 0; i < scene.children.length; i++){
-                    if (scene.children[i].type == 'Sprite')
-                        scene.children[i].lookAt(camera.position);
+                    var sprite = scene.children[i];
+                    if (sprite.type == 'Sprite') {
+                        sprite.lookAt(camera.position);
+                        sprite.quaternion.copy(camera.quaternion);
+                    }
                 }
                 render();
                 renderNeedsUpdate = false;

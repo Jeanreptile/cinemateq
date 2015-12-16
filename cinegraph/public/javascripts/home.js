@@ -2178,13 +2178,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         updateFilterButtonSprite(child, scope.selectedJobs[child.filterButtonJob]);
                 }
                 renderNeedsUpdate = true;
-                n.isSetAsFilter = false;
+                n.isSetAsFilter = null;
             }
         }
 
         function setNodeAsFilter(id, job){
             var n = findNode(id);
-            if (n != undefined){
+            if (n != undefined && n.isSetAsFilter != job){
                 var addBackground = true, addSwitchButton = true, addRightButton = true, addLeftButton = true;
                 for (var i = 0; i < n.children.length; i++){
                     var child = n.children[i];
@@ -2250,7 +2250,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     btn.isRightButton = true;
                     n.add(btn);
                 }
-                n.isSetAsFilter = true;
+                n.isSetAsFilter = job;
             }
             renderNeedsUpdate = true;
         }
@@ -2316,8 +2316,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 else if (intersected.isFilterBackgroundButton) {
                     //updateFilterBackgroundButtonSprite(intersected, true);
                 }
-            } else if (current && current.isSetAsFilter == true)
-                unsetNodeAsFilter(current._id);
+            }
         }
 
         /* ----------------------- */

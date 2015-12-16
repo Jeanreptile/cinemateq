@@ -136,6 +136,37 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 		}
 	};
 
+	$scope.updateTypesAndLimitsFromFilter = function() {
+        $scope.typesAndLimits = [];
+        var max = 10;
+        var numberOfSelectedJobs = 0;
+        for (var job in $scope.selectedJobs) {
+            if ($scope.selectedJobs[job]) {
+                numberOfSelectedJobs++;
+            }
+        }
+
+        for (var job in $scope.selectedJobs) {
+            if ($scope.selectedJobs[job]) {
+                if ($scope.currentNode.type == "Person") {
+                    var obj = {
+                        type: $scope.jobsRelationships[job],
+                        limit: ($scope.jobsRelationships[job] == $scope.currentNode.jobs[0].name ?
+                            Math.round(max / numberOfSelectedJobs) : Math.floor(max / numberOfSelectedJobs))
+                    };
+                }
+                else {
+                    var obj = {
+                        type: $scope.jobsRelationships[job],
+                        limit: ($scope.jobsRelationships[job] == "ACTED_IN" ?
+                            Math.round(max / numberOfSelectedJobs) : Math.floor(max / numberOfSelectedJobs))
+                    };
+                }
+                $scope.typesAndLimits.push(obj);
+            }
+        }
+    };
+
 	$scope.open = function (size) {
 		var modalInstance = $modal.open({
 			animation: $scope.animationsEnabled,

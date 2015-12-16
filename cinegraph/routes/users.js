@@ -3,10 +3,29 @@ var router = express.Router();
 var bCrypt = require('bcrypt-nodejs');
 var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
-
+var path = require("path");
 var config = require('../config');
 
 var db = require("seraph")(config.database_url);
+var multer = require('multer');
+
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../public/users'))
+    },
+    filename: function (req, file, cb) {
+        cb(null, req.params.nameOf + ".jpg");
+  }
+})
+
+var upload = multer({ storage: storage, limits: {fileSize: 1000, files:1}})
+
+router.post('/upload/:nameOf', upload.single('image'), function(req, res, next) {
+  console.log(JSON.stringify(req.file));
+  res.json([]);
+})
+
 
 /* POST user login. */
 router.post('/login', authenticate, function(req, res) {
@@ -85,7 +104,7 @@ function authenticate(req, res, next) {
     }
       // User exists but wrong password, log the error
     if (!isValidPassword(objs[0], req.body.password)) {
-      return res.json(401, {'message' :'Invalid Password'});
+      return res.json(401, {'message' :'Invalid password'});
       // User and password both match, return user from
       // done method which will be treated like success
     }
@@ -109,7 +128,7 @@ function findOrCreateUser(req, res, next) {
     //already exists
     if (objs.length > 0) {
       console.log('User already exists');
-      return res.status(401).json({'message' : 'User Already Exists !'});
+      return res.status(401).json({'message' : 'This username is already taken.'});
     }
     else{
       // if there is no user with that email create the user

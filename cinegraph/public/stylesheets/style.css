@@ -224,6 +224,36 @@ video#bgvid {
   }
 }
 
+.shadowText {
+  color: white;
+  text-shadow: 0px 0px 10px rgba(0, 0, 0, 1);
+}
+
+.goldenShadowText {
+  color: #a97819;
+  text-shadow: 0px 0px 10px rgba(0, 0, 0, 1);
+}
+
+.golden-btn {
+  color: white !important;
+  background-color: #a97819;
+  border-color: #a97819;
+}
+
+.golden-color {
+  color:#a97819 !important;
+}
+
+.red-color {
+  color: #C9262F !important;
+}
+
+.golden-btn:hover,.golden-btn:focus {
+  color: white !important;
+  background-color: #BB8A2C;
+  border-color: #BB8A2C;
+}
+
 
 /* Icon in an input */
 .input-group .icon-addon .form-control {

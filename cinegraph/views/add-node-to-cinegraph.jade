@@ -2,8 +2,9 @@
 	button.close(type="button", ng-click="close()") ×
 	h4.modal-title.font-bold Add node to a cinegraph
 .modal-body
-	p(ng-if="mycinegraphs == undefined")
-		| You must be logged
+	p.golden-color.text-center(ng-if="mycinegraphs == undefined")
+		| You must be logged !
+		a.golden-btn.btn-sm.btn-default.btn-block(href='/register') Create an account to create your own cinegraph !
 	p(ng-if="mycinegraphs.length == 0")
 		| You have not created any cinegraph yet.
 	form(ng-if="mycinegraphs.length > 0")
@@ -19,5 +20,7 @@
 		.form-group
 			label Name
 			input.form-control(type='text', placeholder='"Cinegraph Sci-Fi" or "Cinegraph Thriller"', ng-model="cinegraphTitle")
-		input.btn.btn-success.pull-right(type="submit", ng-click="createAndAddToCinegraph()", value="Create and add")
-		button.btn(ng-click='close()') Cancel
+		input.btn.btn-success.pull-right(type="submit", ng-if="mycinegraphs >= 0", ng-click="createAndAddToCinegraph()", value="Create and add")
+		input.btn.btn-success.pull-right(disabled="", ng-if="mycinegraphs == undefined", ng-click="createAndAddToCinegraph()", value="Create and add")
+		button.btn(type="submit", ng-if="mycinegraphs >= 0", ng-click='close()') Cancel
+		button.btn(disabled="", ng-if="mycinegraphs == undefined", ng-click='close()') Cancel

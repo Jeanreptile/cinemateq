@@ -10,8 +10,7 @@ section.vbox
 								.row
 									.col-sm-12.avatar-center-xs
 										span.thumb.pull-left.avatar.m-r
-											img.dker(src="images/a0.png")
-											i.on.md.b-black
+											img.dker(src="users/{{currentUser.username}}.jpg", onerror="this.src='users/default.jpg'")
 										span.hidden-nav-xs.clear
 											span.block.m-t-xs
 												div(ng-if='currentUser')
@@ -25,6 +24,9 @@ section.vbox
 										a.btn.btn-s-md.btn-info.btn-sm(href='/')
 											|Go to Discovery mode
 											i.i.i-arrow-right.m-l-xs
+								.row
+									.col-sm-12.avatar-center-xs.text-center.golden-color(style="margin-top: 10px;")
+										h1 This week's recommandations
 			section#content.mycinegraph
 				section.hbox.stretch
 					section(ng-controller="MyCinegraphCtrl")

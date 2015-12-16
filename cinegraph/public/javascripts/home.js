@@ -108,6 +108,22 @@ cinegraphApp.filter('JobNameFormatter', function() {
     };
 });
 
+
+cinegraphApp.service('fileUpload', ['$http', function ($http) {
+    this.uploadFileToUrl = function(file, uploadUrl){
+        var fd = new FormData();
+        fd.append('image', file);
+        $http.post(uploadUrl, fd, {
+            transformRequest: angular.identity,
+            headers: {'Content-Type': undefined}
+        })
+        .success(function(){
+        })
+        .error(function(ee){
+          console.log("err is "  + JSON.stringify(ee));
+        });
+    }
+}]);
 var cinegraphController = cinegraphApp.controller('restrictedController',
     function($scope, $http, $window, $location, AuthService) {
     $(document).ready(function(){
@@ -118,7 +134,7 @@ var cinegraphController = cinegraphApp.controller('restrictedController',
 });
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
-    function($scope, $http, $window, $location, AuthService, $modal, socket) {
+    function($scope, $http, $window, $location, AuthService, $modal, socket, fileUpload) {
 
       /* Variables initialization */
 
@@ -173,6 +189,12 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             $location.path('/profile');
         });
     }
+
+    $scope.uploadFile = function(userName){
+        var file = $scope.myFile;
+        var uploadUrl = "/users/upload/" + userName;
+        fileUpload.uploadFileToUrl(file, uploadUrl);
+    };
 
     $scope.logout = function(){
       AuthService.logout();
@@ -410,6 +432,23 @@ cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, cu
         $modalInstance.dismiss("close");
     };
 });
+
+cinegraphApp.directive('fileModel', ['$parse', function ($parse) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            var model = $parse(attrs.fileModel);
+            var modelSetter = model.assign;
+
+            element.bind('change', function(){
+                scope.$apply(function(){
+                    modelSetter(scope, element[0].files[0]);
+                });
+            });
+        }
+    };
+}]);
+
 
 cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $location) {
 	return {

@@ -21,15 +21,14 @@ section.vbox.allWindow
         i.fa.fa-cog
     ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
       li.dropdown
-        a.dropdown-toggle(href='#', data-toggle='dropdown')
-          span.thumb-sm.pull-left.avatar.m-r
-            img.dker(src="images/a0.png")
+        a(href='/signin' ng-if="currentUser == undefined") Sign in
+        a.dropdown-toggle(href='#', data-toggle='dropdown' ng-if='currentUser')
+          span.thumb-sm.pull-left.avatar.m-r(ng-if='currentUser')
+              img.dker(src="users/{{currentUser.username}}.jpg", onerror="this.src='users/default.jpg'")
           span(ng-if='currentUser')
             | {{currentUser.firstName}}
-          span(ng-if='currentUser == undefined')
-            | Invité
-          b.caret 
-        ul.dropdown-menu.animated.fadeInRight
+          b.caret(ng-if='currentUser')
+        ul.dropdown-menu.animated.fadeInRight(ng-if='currentUser')
           li(ng-if='currentUser')
             a(href='/profile') Profile
           li(ng-if='currentUser')
@@ -39,7 +38,6 @@ section.vbox.allWindow
           li.divider
           li
             a(ng-click='logout()' ng-if='currentUser') Logout
-            a(href='/signin' ng-if="currentUser == undefined") Sign in
   section#searchBarPosition.hbox.stretch
     section#content
         section.vbox

@@ -19,29 +19,31 @@ section.vbox.allWindow
         .container.aside-xl
           section.m-b-lg
             header.wrapper.text-center
-              strong Sign up to explore the amazing galaxy of cinema
-            #message
-              div(ng-if'message')
-                h1.text-center.error-message {{message}}
-            form(ng-submit='register()')
-              .list-group
-                .list-group-item
-                  input.form-control.no-border(ng-model = 'user.username' type='text', name='username', placeholder='Username', required, autofocus)
-                .list-group-item
-                  input.form-control.no-border(ng-model = 'user.password' type='password', name='password', placeholder='Password', required)
-                .list-group-item
-                  input.form-control.no-border(ng-model = 'user.email' type='email', name='email', placeholder='Email', required)
-                .list-group-item
-                  input.form-control.no-border(ng-model = 'user.firstName' type='text', name='firstName' class='form-control', placeholder='First Name', required)
-                .list-group-item
-                  input.form-control.no-border(ng-model = 'user.lastName' type='text', name='lastName' class='form-control', placeholder='Last Name', required)
-              // .checkbox.m-b
-                label
-                  input(type='checkbox')
-                  |  Agree the 
-                  a(href='#') terms and policy
-              button.btn.btn-lg.btn-info.btn-block(type='submit') Sign up
-              .line.line-dashed
-              p.text-muted.text-center
-                small Already have an account?
-              a.btn.btn-lg.btn-default.btn-block(href='/signin') Sign in
+              strong.shadowText Sign up to explore the amazing galaxy of cinema
+              #message
+                div(ng-if'message')
+                  h3.goldenShadowText.text-center.error-message {{message}}
+              form(ng-submit='register()')
+                .list-group
+                  .list-group-item
+                    input.form-control.no-border(ng-model = 'user.username' type='text', name='username', placeholder='Username', required, autofocus)
+                  .list-group-item
+                    input.form-control.no-border(ng-model = 'user.password' type='password', name='password', placeholder='Password', required)
+                  .list-group-item
+                    input.form-control.no-border(ng-model = 'user.email' type='email', name='email', placeholder='Email', required)
+                  .list-group-item
+                    input.form-control.no-border(ng-model = 'user.firstName' type='text', name='firstName' class='form-control', placeholder='First Name', required)
+                  .list-group-item
+                    input.form-control.no-border(ng-model = 'user.lastName' type='text', name='lastName' class='form-control', placeholder='Last Name', required)
+                  //.list-group-item
+                    input.form-control-no-border.filestyle(type='file', placeholder="Choose a picture for your profile", file-model="myFile", accept='image/*', data-icon='false', data-classbutton='btn btn-default', data-classinput='form-control inline v-middle input-s')
+                // .checkbox.m-b
+                  label
+                    input(type='checkbox')
+                    |  Agree the 
+                    a(href='#') terms and policy
+                button.btn.btn-lg.btn-info.btn-block(type='submit') Sign up
+                .line.line-dashed
+                p.text-muted.text-center
+                  small.shadowText Already have an account?
+                a.golden-btn.btn-lg.btn-default.btn-block(href='/signin') Sign in

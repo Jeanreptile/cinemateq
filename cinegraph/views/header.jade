@@ -1,8 +1,8 @@
 header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
-	.navbar-header.aside-md.dk
+	.navbar-header.aside-md.dk.text-center
 		a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
 			i.fa.fa-bars
-		a.navbar-brand(href='/')
+		a.navbar-brand(href='/', style='margin: auto;')
 			img.m-r-sm(src='images/logoRoueLibre.png', alt='logo', style='height:35px;')
 		a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
 			i.fa.fa-cog
@@ -75,9 +75,9 @@ header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 				li.divider
 				li
 					a(ng-click='logout()' ng-if='currentUser') Logout
-	a.hidden-md.hidden-xs.hidden-sm.btn.btn-s-md.btn-info.btn-sm.right-menu(ng-if='currentUser', href='/mycinegraph', ng-show="!currentCinegraph")
+	a.hidden-md.hidden-xs.hidden-sm.btn.btn-s-md.btn-info.btn-sm.right-menu(ng-if='currentUser', href='/mycinegraph', ng-show="!currentCinegraph && !mycinegraphs")
 		|See my cinegraphs
 		i.i.i-arrow-right.m-l-xs
-	a.hidden-xs.btn.btn-s-md.btn-info.btn-sm.right-menu(href='/', ng-show="currentCinegraph")
+	a.hidden-xs.btn.btn-s-md.btn-info.btn-sm.right-menu(href='/', ng-show="currentCinegraph || mycinegraphs")
 		|Go to Discovery mode
 		i.i.i-arrow-right.m-l-xs

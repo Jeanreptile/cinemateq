@@ -210,7 +210,7 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         .success(function(payload){
           $('#noteObj').rating('rate', 0);
           $('#noteLove').rating('rate', 0);
-          if (payload.message != "no rate"){
+          if (payload.message != "no rate") {
             $('#noteObj').rating('rate', payload.obj);
             $('#noteLove').rating('rate', payload.love);
           }
@@ -1119,7 +1119,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     scope.friendsTastes = [];
                     var sentenceObj = {
                       showButton: false,
-                      sentence: "Hey buddy, rate this movie to compare it with your friends."
+                      sentence: "Hey buddy, rate this " + scope.currentNode.type.toLowerCase() + " to compare it with your friends."
                     }
                     scope.friendsTastes.push(sentenceObj);
                 }
@@ -1206,7 +1206,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     }
                     if (endpoint === endpoint2) {
                         found = true;
-                        return false;
+                        break;
                     }
                 }
                 if (scope.cinegraphId != undefined) {
@@ -1262,7 +1262,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                               if (relationships[i].id === array[j].id) {
                                     found = true;
                                     count.val++;
-                                    return false;
+                                    break;
                                 }
                             }
                             if (found == false) {

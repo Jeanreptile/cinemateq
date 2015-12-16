@@ -19,7 +19,7 @@ var storage = multer.diskStorage({
   }
 })
 
-var upload = multer({ storage: storage, limits: {fileSize: 1000, files:1}})
+var upload = multer({ storage: storage, limits: {fileSize: 100000, files:1}})
 
 router.post('/upload/:nameOf', upload.single('image'), function(req, res, next) {
   console.log(JSON.stringify(req.file));

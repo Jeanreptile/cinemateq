@@ -1827,36 +1827,32 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         var filterBackgroundSprites = [];
 
         function generateSpriteFilterBackground(job) {
-            if (filterBackgroundSprites[job] == undefined){
-                var canvas = document.createElement('canvas');
-                canvas.width = 256;
-                canvas.height = 256;
-                var context = canvas.getContext('2d');
-                context.beginPath();
-                var halfWidth = canvas.width / 2;
-                var borderThickness = canvas.width / borderFraction;
-                context.arc(halfWidth, halfWidth, halfWidth, 0, PI2);
-                context.clip();
-                context.fillStyle = job != undefined ? colors[scope.jobsRelationships[job]] : orangeColor;
-                context.globalAlpha = 0.9;
-                context.fillRect(0, 0, canvas.width, canvas.height);
-                // drawing text
-                context.fillStyle = "#ffffff";
-                context.font = "bold " + (canvas.width / 10) + "px Arial";
-                context.textAlign = "center";
-                context.globalAlpha = 1;
-                wrapText(context, scope.jobsNames[job].toUpperCase(), halfWidth, canvas.height / 2.5,
-                    canvas.width -  5 * borderThickness, canvas.height / 6);
-
-                var texture = new THREE.Texture(canvas);
-                var material = new THREE.SpriteMaterial({ map: texture });
-                var sprite = new THREE.Sprite(material);
-                sprite.gradientRemoveDisable = true;
-                //texture.minFilter = THREE.LinearFilter;
-                texture.needsUpdate = true;
-                filterBackgroundSprites[job] = sprite;
-            }
-            return filterBackgroundSprites[job];
+            var canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            var context = canvas.getContext('2d');
+            context.beginPath();
+            var halfWidth = canvas.width / 2;
+            var borderThickness = canvas.width / borderFraction;
+            context.arc(halfWidth, halfWidth, halfWidth, 0, PI2);
+            context.clip();
+            context.fillStyle = job != undefined ? colors[scope.jobsRelationships[job]] : orangeColor;
+            context.globalAlpha = 0.9;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            // drawing text
+            context.fillStyle = "#ffffff";
+            context.font = "bold " + (canvas.width / 10) + "px Arial";
+            context.textAlign = "center";
+            context.globalAlpha = 1;
+            wrapText(context, scope.jobsNames[job].toUpperCase(), halfWidth, canvas.height / 2.5,
+                canvas.width -  5 * borderThickness, canvas.height / 6);
+            var texture = new THREE.Texture(canvas);
+            var material = new THREE.SpriteMaterial({ map: texture });
+            var sprite = new THREE.Sprite(material);
+            sprite.gradientRemoveDisable = true;
+            //texture.minFilter = THREE.LinearFilter;
+            texture.needsUpdate = true;
+            return sprite;
         }
 
         function updateSpriteFilterBackground(context, job) {
@@ -2035,11 +2031,21 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     updateFilterBackgroundButtonSprite(intersection.object, scope.selectedJobs[job]);
                 }
                 // left pagination
-                else if (intersection.object.isLeftButton)
+                else if (intersection.object.isLeftButton) {
                     scope.paginateBy(job, scope.jobsRelationships[job], 'Left');
+                    updateFilterBackgroundButtonSprite(intersection.object, true);
+                    setTimeout(function(){
+                        updateFilterBackgroundButtonSprite(intersection.object, false);
+                    }, 300);
+                }
                 // right pagination
-                else if (intersection.object.isRightButton)
+                else if (intersection.object.isRightButton) {
                     scope.paginateBy(job, scope.jobsRelationships[job], 'Right');
+                    updateFilterBackgroundButtonSprite(intersection.object, true);
+                    setTimeout(function(){
+                        updateFilterBackgroundButtonSprite(intersection.object, false);
+                    }, 300);
+                }
             }
         }
 
@@ -2186,7 +2192,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     if (child.isFilterBackground == true) {
                         addBackground = false;
                         if (child.filterBackgroundJob != job){
-                            updateSpriteFilterBackground(n.children[i].material.map.image.getContext('2d'), job);
+                            updateSpriteFilterBackground(child.material.map.image.getContext('2d'), job);
                             child.material.map.needsUpdate = true;
                             child.filterBackgroundJob = job;
                         }
@@ -2211,6 +2217,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     sprite.filterBackgroundJob= job;
                     sprite.position.z = 0.001;
                     sprite.scale.set(0.92,0.92,0.92);
+                    sprite.filterBackgroundJob = job;
                     n.add(sprite);
                 }
                 if (addSwitchButton){

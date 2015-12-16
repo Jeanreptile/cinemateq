@@ -21,11 +21,9 @@ section.vbox
 													span.text-muted.text-xs.block Novice
 								.row
 									.col-sm-12.avatar-center-xs.text-center.golden-color(style="margin-top: 10px;")
-										h1 This week's recommandations
-					footer.footer.hidden-xs.no-padder.text-center-nav-xs
-						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(data-target='#nav', data-toggle='class:nav-xs')
-							i.i.i-circleleft.text
-								i.i.i-circleright.text-active
+										div.pos-rlt.node-details.text-center.hidden-nav-xs
+											h1 This week's recommandations
+											img(ng-src="images/movies/OSS 117_ Rio ne répond plus2009/poster.jpg")
 			section#content
 				section.vbox
 						section.scrollable.bg-white
@@ -141,7 +139,7 @@ section.vbox
 									section.vbox(ng-controller='FriendsController')
 										section.panel.panel-default
 												header.panel-heading
-													.input-group.text-sm
+													//.input-group.text-sm
 														input.input-sm.form-control(type='text', placeholder='Search', ng-model="userToFind")
 														|                         
 														.input-group-btn

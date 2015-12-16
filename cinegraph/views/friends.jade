@@ -21,7 +21,9 @@ section.vbox
 													span.text-muted.text-xs.block Novice
 								.row
 									.col-sm-12.avatar-center-xs.text-center.golden-color(style="margin-top: 10px;")
-										h1 This week's recommandations
+										div.pos-rlt.node-details.text-center.hidden-nav-xs
+											h1 This week's recommandations
+											img(ng-src="images/movies/OSS 117_ Rio ne répond plus2009/poster.jpg")
 								//.row.m-t-sm.hidden-nav-xs
 									.col-sm-12.text-center
 										a.btn.btn-s-md.btn-info.btn-sm(href='/mycinegraph')
@@ -64,7 +66,7 @@ section.vbox
 								li.list-group-item(ng-repeat="user in usersToAdd")
 									.media
 										span.pull-left.thumb-sm
-											img.img-circle(src='images/a0.png', alt='John said')
+											img.img-circle(src="users/{{user.username}}.jpg", onerror="this.src='users/default.jpg'" alt="{user.username} pic")
 										|                           
 										p.pull-right.text-success.m-t-sm
 											button.btn.btn-sm.btn-info.disabled(ng-show="user.isFriend")

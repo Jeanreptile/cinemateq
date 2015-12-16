@@ -1109,11 +1109,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function displayFriendsTastes() {
             $http.get('/api/user/rating/' + scope.currentNode.id).success(function (rating) {
                 if (!rating.message) {
-                    $http.get('/api/friends/' + scope.currentUser.id).success(function (friends) {
-                        for (var i = 0; i < friends.length; i++) {
-                             getFriendsRatings(friends, i, scope.currentNode, rating);
-                        };
-                    });
+                  scope.friendsTastes = [];
+                  $http.get('/api/friends/' + scope.currentUser.id).success(function (friends) {
+                      for (var i = 0; i < friends.length; i++) {
+                           getFriendsRatings(friends, i, scope.currentNode, rating);
+                      };
+                  });
                 }
                 else {
                     scope.friendsTastes = [];

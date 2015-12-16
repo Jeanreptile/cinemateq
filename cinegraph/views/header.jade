@@ -75,9 +75,9 @@ header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
 				li.divider
 				li
 					a(ng-click='logout()' ng-if='currentUser') Logout
-	a.hidden-md.hidden-xs.hidden-sm.btn.btn-s-md.btn-info.btn-sm.right-menu(ng-if='currentUser', href='/mycinegraph', ng-show="!currentCinegraph")
+	a.hidden-md.hidden-xs.hidden-sm.btn.btn-s-md.btn-info.btn-sm.right-menu(ng-if='currentUser', href='/mycinegraph', ng-show="!currentCinegraph && !mycinegraphs")
 		|See my cinegraphs
 		i.i.i-arrow-right.m-l-xs
-	a.hidden-xs.btn.btn-s-md.btn-info.btn-sm.right-menu(href='/', ng-show="currentCinegraph")
+	a.hidden-xs.btn.btn-s-md.btn-info.btn-sm.right-menu(href='/', ng-show="currentCinegraph || mycinegraphs")
 		|Go to Discovery mode
 		i.i.i-arrow-right.m-l-xs

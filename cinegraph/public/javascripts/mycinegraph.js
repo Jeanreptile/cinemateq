@@ -30,59 +30,103 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 	}
 
 	$scope.updateTypesAndLimits = function() {
+		// var craziness = 1;
+		// if ($scope.currentNode.type == "Person")
+		// {
+		// 	$scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},
+		// 							{ type: 'PRODUCED', limit: 2 * craziness},
+		// 							{ type: 'DIRECTED', limit: 2 * craziness},
+		// 							{ type: 'COMPOSED_MUSIC', limit: 1 * craziness},
+		// 							{ type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
+		// 							{ type: 'WROTE', limit: 5 * craziness},
+		// 							{ type: 'EDITED', limit: 3 * craziness},
+		// 							{ type: 'DESIGNED_PRODUCTION', limit: 3 * craziness},
+		// 							{ type: 'DESIGNED_COSTUMES', limit: 2 * craziness} ];
+		// }
+		// else
+		// {
+		// 	$scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4 * craziness},
+		// 							{ type: 'DIRECTED', limit: 1 * craziness},
+		// 							{ type: 'PRODUCED', limit: 1 * craziness},
+		// 							{ type: 'COMPOSED_MUSIC', limit: 1 * craziness},
+		// 							{ type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
+		// 							{ type: 'WROTE', limit: 1 * craziness},
+		// 							{ type: 'EDITED', limit: 1 * craziness},
+		// 							{ type: 'DESIGNED_PRODUCTION', limit: 1 * craziness},
+		// 							{ type: 'DESIGNED_COSTUMES', limit: 1 * craziness} ];
+		// }
+
 		var craziness = 1;
-		if ($scope.currentNode.type == "Person")
-		{
-			$scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 5 * craziness},
-									{ type: 'PRODUCED', limit: 2 * craziness},
-									{ type: 'DIRECTED', limit: 2 * craziness},
-									{ type: 'COMPOSED_MUSIC', limit: 1 * craziness},
-									{ type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
-									{ type: 'WROTE', limit: 5 * craziness},
-									{ type: 'EDITED', limit: 3 * craziness},
-									{ type: 'DESIGNED_PRODUCTION', limit: 3 * craziness},
-									{ type: 'DESIGNED_COSTUMES', limit: 2 * craziness} ];
-		}
-		else
-		{
-			$scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4 * craziness},
-									{ type: 'DIRECTED', limit: 1 * craziness},
-									{ type: 'PRODUCED', limit: 1 * craziness},
-									{ type: 'COMPOSED_MUSIC', limit: 1 * craziness},
-									{ type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
-									{ type: 'WROTE', limit: 1 * craziness},
-									{ type: 'EDITED', limit: 1 * craziness},
-									{ type: 'DESIGNED_PRODUCTION', limit: 1 * craziness},
-									{ type: 'DESIGNED_COSTUMES', limit: 1 * craziness} ];
-		}
+        if ($scope.currentNode.type == "Person")
+        {
+            $scope.typesAndLimits = [];
+            for (var i = 0; i < $scope.currentNode.jobs.length; i++) {
+                var obj = {
+                    type: $scope.currentNode.jobs[i].name,
+                    limit: (i == 0 ? 10 : 0)
+                };
+                $scope.typesAndLimits.push(obj);
+            };
+        }
+        else
+        {
+            // $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 10 * craziness},
+            //                         { type: 'DIRECTED', limit: 0 * craziness},
+            //                         { type: 'PRODUCED', limit: 0 * craziness},
+            //                         { type: 'COMPOSED_MUSIC', limit: 0 * craziness},
+            //                         { type: 'DIRECTED_PHOTOGRAPHY', limit: 0 * craziness},
+            //                         { type: 'WROTE', limit: 0 * craziness},
+            //                         { type: 'EDITED', limit: 0 * craziness},
+            //                         { type: 'DESIGNED_PRODUCTION', limit: 0 * craziness},
+            //                         { type: 'DESIGNED_COSTUMES', limit: 0 * craziness} ];
+             $scope.typesAndLimits = [ { type: 'ACTED_IN', limit: 4 * craziness},
+                                    { type: 'DIRECTED', limit: 1 * craziness},
+                                    { type: 'PRODUCED', limit: 1 * craziness},
+                                    { type: 'COMPOSED_MUSIC', limit: 1 * craziness},
+                                    { type: 'DIRECTED_PHOTOGRAPHY', limit: 1 * craziness},
+                                    { type: 'WROTE', limit: 1 * craziness},
+                                    { type: 'EDITED', limit: 1 * craziness},
+                                    { type: 'DESIGNED_PRODUCTION', limit: 1 * craziness},
+                                    { type: 'DESIGNED_COSTUMES', limit: 1 * craziness} ];
+        }
 	};
 
 	$scope.updateSelectedJobs = function() {
-		if ($scope.currentNode.type == 'Person') {
-			$scope.selectedJobs = {
-				actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
-				writer: $scope.currentNode.jobs[0].name == 'WROTE',
-				producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
-				director: $scope.currentNode.jobs[0].name == 'DIRECTED',
-				editor: $scope.currentNode.jobs[0].name == 'EDITED',
-				dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
-				musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
-				cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
-				proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION' };
-		}
-		else {
-			$scope.selectedJobs = {
-				actor: true,
-				writer: false,
-				producer: false,
-				director: true,
-				editor: false,
-				dirphotography: false,
-				musiccomposer: false,
-				cosdesigner: false,
-				proddesigner: false };
-		}
-	};
+        if ($scope.currentNode.type == 'Person') {
+            $scope.selectedJobs = {
+                actor: $scope.currentNode.jobs[0].name == 'ACTED_IN',
+                director: $scope.currentNode.jobs[0].name == 'DIRECTED',
+                producer: $scope.currentNode.jobs[0].name == 'PRODUCED',
+                writer: $scope.currentNode.jobs[0].name == 'WROTE',
+                dirphotography: $scope.currentNode.jobs[0].name == 'DIRECTED_PHOTOGRAPHY',
+                editor: $scope.currentNode.jobs[0].name == 'EDITED',
+                musiccomposer: $scope.currentNode.jobs[0].name == 'COMPOSED_MUSIC',
+                cosdesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_COSTUMES',
+                proddesigner: $scope.currentNode.jobs[0].name == 'DESIGNED_PRODUCTION'
+            };
+        }
+        else {
+            $scope.selectedJobs = {
+                actor: false,
+                director: false,
+                producer: false,
+                writer: false,
+                dirphotography: false,
+                editor: false,
+                musiccomposer: false,
+                cosdesigner: false,
+                proddesigner: false
+            };
+        }
+        var nodes = $scope.cinegraphId != undefined ? $scope.suggestedNodes : $scope.currentDisplayedNodes;
+        for (var i = 0; i < nodes.length; i++) {
+            for (var job in $scope.selectedJobs) {
+                if ($scope.jobsRelationships[job] == nodes[i].type) {
+                    $scope.selectedJobs[job] = true;
+                }
+            }
+        };
+    };
 
 	$scope.findLimitForJob = function(type) {
 		for (var i = 0 ; i < $scope.typesAndLimits.length; i++) {

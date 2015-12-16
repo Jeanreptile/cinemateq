@@ -1119,7 +1119,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     scope.friendsTastes = [];
                     var sentenceObj = {
                       showButton: false,
-                      sentence: "Hey buddy, rate this movie to compare it with your friends."
+                      sentence: "Hey buddy, rate this " + scope.currentNode.type.toLowerCase() + " to compare it with your friends."
                     }
                     scope.friendsTastes.push(sentenceObj);
                 }

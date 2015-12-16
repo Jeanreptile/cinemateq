@@ -630,7 +630,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 linesScene = new THREE.Scene();
                 renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, autoClear: false });
                 raycaster = new THREE.Raycaster();
-
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
@@ -661,9 +660,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 linesScene.add(camera);
 
                 // camera
-                camera.position.x = 0;
-                camera.position.y = 0;
-                camera.position.z = 55;
+                camera.position.set(0, 0, 55);
                 cameraControls = new THREE.TrackballControls(camera, document.getElementById('graph'));
                 cameraControls.rotateSpeed = 2.0;
                 cameraControls.zoomSpeed = 1.2;
@@ -675,10 +672,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 cameraControls.keys = [ 65, 83, 68 ];
 
                 // label text init
-                label = $(
-                    '<div id="canvasNodeLabel" style="text-align:center;">\
-                        <div class="labelText"></div>\
-                    </div>');
+                label = $('<div id="canvasNodeLabel" style="text-align:center;"><div class="labelText"></div></div>');
                 label.css({ 'position': 'absolute','z-index': '1','background-color': '#aaaaaa',
                     'color': 'white','padding':'10px','left':'-1000'
                 });
@@ -769,34 +763,37 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function generateGradientSprite(color) {
-            var c = new THREE.Color(color);
-            var gradientCanv = document.createElement('canvas');
-            gradientCanv.width = 256;
-            gradientCanv.height = 256;
-            var hw = gradientCanv.width / 2;
-            var gradientCtx = gradientCanv.getContext('2d');
-            // outer circle mask
-            gradientCtx.beginPath();
-            gradientCtx.arc(hw, hw, hw, 0, PI2);
-            gradientCtx.clip();
-            gradientCtx.fillStyle = "rgba("+c.r*255+","+c.g*255+","+c.b*255+",0)";
-            gradientCtx.fill();
-            // gradient
-            gradientCtx.shadowOffsetX = 1000;
-            gradientCtx.shadowOffsetY = 1000;
-            gradientCtx.shadowBlur = hw / 2.5;
-            gradientCtx.fillStyle = color;
-            gradientCtx.shadowColor = color;
-            gradientCtx.beginPath();
-            gradientCtx.arc(
-                hw * 2 - gradientCtx.shadowOffsetX,
-                hw - gradientCtx.shadowOffsetY,
-                hw - gradientCtx.shadowBlur * 1.2,
-                0, PI2, true
-            );
-            gradientCtx.fill();
+            if (gradients[color] == undefined) {
+                var c = new THREE.Color(color);
+                var gradientCanv = document.createElement('canvas');
+                gradientCanv.width = 256;
+                gradientCanv.height = 256;
+                var hw = gradientCanv.width / 2;
+                var gradientCtx = gradientCanv.getContext('2d');
+                // outer circle mask
+                gradientCtx.beginPath();
+                gradientCtx.arc(hw, hw, hw, 0, PI2);
+                gradientCtx.clip();
+                gradientCtx.fillStyle = "rgba("+c.r*255+","+c.g*255+","+c.b*255+",0)";
+                gradientCtx.fill();
+                // gradient
+                gradientCtx.shadowOffsetX = 1000;
+                gradientCtx.shadowOffsetY = 1000;
+                gradientCtx.shadowBlur = hw / 2.5;
+                gradientCtx.fillStyle = color;
+                gradientCtx.shadowColor = color;
+                gradientCtx.beginPath();
+                gradientCtx.arc(
+                    hw * 2 - gradientCtx.shadowOffsetX,
+                    hw - gradientCtx.shadowOffsetY,
+                    hw - gradientCtx.shadowBlur * 1.2,
+                    0, PI2, true
+                );
+                gradientCtx.fill();
+                gradients[color] = gradientCanv;
+            }
             // generating sprite
-            var texture = new THREE.Texture(gradientCanv);
+            var texture = new THREE.Texture(gradients[color]);
             var material = new THREE.SpriteMaterial({ map: texture, transparent: true });
             var sprite = new THREE.Sprite(material);
             //texture.minFilter = THREE.LinearFilter;
@@ -816,8 +813,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 if (pos.x + circleRadius < 0 || pos.x - circleRadius > viewWidth
                     || pos.y + circleRadius < 0 || pos.y - circleRadius > viewHeight)
                     continue;
-                var circleDiameter = circleRadius * 2;
-                var innerRadius = Math.abs(circleRadius * ((borderFraction - 2) / borderFraction));
                 // tagging gradient sprites as unused to remove them later if necessary
                 for (var k = 0; k < sprite.children.length; k++)
                     sprite.children[k].gradientIsActive = false;
@@ -861,7 +856,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         gradientSprite.lineId = lineId;
                         sprite.add(gradientSprite);
                         gradientSprite.gradientIsActive = true;
-                        console.log('adding contour for ' + sprite.name + " " + c);
                     }
                 }
                 // removing gradient sprite when not needed anymore
@@ -1530,6 +1524,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         }
 
         function refreshGraph() {
+            removeFilters();
             removeSuggestions();
             displayCinegraphNodes([], true);
         }
@@ -1615,17 +1610,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     line = testLine;
             }
             context.fillText(line, x, y, maxWidth);
-        }
-
-        function generateBackgroundCanvas(width, height, image, blur) {
-            var bgCanvas = document.createElement('canvas');
-            bgCanvas.width = width;
-            bgCanvas.height = height;
-            var bgContext = bgCanvas.getContext('2d');
-            drawImageProp(bgContext, image, 0, 0, bgCanvas.width, bgCanvas.height);
-            stackBlurCanvasRGB(bgCanvas, 0, 0, bgCanvas.width, bgCanvas.height, blur);
-            return bgCanvas;
-        }
+        }    
 
         function toScreenPosition(v)
         {
@@ -1637,17 +1622,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             vector.x = (vector.x * widthHalf) + widthHalf;
             vector.y = - (vector.y * heightHalf) + heightHalf;
             return new THREE.Vector3(vector.x,  vector.y, 0);
-        }
-
-        function crossFadeBackgroundCanvas(canvas, startCanvas, endCanvas, percentage) {
-            var bgContext = canvas.getContext('2d');
-            bgContext.fillStyle = "#000000";
-            bgContext.fillRect(0, 0, canvas.width, canvas.height);
-            bgContext.globalAlpha = 1 - (percentage / 100);
-            bgContext.drawImage(startCanvas, 0, 0, canvas.width, canvas.height);
-            bgContext.globalAlpha = percentage / 100;
-            bgContext.drawImage(endCanvas, 0, 0, canvas.width, canvas.height);
-            bgContext.globalAlpha = 1;
         }
 
 
@@ -1711,60 +1685,156 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             scope.paginateBy(job, scope.jobsRelationships[job], direction);
         }
 
-        function updateFilters() {
-            if (current == null || current._id != scope.currentNode.id)
-                $('.canvasNodeFilter').fadeOut(300, function(){ $(this).remove(); });
-            else {
-                var i = -2;
-                var slice = PI2 / 12;
-                for (f in scope.selectedJobs){
-                    i++;
-                    var filter = $('.canvasNodeFilter.' + f);
-                    if (filter.length <= 0) {
-                        // create element if not existing
-                        filter = $('<div class="canvasNodeFilter ' + f + '" title="' + scope.jobsNames[f] + '"> \
-                            <div class="canvasNodeFilterLeft">◄</div><div class="canvasNodeFilterRight">►</div></div>');
-                        filter.find('.canvasNodeFilterLeft, .canvasNodeFilterRight').css({
-                            "background-color": scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
-                            "color": !scope.selectedJobs[f] ? colors[scope.jobsRelationships[f]] : "#555555",
-                        });
-                        if (scope.selectedJobs[f])
-                            filter.toggleClass('selected');
-                        filter.data('job', f);
-                        // binding mouse events
-                        filter.mousedown(function(){
-                            $(this).data('pressed', 'true');
-                            setTimeout((function(f) { return function() {
-                                if (f.data('pressed')) {
-                                    filterCallback(f.data('job'));
-                                    f.data('pressed', false);
-                                }
-                            }; })($(this)), 500);
-                        }).on('mouseup', function(e){
-                            if ($(this).data('pressed')) {
-                                if(e.target == $(this).find('.canvasNodeFilterLeft')[0])
-                                    paginateCallback($(this).data('job'), 'Left');
-                                else
-                                    paginateCallback($(this).data('job'), 'Right');
-                            }
-                            $(this).data('pressed', false);
-                        }).on('mouseleave', function(){ $(this).data('pressed', false); });
-                        // adding
-                        $('#graph').after(filter.hide().fadeIn(300));
-                    }
-                    // calculating position
-                    var p = toScreenPosition(current.position);
-                    var radius = getSpriteRadius(current.position, current.scale.x);
-                    var r = filter.outerWidth() / 2;
-                    radius += r * 1.2;
-                    var x = p.x + radius * Math.cos(slice * i) - r;
-                    var y = p.y + radius * Math.sin(slice * i) - r;
-                    filter.css({ top: y, left: x });
-                    if (filter.hasClass('selected'))
-                        filter.find('.canvasNodeFilterLeft').css("color", scope.jobsOffset[f] == 0 ?
-                            jQuery.Color(colors[scope.jobsRelationships[f]]).darkenColor(20) : '#55555');
-                }
+        function generateFilterButtonSprite(job) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            var borderThickness = canvas.width / borderFraction;
+            var halfWidth = canvas.width / 2;
+            var halfHeight = canvas.height / 2;
+            var context = canvas.getContext('2d');
+            // clipping to circle
+            context.beginPath();
+            context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
+            context.clip();
+            // background color
+            context.fillStyle = '#222222';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            // drawing text
+            context.fillStyle = colors[scope.jobsRelationships[job]];
+            context.font = "bold 100px Arial";
+            context.textAlign = "center";
+            context.textBaseline = 'middle';
+            context.fillText(scope.jobsNames[job].toUpperCase().substring(0,2), halfWidth, halfWidth);
+            // generating sprite
+            var texture = new THREE.Texture(canvas);
+            var material = new THREE.SpriteMaterial({ map: texture });
+            var sprite = new THREE.Sprite(material);
+            //texture.minFilter = THREE.LinearFilter;
+            texture.needsUpdate = true;
+            sprite.isFilterButton = true;
+            sprite.filterButtonJob = job;
+            sprite.gradientRemoveDisable = true;
+            return sprite;
+        }
+
+        function updateFilterButtonSprite(sprite, selected){
+            selected = selected != true ? false : true;
+            var context = sprite.material.map.image.getContext('2d');
+            var width = 256;
+            var halfWidth = width / 2;
+            if (context != undefined){
+                var color = colors[scope.jobsRelationships[sprite.filterButtonJob]];
+                // background color
+                context.fillStyle = selected ? color : '#222222';
+                context.fillRect(0, 0, width, width);
+                // drawing text
+                context.fillStyle = selected ? '#222222' : color;
+                context.font = "bold 100px Arial";
+                context.textAlign = "center";
+                context.textBaseline = 'middle';
+                context.fillText(scope.jobsNames[sprite.filterButtonJob].toUpperCase().substring(0,2), halfWidth, halfWidth);
+                sprite.material.map.needsUpdate = true;
             }
+        }
+
+        function generateFilterBackgroundButtonSprite(text) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            var borderThickness = canvas.width / borderFraction;
+            var halfWidth = canvas.width / 2;
+            var halfHeight = canvas.height / 2;
+            var context = canvas.getContext('2d');
+            // clipping to circle
+            context.beginPath();
+            context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
+            context.clip();
+            // background color
+            context.fillStyle = '#222222';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            // drawing text
+            context.fillStyle = '#ffffff';
+            context.font = "bold 100px Arial";
+            context.textAlign = "center";
+            context.textBaseline = 'middle';
+            context.fillText(text, halfWidth, halfWidth);
+            // generating sprite
+            var texture = new THREE.Texture(canvas);
+            var material = new THREE.SpriteMaterial({ map: texture });
+            var sprite = new THREE.Sprite(material);
+            //texture.minFilter = THREE.LinearFilter;
+            texture.needsUpdate = true;
+            sprite.isFilterBackgroundButton = true;
+            sprite.filterBackgroundButtonText = text;
+            sprite.gradientRemoveDisable = true;
+            return sprite;
+        }
+
+        function updateFilterBackgroundButtonSprite(sprite, selected){
+            selected = selected != true ? false : true;
+            var context = sprite.material.map.image.getContext('2d');
+            var width = 256;
+            var halfWidth = width / 2;
+            if (context != undefined){
+                var color = '#ffffff';
+                // background color
+                context.fillStyle = selected ? color : '#222222';
+                context.fillRect(0, 0, width, width);
+                // drawing text
+                context.fillStyle = selected ? '#222222' : color;
+                context.font = "bold 100px Arial";
+                context.textAlign = "center";
+                context.textBaseline = 'middle';
+                context.fillText(sprite.filterBackgroundButtonText, halfWidth, halfWidth);
+                sprite.material.map.needsUpdate = true;
+            }
+        }
+
+        function generateSpriteFilterBackground(job) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            var context = canvas.getContext('2d');
+            context.beginPath();
+            var halfWidth = canvas.width / 2;
+            var borderThickness = canvas.width / borderFraction;
+            context.arc(halfWidth, halfWidth, halfWidth, 0, PI2);
+            context.clip();
+            context.fillStyle = job != undefined ? colors[scope.jobsRelationships[job]] : orangeColor;
+            context.globalAlpha = 0.9;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            // drawing text
+            context.fillStyle = "#ffffff";
+            context.font = "bold " + (canvas.width / 9) + "px Arial";
+            context.textAlign = "center";
+            context.globalAlpha = 1;
+            wrapText(context, scope.jobsNames[job].toUpperCase(), halfWidth, canvas.height / 2.5,
+                canvas.width -  5 * borderThickness, canvas.height / 6);
+
+            var texture = new THREE.Texture(canvas);
+            var material = new THREE.SpriteMaterial({ map: texture });
+            var sprite = new THREE.Sprite(material);
+            sprite.gradientRemoveDisable = true;
+            //texture.minFilter = THREE.LinearFilter;
+            texture.needsUpdate = true;
+            return sprite;
+        }
+
+        function updateSpriteFilterBackground(context, job) {
+            var width = 256;
+            var borderThickness = width / borderFraction;
+            context.clearRect(0,0,width,width);
+            context.fillStyle = job != undefined ? colors[scope.jobsRelationships[job]] : orangeColor;
+            context.globalAlpha = 0.9;
+            context.fillRect(0, 0, width, width);
+            // drawing text
+            context.fillStyle = "#ffffff";
+            context.font = "bold " + (width / 9) + "px Arial";
+            context.textAlign = "center";
+            context.globalAlpha = 1;
+            wrapText(context, scope.jobsNames[job].toUpperCase(), width / 2, width / 2.5,
+                width -  5 * borderThickness, width / 6);
         }
 
         jQuery.Color.fn.darkenColor = function(amount) {
@@ -1837,8 +1907,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             else if (scope.cinegraphId != undefined && mouseClickStart.onNode)
             {
                 var intersected = getIntersection();
-                if (intersected.length > 0)
-                {
+                if (intersected.length > 0){
                     var id = intersected[0].object._id;
                     if ($.inArray(id, mouseClickStart.cinegraphPath) == -1)
                         mouseClickStart.cinegraphPath.push(id);
@@ -1884,11 +1953,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var intersection = getIntersection()[0];
             if (intersection == undefined){
                 removeSuggestions();
+                removeFilters();
                 return;
             }
             // intersection with a node
             var id = intersection.object._id;
             if (id != null) {
+                console.log(id);
                 if (scope.cinegraphId != undefined) {
                     var alreadySuggestedNodes = false;
                     $.each(scope.suggestedNodes, function (i, obj) {
@@ -1899,11 +1970,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     });
                     if (alreadySuggestedNodes)
                         return;
-                    else
+                    else {
+                        removeFilters();
                         removeSuggestions();
+                    }
                 }
-                scope.clearOffsets(); // clearing pagination offsets
-                cameraLookAtNode(id); // animating camera
+                scope.clearOffsets();   // clearing pagination offsets
+                addFilters(id);         // adding filters buttons
+                cameraLookAtNode(id);   // animating camera
                 // updating current node
                 scope.currentNode.sprite = intersection.object;
                 nodePosition = intersection.object.position;
@@ -1911,6 +1985,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     getNodeCinegraphMode(id, nodePosition, draw, true);
                 else
                     getNode(id, nodePosition, draw);
+            } else if (intersection.object.isFilterBackgroundButton) {
+                var job = intersection.object.filterBackgroundJob;
+                //console.log(job, scope.selectedJobs[job]);
+                scope.selectedJobs[job] = !scope.selectedJobs[job];
+                scope.filterBy(job, scope.jobsRelationships[job]);
+                //console.log(job, scope.selectedJobs[job]);
+                updateFilterBackgroundButtonSprite(intersection.object, scope.selectedJobs[job]);
             }
         }
 
@@ -1982,16 +2063,154 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
+        function addFilters(id) {
+            var n = findNode(id);
+            var slice = PI2 / 12;
+            if (n != undefined){
+                var i = 0;
+                for (job in scope.selectedJobs){
+                    i++;
+                    var found = false;
+                    for (var j = 0; j < scene.children.length; j++) {
+                        if (scene.children[j].filterButtonJob == job){
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found){
+                        var buttonSprite = generateFilterButtonSprite(job);
+                        var scale = 0.33;
+                        buttonSprite.scale.set(scale, scale, scale);
+                        buttonSprite.position.set(
+                            Math.cos(slice * i) * 0.65,
+                            Math.sin(slice * i) * 0.65,
+                            0.1
+                        );
+                        buttonSprite.filterButtonNodeId = n._id;
+                        n.add(buttonSprite);
+                    }
+                }
+            }
+        }
+
+        function removeFilters() {
+            for (var i = scene.children.length - 1; i >= 0; i--){
+                var sprite = scene.children[i];
+                var done = false;
+                for (var j = sprite.children.length - 1; j >= 0; j--){
+                    var child = sprite.children[j];
+                    if (child.isFilterButton || child.isFilterBackground || child.isFilterBackgroundButton){
+                        child.geometry.dispose();
+                        child.material.dispose();
+                        sprite.remove(child);
+                        done = true;
+                    }
+                }
+                if (done){
+                    renderNeedsUpdate = true;
+                    return;
+                }
+            }
+        }
+
+        function unsetNodeAsFilter(id){
+            var n = findNode(id);
+            if (n != undefined){
+                for (var i = n.children.length - 1; i >= 0; i--){
+                    var child = n.children[i];
+                    if (child.isFilterBackground || child.isFilterBackgroundButton) {
+                        child.geometry.dispose();
+                        child.material.dispose();
+                        n.remove(child);
+                    } else if (child.isFilterButton)
+                        updateFilterButtonSprite(child, scope.selectedJobs[child.filterButtonJob]);
+                }
+                renderNeedsUpdate = true;
+                n.isSetAsFilter = false;
+            }
+        }
+
+        function setNodeAsFilter(id, job){
+            var n = findNode(id);
+            if (n != undefined){
+                var addBackground = true;
+                var addSwitchButton = true;
+                for (var i = 0; i < n.children.length; i++){
+                    var child = n.children[i];
+                    if (child.isFilterBackground == true) {
+                        addBackground = false;
+                        if (child.filterBackgroundJob != job){
+                            updateSpriteFilterBackground(n.children[i].material.map.image.getContext('2d'), job);
+                            child.material.map.needsUpdate = true;
+                            child.filterBackgroundJob = job;
+                        }
+                    } else if (child.isFilterButton)
+                        updateFilterButtonSprite(child, child.filterButtonJob == job || scope.selectedJobs[child.filterButtonJob]);
+                    else if (child.isFilterBackgroundButton) {
+                        addSwitchButton = false;
+                        updateFilterBackgroundButtonSprite(child, scope.selectedJobs[job]);
+                        child.filterBackgroundJob = job;
+                    }
+                }
+                // creating new filter background sprite
+                if (addBackground) {
+                    var sprite = generateSpriteFilterBackground(job);
+                    sprite.isFilterBackground = true;
+                    sprite.filterBackgroundJob= job;
+                    sprite.position.z = 0.001;
+                    sprite.scale.set(0.92,0.92,0.92);
+                    n.add(sprite);
+                }
+                if (addSwitchButton){
+                    var switchButton = generateFilterBackgroundButtonSprite("✔");
+                    var scale = 0.23;
+                    switchButton.scale.set(scale, scale, scale);
+                    switchButton.position.z = 0.002;
+                    switchButton.position.y = -0.25
+                    switchButton.filterBackgroundJob = job;
+                    n.add(switchButton);
+                }
+                n.isSetAsFilter = true;
+            }
+        }
+
+        // overriding Sprite raycasting with custom values
+        THREE.Sprite.prototype.raycast = (function () {
+            var matrixPosition = new THREE.Vector3();
+            return function raycast( raycaster, intersects ) {
+                matrixPosition.setFromMatrixPosition( this.matrixWorld );
+                var distanceSq = raycaster.ray.distanceSqToPoint( matrixPosition );
+                var guessSizeSq = this.scale.x * this.scale.y;
+                if (this.scale.x == 8)
+                    guessSizeSq = 14;
+                else if (this.scale.x == 0.33)
+                    guessSizeSq = 1.63;
+                else if (this.scale.x == 0.23)
+                    guessSizeSq = 0.8;
+                if (distanceSq > guessSizeSq)
+                    return;
+                intersects.push({
+                    distance: Math.sqrt(distanceSq),
+                    point: this.position,
+                    face: null,
+                    object: this
+                });
+            };
+        }());
+
         function getIntersection() {
             raycaster.setFromCamera(mouse, camera);
-            return raycaster.intersectObjects(scene.children);
+            return raycaster.intersectObjects(scene.children, true);
         }
 
         function updateIntersection() {
-            // getting intersected object
             var intersects = getIntersection();
-            if (intersects.length > 0 && intersects[0].object != current){
+            if (intersects.length > 0){
+                if (intersects[0].object == current){
+                    return;
+                }
                 var intersected = intersects[0].object;
+                // node intersection
                 if (intersected._id !== undefined) {
                     // restoring node state when leaving it
                     if (current && (current._id != intersected._id)) {
@@ -2010,6 +2229,15 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         current.texture.needsUpdate = true;
                     }).start();
                 }
+                // filter button intersection
+                else if (intersected.isFilterButton == true)
+                    setNodeAsFilter(intersected.filterButtonNodeId, intersected.filterButtonJob);
+                else if (intersected.isFilterBackgroundButton) {
+                    //updateFilterBackgroundButtonSprite(intersected, true);
+                }
+            } else if (current && current.isSetAsFilter == true) {
+                console.log("unsetting!");
+                unsetNodeAsFilter(current._id);
             }
         }
 
@@ -2224,6 +2452,26 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         /* BACKGROUND HANDLING */
         /* ------------------- */
 
+        function generateBackgroundCanvas(width, height, image, blur) {
+            var bgCanvas = document.createElement('canvas');
+            bgCanvas.width = width;
+            bgCanvas.height = height;
+            var bgContext = bgCanvas.getContext('2d');
+            drawImageProp(bgContext, image, 0, 0, bgCanvas.width, bgCanvas.height);
+            stackBlurCanvasRGB(bgCanvas, 0, 0, bgCanvas.width, bgCanvas.height, blur);
+            return bgCanvas;
+        }
+
+        function crossFadeBackgroundCanvas(canvas, startCanvas, endCanvas, percentage) {
+            var bgContext = canvas.getContext('2d');
+            bgContext.fillStyle = "#000000";
+            bgContext.fillRect(0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = 1 - (percentage / 100);
+            bgContext.drawImage(startCanvas, 0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = percentage / 100;
+            bgContext.drawImage(endCanvas, 0, 0, canvas.width, canvas.height);
+            bgContext.globalAlpha = 1;
+        }
 
         function cloneCanvas(canvas) {
             var newCanvas = document.createElement('canvas');
@@ -2351,8 +2599,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var oldTweenCount = tweenCount;
             tweenCount = TWEEN.getAll().length;
             if (renderNeedsUpdate || tweenCount > 0 || oldTweenCount > 0 && tweenCount == 0){
-                for (var i = 0; i < scene.children.length; i++)
-                {
+                for (var i = 0; i < scene.children.length; i++){
                     if (scene.children[i].type == 'Sprite')
                         scene.children[i].lookAt(camera.position);
                 }
@@ -2389,9 +2636,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             composerBackground.render();
             composerLines.render();
             updateHoverLabelPosition();
-            updateFilters();
-            composer.render();
             updateGradientLayer();
+            composer.render();
             blendComposer.render();
         }
 

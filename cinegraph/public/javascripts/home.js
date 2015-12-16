@@ -1321,6 +1321,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             // outline
             var gradientSprite = generateSpriteBackground(sprite.mainJob);
             gradientSprite.material.depthWrite = false;
+            gradientSprite.isOutlineSprite = true;
             gradientSprite.position.set(0,0,-0.000001);
             sprite.add(gradientSprite);
             // adding sprite
@@ -1798,7 +1799,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 sprite.filterBackgroundButtonText = text;
                 sprite.gradientRemoveDisable = true;
                 filterBackgroundButtonSprites[text] = sprite;
-                console.log("generating");
             }
             return filterBackgroundButtonSprites[text];
         }
@@ -1994,7 +1994,9 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 removeFilters();
                 return;
             }
-
+            // handling raycasting error
+            if (intersection.object.isOutlineSprite)
+                intersection.object = intersection.object.parent;
             // intersection with a node
             var id = intersection.object._id;
             if (id != null) {
@@ -2314,10 +2316,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 else if (intersected.isFilterBackgroundButton) {
                     //updateFilterBackgroundButtonSprite(intersected, true);
                 }
-            } else if (current && current.isSetAsFilter == true) {
-                console.log("unsetting!");
+            } else if (current && current.isSetAsFilter == true)
                 unsetNodeAsFilter(current._id);
-            }
         }
 
         /* ----------------------- */

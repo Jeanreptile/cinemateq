@@ -2030,11 +2030,21 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     updateFilterBackgroundButtonSprite(intersection.object, scope.selectedJobs[job]);
                 }
                 // left pagination
-                else if (intersection.object.isLeftButton)
+                else if (intersection.object.isLeftButton) {
                     scope.paginateBy(job, scope.jobsRelationships[job], 'Left');
+                    updateFilterBackgroundButtonSprite(intersection.object, true);
+                    setTimeout(function(){
+                        updateFilterBackgroundButtonSprite(intersection.object, false);
+                    }, 300);
+                }
                 // right pagination
-                else if (intersection.object.isRightButton)
+                else if (intersection.object.isRightButton) {
                     scope.paginateBy(job, scope.jobsRelationships[job], 'Right');
+                    updateFilterBackgroundButtonSprite(intersection.object, true);
+                    setTimeout(function(){
+                        updateFilterBackgroundButtonSprite(intersection.object, false);
+                    }, 300);
+                }
             }
         }
 

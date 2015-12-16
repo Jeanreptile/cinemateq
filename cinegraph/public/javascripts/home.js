@@ -502,7 +502,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             scope.suggestedNodes = [];
 
             scope.paginateBy = function(job, relationship, direction) {
-                console.log('paginateBy');
                 var nodes = scope.cinegraphId != undefined ? scope.suggestedNodes : scope.currentDisplayedNodes;
                 if (scope.selectedJobs[job]) {
                     // removing old nodes
@@ -1707,41 +1706,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
         }
 
-        function filterCallback(job) {
-            scope.selectedJobs[job] = !scope.selectedJobs[job];
-            scope.filterBy(job, scope.jobsRelationships[job]);
-            var f = $('.canvasNodeFilter.' + job);
-            f.toggleClass('selected');
-            var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilterLeft, .canvasNodeFilterRight');
-            if (btn.length > 0){
-                if (f.hasClass('selected'))
-                    btn.animate({"background-color": colors[scope.jobsRelationships[job]],"color": "#555555" }, 200);
-                else
-                    btn.animate({"background-color": "#555555","color": colors[scope.jobsRelationships[job]] }, 200);
-            }
-        }
-
-        function paginateCallback(job, direction){
-            console.log('paginateCallback', job, direction);
-            if (direction == 'Left' && scope.jobsOffset[job] == 0
-                || !$('.canvasNodeFilter.' + job).hasClass('selected'))
-                return;
-            var btn = $('.canvasNodeFilter.' + job).find('.canvasNodeFilter' + direction);
-            var bgColor = btn.css('background-color');
-            var c = btn.css('background-color').replace(/[^0-9,]+/g, "");
-            var r = Math.min(parseInt(c.split(",")[0],10) + 25, 255),
-                g = Math.min(parseInt(c.split(",")[1],10) + 25, 255),
-                b = Math.min(parseInt(c.split(",")[2],10) + 25, 255);
-            var lighterBg = 'rgb('+ r +','+ g +','+ b +')';
-            // animating button color when paginating
-            btn.animate({ 'background-color': lighterBg }, 250, function() {
-                setTimeout((function(b, c) { return function() {
-                    b.animate({ 'background-color': c }, 250);
-                }; })($(this), bgColor), 1000);
-            });
-            scope.paginateBy(job, scope.jobsRelationships[job], direction);
-        }
-
         function generateFilterButtonSprite(job) {
             var canvas = document.createElement('canvas');
             canvas.width = 256;
@@ -2016,7 +1980,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             // intersection with a node
             var id = intersection.object._id;
             if (id != null) {
-                console.log(id);
                 if (scope.cinegraphId != undefined) {
                     var alreadySuggestedNodes = false;
                     $.each(scope.suggestedNodes, function (i, obj) {
@@ -2044,11 +2007,20 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     getNode(id, nodePosition, draw);
             } else if (intersection.object.isFilterBackgroundButton) {
                 var job = intersection.object.filterBackgroundJob;
-                //console.log(job, scope.selectedJobs[job]);
-                scope.selectedJobs[job] = !scope.selectedJobs[job];
-                scope.filterBy(job, scope.jobsRelationships[job]);
-                //console.log(job, scope.selectedJobs[job]);
-                updateFilterBackgroundButtonSprite(intersection.object, scope.selectedJobs[job]);
+                // switch job button
+                if (intersection.object.isSwitchButton){
+                    //console.log(job, scope.selectedJobs[job]);
+                    scope.selectedJobs[job] = !scope.selectedJobs[job];
+                    scope.filterBy(job, scope.jobsRelationships[job]);
+                    //console.log(job, scope.selectedJobs[job]);
+                    updateFilterBackgroundButtonSprite(intersection.object, scope.selectedJobs[job]);
+                }
+                // left pagination
+                else if (intersection.object.isLeftButton)
+                    scope.paginateBy(job, scope.jobsRelationships[job], 'Left');
+                // right pagination
+                else if (intersection.object.isRightButton)
+                    scope.paginateBy(job, scope.jobsRelationships[job], 'Right');
             }
         }
 
@@ -2190,8 +2162,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function setNodeAsFilter(id, job){
             var n = findNode(id);
             if (n != undefined){
-                var addBackground = true;
-                var addSwitchButton = true;
+                var addBackground = true, addSwitchButton = true, addRightButton = true, addLeftButton = true;
                 for (var i = 0; i < n.children.length; i++){
                     var child = n.children[i];
                     if (child.isFilterBackground == true) {
@@ -2204,8 +2175,14 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     } else if (child.isFilterButton)
                         updateFilterButtonSprite(child, child.filterButtonJob == job || scope.selectedJobs[child.filterButtonJob]);
                     else if (child.isFilterBackgroundButton) {
-                        addSwitchButton = false;
-                        updateFilterBackgroundButtonSprite(child, scope.selectedJobs[job]);
+                        if (child.isSwitchButton) {
+                            addSwitchButton = false;
+                            updateFilterBackgroundButtonSprite(child, scope.selectedJobs[job]);
+                        }
+                        else if (child.isLeftButton)
+                            addLeftButton = false;
+                        else if (child.isRightButton)
+                            addRightButton = false;
                         child.filterBackgroundJob = job;
                     }
                 }
@@ -2219,13 +2196,36 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     n.add(sprite);
                 }
                 if (addSwitchButton){
-                    var switchButton = generateFilterBackgroundButtonSprite("✔");
+                    var btn = generateFilterBackgroundButtonSprite("✔");
                     var scale = 0.23;
-                    switchButton.scale.set(scale, scale, scale);
-                    switchButton.position.z = 0.002;
-                    switchButton.position.y = -0.25
-                    switchButton.filterBackgroundJob = job;
-                    n.add(switchButton);
+                    btn.scale.set(scale, scale, scale);
+                    btn.position.z = 0.002;
+                    btn.position.y = -0.25
+                    btn.filterBackgroundJob = job;
+                    btn.isSwitchButton = true;
+                    n.add(btn);
+                }
+                if (addLeftButton){
+                    var btn = generateFilterBackgroundButtonSprite("◄");
+                    var scale = 0.23;
+                    btn.scale.set(scale, scale, scale);
+                    btn.position.x = -0.23;
+                    btn.position.z = 0.002;
+                    btn.position.y = -0.25
+                    btn.filterBackgroundJob = job;
+                    btn.isLeftButton = true;
+                    n.add(btn);
+                }
+                if (addRightButton){
+                    var btn = generateFilterBackgroundButtonSprite("►");
+                    var scale = 0.23;
+                    btn.scale.set(scale, scale, scale);
+                    btn.position.x = 0.23;
+                    btn.position.z = 0.002;
+                    btn.position.y = -0.25
+                    btn.filterBackgroundJob = job;
+                    btn.isRightButton = true;
+                    n.add(btn);
                 }
                 n.isSetAsFilter = true;
             }

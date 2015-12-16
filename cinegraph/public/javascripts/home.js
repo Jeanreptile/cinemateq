@@ -2009,16 +2009,15 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                         }
                     });
                     // if node is a suggestion
-                    if (alreadySuggestedNodes) {
+                    if (alreadySuggestedNodes)
                         return;
-                    } else {
-                        removeFilters();
+                    else
                         removeSuggestions();
-                    }
                 }
-                scope.clearOffsets();   // clearing pagination offsets
-                addFilters(id);         // adding filters buttons
-                cameraLookAtNode(id);   // animating camera
+                removeFilters();
+                scope.clearOffsets();
+                addFilters(id);
+                cameraLookAtNode(id);
                 // updating current node
                 scope.currentNode.sprite = intersection.object;
                 nodePosition = intersection.object.position;
@@ -2148,21 +2147,16 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function removeFilters() {
             for (var i = scene.children.length - 1; i >= 0; i--){
                 var sprite = scene.children[i];
-                var done = false;
                 for (var j = sprite.children.length - 1; j >= 0; j--){
                     var child = sprite.children[j];
                     if (child.isFilterButton || child.isFilterBackground || child.isFilterBackgroundButton){
                         child.geometry.dispose();
                         child.material.dispose();
                         sprite.remove(child);
-                        done = true;
                     }
                 }
-                if (done){
-                    renderNeedsUpdate = true;
-                    return;
-                }
             }
+            renderNeedsUpdate = true;
         }
 
         function unsetNodeAsFilter(id){

@@ -33,20 +33,16 @@
 				//div.col-xs-12.m-t-sm
 					input#noteLove2.rating(type='hidden', data-filled='fa fa-heart fa-3x', data-empty='fa fa-heart-o fa-3x')
 			div.col-xs-12.m-t-sm
-					button.like-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button')
-						i.fa.fa-heart.fa-lg
-					|  
-					.btn-group(dropdown='', ng-controller="MyCinegraphCtrl")
-						button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
-							i.fa.fa-plus.fa-lg
-						ul.dropdown-menu(role='menu')
-							li(ng-if="mycinegraphs == undefined")
-								a(href='/signin') You must be logged.
-							li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
-								a(href='#') {{cine.title}}
-							li.divider(ng-if="mycinegraphs")
-							li(ng-if="mycinegraphs")
-								a(href='#') Create a myCINEGRAPH
+					button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle(type='button', dropdown-toggle='')
+						i.fa.fa-plus.fa-lg
+					ul.dropdown-menu(role='menu')
+						li(ng-if="mycinegraphs == undefined")
+							a(href='/signin') You must be logged.
+						li(ng-if="mycinegraphs", ng-repeat="cine in mycinegraphs")
+							a(href='#') {{cine.title}}
+						li.divider(ng-if="mycinegraphs")
+						li(ng-if="mycinegraphs")
+							a(href='#') Create a myCINEGRAPH
 		.col-sm-8
 			div
 				p.text-center

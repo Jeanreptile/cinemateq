@@ -44,7 +44,6 @@ angular.module('cinegraphApp').controller('UserCtrl', function($scope, $http, $w
       })
       .error(function (data, status, headers, config) {
         // Erase the token if the user fails to register
-        console.log("osadasd : " + data.message);
         $scope.message = 'Error';
         $scope.user = {};
         delete $window.localStorage.token;
@@ -118,7 +117,6 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($injector, $
         currentDate = Math.floor(Date.now() / 1000) - 120;;
         if (parseInt((JSON.parse(Base64.decode($window.localStorage.token.split('.')[1]))).exp) < parseInt(currentDate)) {
           $http.get('/users/refreshToken?username=' + JSON.parse($window.localStorage.user).username).success(function(res) {
-            console.log('ok');
             $window.localStorage.token = res.token;
             config.headers.Authorization = 'Bearer ' + $window.localStorage.token;
           });
@@ -134,18 +132,21 @@ angular.module('cinegraphApp').factory('authInterceptor', function ($injector, $
       return config;
     },
     requestError: function (rejection) {
+        console.log("Not authenticated ! 1");
       if (rejection.status === 401) {
         // handle the case where the user is not authenticated
-        console.log("Not authenticated :/");
+        console.log("Not authenticated !");
       }
       return $q.reject(rejection);
     },
     responseError: function (rejection) {
       if (rejection.status === 401) {
         // handle the case where the user is not authenticated
-        console.log("Not authenticated :/");
-        console.log(JSON.stringify(rejection));
-        $location.url("/unauthorized");
+        if (!rejection.data.message)
+        {
+          if (rejection.data && rejection.data.startsWith("<h1>Woops ! Error !</h1><h1>No authorization token was found</h1>"));
+            $location.url("/unauthorized");
+        }
       }
       return $q.reject(rejection);
     }

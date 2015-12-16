@@ -9,9 +9,9 @@ script(type='text/ng-template', id='templateAuto').
     <span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
   </a>
 section.vbox.allWindow
-  header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow(style="text-align: center;")
-    .navbar-header.aside-md.dk(style="display: inline-block;float: none")
-      a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
+  header.bg-white.header.header-md.navbar.navbar-fixed-top-xs.box-shadow
+    .navbar-header.aside-md.dk.centered-navbar
+      //a.btn.btn-link.visible-xs(data-toggle='class:nav-off-screen,open', data-target='#nav,html')
         i.fa.fa-bars
       a.navbar-brand(href='/')
         img.m-r-sm(src='images/logoRoueLibre.png', alt='')
@@ -19,17 +19,16 @@ section.vbox.allWindow
           | C I N E M A T E Q
       a.btn.btn-link.visible-xs(data-toggle='dropdown', data-target='.user')
         i.fa.fa-cog
-    ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user(style="right: 0;display: inline-block;position: absolute;")
+    ul.nav.navbar-nav.navbar-right.m-n.hidden-xs.nav-user.user
       li.dropdown
-        a.dropdown-toggle(href='#', data-toggle='dropdown')
-          span.thumb-sm.pull-left.avatar.m-r
-            img.dker(src="images/a0.png")
+        a(href='/signin' ng-if="currentUser == undefined") Sign in
+        a.dropdown-toggle(href='#', data-toggle='dropdown' ng-if='currentUser')
+          span.thumb-sm.pull-left.avatar.m-r(ng-if='currentUser')
+              img.dker(src="users/{{currentUser.username}}.jpg", onerror="this.src='users/default.jpg'")
           span(ng-if='currentUser')
             | {{currentUser.firstName}}
-          span(ng-if='currentUser == undefined')
-            | Invité
-          b.caret 
-        ul.dropdown-menu.animated.fadeInRight
+          b.caret(ng-if='currentUser')
+        ul.dropdown-menu.animated.fadeInRight(ng-if='currentUser')
           li(ng-if='currentUser')
             a(href='/profile') Profile
           li(ng-if='currentUser')
@@ -39,16 +38,12 @@ section.vbox.allWindow
           li.divider
           li
             a(ng-click='logout()' ng-if='currentUser') Logout
-            a(href='/signin' ng-if="currentUser == undefined") Sign in
   section#searchBarPosition.hbox.stretch
     section#content
         section.vbox
             section
                 form(ng-submit='submitSearchQuery(false)')
                   .input-group.searchBarStyle.centerWidth.animated.fadeInUp
-                    //.icon-addon.addon-lg
-                    //  input#searchFormControl.form-control.input-lg(autocomplete='off', type='text', ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.', typeahead='query for query in getLocation($viewValue)', typeahead-loading='loadingLocations', typeahead-min-length=4)
-                    //  label.glyphicon.glyphicon-search(for='searchBarForm', rel='tooltip', title='email')
                     input(type='hidden', name='id', value="{{asyncSelected.thisId}}")
                     input#searchFormControl.form-control.input-lg(required="", autocomplete='off', type='text',
                       ng-model='asyncSelected', placeholder='Enter your favorite {{selectedItem}}.',

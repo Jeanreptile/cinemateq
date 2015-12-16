@@ -10,8 +10,7 @@ section.vbox
 								.row
 									.col-sm-12.avatar-center-xs
 										span.thumb.pull-left.avatar.m-r
-											img.dker(src="images/a0.png")
-											i.on.md.b-black
+											img.dker(src="users/{{currentUser.username}}.jpg", onerror="this.src='users/default.jpg'")
 										span.hidden-nav-xs.clear
 											span.block.m-t-xs
 												div(ng-if='currentUser')
@@ -20,11 +19,9 @@ section.vbox
 												div(ng-if='currentUser == undefined')
 													strong.font-bold.text-lt Invité
 													span.text-muted.text-xs.block Novice
-								.row.m-t-sm.hidden-nav-xs
-									.col-sm-12.text-center
-										a.btn.btn-s-md.btn-info.btn-sm(href='/mycinegraph')
-											|See my cinegraphs
-											i.i.i-arrow-right.m-l-xs
+								.row
+									.col-sm-12.avatar-center-xs.text-center.golden-color(style="margin-top: 10px;")
+										h1 This week's recommandations
 					footer.footer.hidden-xs.no-padder.text-center-nav-xs
 						a.btn.btn-icon.icon-muted.btn-inactive.m-l-xs.m-r-xs(data-target='#nav', data-toggle='class:nav-xs')
 							i.i.i-circleleft.text
@@ -36,7 +33,7 @@ section.vbox
 								.hbox
 									aside.aside-md
 										.text-center
-											img.img-circle.m-b(src='images/a0.png', alt='...')
+											img.img-circle.m-b(width="128px", src="users/{{currentUser.username}}.jpg", alt='{{currentUser.username}} pic', onerror="this.src='users/default.jpg'")
 									|                   
 									aside
 										div(ng-if='currentUser')
@@ -56,27 +53,28 @@ section.vbox
 												i.fa.fa-lg.fa-circle-o.text-primary.m-r-sm
 												strong Cinephile
 											
-										ul.nav.nav-pills.nav-stacked.aside-lg
+										//ul.nav.nav-pills.nav-stacked.aside-lg
 											li.bg-light.dk
 												a(href='#')
 													i.i.i-share.m-r-sm
 													|  See my cinegraphs
 							|               
 							ul.nav.nav-tabs.m-b-n-xxs.bg-light
-								li.active
-									a(data-target="#notifications", data-toggle='tab') Notifications
-										span.badge.bg-danger.badge-sm.m-l-xs 10
+								//li
+									a(data-target="#recommandations", data-toggle='tab') Recommandations
 								li
 									a(data-target='#activities', data-toggle='tab') Activities
-								li
+								li.active
 									a(data-target='#edit', data-toggle='tab') Edit profile
 								li
 									a(data-target='#friends', data-toggle='tab') Friends
 							|               
 							.tab-content
-								#notifications.panel.tab-pane.active
+								//#recommandations.panel.tab-pane
 									ul.list-group.no-radius.m-b-none.m-t-n-xxs.list-group-lg.no-border
 										li.list-group-item
+											strong.block Welcome to your profile page !
+										//li.list-group-item
 											a.thumb-sm.pull-left.m-r-sm(href='#')
 												img.img-circle(src='images/a0.png')
 											|                       
@@ -84,6 +82,7 @@ section.vbox
 												small.pull-right 3 minutes ago
 												strong.block Drew Wllon
 												small invited you to be his friend
+								|                 
 								#activities.panel.tab-pane(ng-controller='ActionsController')
 									ul.list-group.no-radius.m-b-none.m-t-n-xxs.list-group-lg.no-border
 										li.list-group-item(ng-repeat="action in actions")
@@ -94,41 +93,50 @@ section.vbox
 												strong.block {{action.username}}
 												small {{action.message}}
 								|                 
-								#edit.tab-pane.wrapper-lg
-									form.form-horizontal
-										.form-group
-											label.col-sm-3.control-label Username:
-											.col-sm-5
-												input.form-control(type='text', ng-model='currentUserToEdit.username', disabled='disabled')
-										.line.line-dashed.b-b.line-lg.pull-in
-										|                     
-										.form-group
-											label.col-sm-3.control-label Firstname:
-											.col-sm-5
-												input.form-control(type='text', ng-model='currentUserToEdit.firstName')
-										.line.line-dashed.b-b.line-lg.pull-in
-										|                     
-										.form-group
-											label.col-sm-3.control-label Lastname:
-											.col-sm-5
-												input.form-control(type='text', ng-model='currentUserToEdit.lastName')
-										.line.line-dashed.b-b.line-lg.pull-in
-										|                     
-										.form-group
-											label.col-sm-3.control-label(for='input-id-1') Email:
-											.col-sm-5
-												input#input-id-1.form-control(type='email', ng-model='currentUserToEdit.email')
-										.line.line-dashed.b-b.line-lg.pull-in
-										|                     
-										//.form-group
-											label.col-sm-3.control-label Password:
-											.col-sm-5
-												input.form-control(type='password', ng-model='currentUserToEdit.password')
-										//.line.line-dashed.b-b.line-lg.pull-in
-										|                     
-										.form-group
-											.col-sm-offset-3.col-sm-5
-												button.btn.btn-sm.btn-primary(type='submit', ng-click='updateProfile(currentUserToEdit)') Update
+								#edit.tab-pane.wrapper-lg.active
+									.form-group
+										form.form-horizontal
+											.form-group
+												label.col-sm-3.control-label(for='image-up') Profile picture:
+												.col-sm-2
+													input.filestyle(type='file', file-model="myFile", accept='image/*', data-icon='false', data-classbutton='btn btn-default', data-classinput='form-control inline v-middle input-s')
+												.col-sm-2
+													button.btn.btn-sm.btn-primary(type='submit', ng-click="uploadFile(currentUserToEdit.username)") Upload
+											.line.line-dashed.b-b.line-lg.pull-in
+										form.form-horizontal
+											.form-group
+												label.col-sm-3.control-label Username:
+												.col-sm-5
+													input.form-control(type='text', ng-model='currentUserToEdit.username', disabled='disabled')
+											.line.line-dashed.b-b.line-lg.pull-in
+											|                     
+											.form-group
+												label.col-sm-3.control-label Firstname:
+												.col-sm-5
+													input.form-control(type='text', ng-model='currentUserToEdit.firstName')
+											.line.line-dashed.b-b.line-lg.pull-in
+											|                     
+											.form-group
+												label.col-sm-3.control-label Lastname:
+												.col-sm-5
+													input.form-control(type='text', ng-model='currentUserToEdit.lastName')
+											.line.line-dashed.b-b.line-lg.pull-in
+											|                     
+											.form-group
+												label.col-sm-3.control-label(for='input-id-1') Email:
+												.col-sm-5
+													input#input-id-1.form-control(type='email', ng-model='currentUserToEdit.email')
+											.line.line-dashed.b-b.line-lg.pull-in
+											|                     
+											//.form-group
+												label.col-sm-3.control-label Password:
+												.col-sm-5
+													input.form-control(type='password', ng-model='currentUserToEdit.password')
+											//.line.line-dashed.b-b.line-lg.pull-in
+											|                     
+											.form-group
+												.col-sm-offset-3.col-sm-5
+													button.btn.btn-sm.btn-primary(type='submit', ng-click='updateProfile(currentUserToEdit)') Update
 								#friends.panel.tab-pane
 									section.vbox(ng-controller='FriendsController')
 										section.panel.panel-default
@@ -144,7 +152,7 @@ section.vbox
 													li.list-group-item(ng-repeat="friend in currentFriends | filter:userToFind")
 														.media
 															span.pull-left.thumb-sm
-																img.img-circle(src='images/a0.png', alt='John said')
+																img.img-circle(src="users/{{friend.username}}.jpg", onerror="this.src='users/default.jpg'" alt="{friend.username} pic")
 															|                           
 															.pull-right.text-success.m-t-sm
 																i.fa.fa-circle

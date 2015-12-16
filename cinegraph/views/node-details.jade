@@ -1,14 +1,14 @@
 div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 	div.bg-shadow-top
 		div.h4.m-t
-			a(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
+			a.golden-color(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
 				{{currentNode.firstname}} {{currentNode.lastname}}
-				i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
-			a(href='#', ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
+				i.golden-color.i.i-info.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
+			a.golden-color(href='#', ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
 				{{currentNode.title}}
-				i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
+				//i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
 			.btn-group.m-l-sm(dropdown='', ng-controller="MyCinegraphCtrl")
-				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-dark(type='button', ng-click="openAddToCinegraphModal()")
+				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-info(type='button', ng-click="openAddToCinegraphModal()")
 					i.fa.fa-plus.fa-lg
 			//.btn-group.m-l-xs(dropdown='', ng-click='sendInvitationToRate()')
 				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle.btn-dark(type='button', dropdown-toggle='')
@@ -32,37 +32,37 @@ div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 		div.col-xs-12.no-padder
 			div.row.small.m-n
 				div.col-xs-12(ng-show='currentUser == undefined || currentUser && currentCinegraph')
-					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
+					div.h4.font-bold.golden-color(ng-if="currentNode.globalObjScore >= 0")
 						| {{currentNode.globalObjScore}}
-					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
+					div.golden-color.h4.font-bold(ng-if="currentNode.globalObjScore == undefined")
 						| 0
-					small.text-muted
+					small.golden-color
 						| Objective score
 				div.col-xs-6.global-score(ng-show='currentUser && !currentCinegraph')
-					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore >= 0")
+					div.h4.font-bold.golden-color(ng-if="currentNode.globalObjScore >= 0")
 						| {{currentNode.globalObjScore}}
-					div.h4.font-bold.text-lt(ng-if="currentNode.globalObjScore == undefined")
+					div.h4.font-bold.golden-color(ng-if="currentNode.globalObjScore == undefined")
 						| 0
-					small.text-muted
+					small.golden-color
 						| Objective score
-				div.col-xs-6.text-left-align.no-padder(ng-show='currentUser && !currentCinegraph')
+				div.golden-color.col-xs-6.text-left-align.no-padder(ng-show='currentUser && !currentCinegraph')
 					input#noteObj.rating(type='hidden', data-filled='fa fa-star fa-2x', data-empty='fa fa-star-o fa-2x')
 			div.row.small.m-n
 				div.col-xs-12(ng-show='currentUser == undefined || currentUser && currentCinegraph')
-					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
+					div.h4.font-bold.red-color(ng-if="currentNode.globalLoveScore >= 0")
 						| {{currentNode.globalLoveScore}}
-					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
+					div.h4.red-color.font-bold(ng-if="currentNode.globalLoveScore == undefined")
 						| 0
-					small.text-muted
+					small.red-color
 						| Love score
 				div.col-xs-6.global-score(ng-show='currentUser && !currentCinegraph')
-					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore >= 0")
+					div.h4.font-bold.red-color(ng-if="currentNode.globalLoveScore >= 0")
 						| {{currentNode.globalLoveScore}}
-					div.h4.font-bold.text-lt(ng-if="currentNode.globalLoveScore == undefined")
+					div.h4.font-bold.red-color(ng-if="currentNode.globalLoveScore == undefined")
 						| 0
-					small.text-muted
+					small.red-color
 						| Love score
-				div.col-xs-6.no-padder.text-left-align(ng-show='currentUser && !currentCinegraph')
+				div.red-color.col-xs-6.no-padder.text-left-align(ng-show='currentUser && !currentCinegraph')
 					input#noteLove.rating(type='hidden', data-filled='fa fa-heart fa-2x', data-empty='fa fa-heart-o fa-2x')
 
 nav.nav-primary.m-t-xs.hidden-xs.community-element(ng-show="currentUser && !currentCinegraph")
@@ -72,7 +72,6 @@ nav.nav-primary.m-t-xs.hidden-xs.community-element(ng-show="currentUser && !curr
 		li.list-group-item(ng-repeat="sentence in friendsTastes")
 			span.pull-left.thumb-sm.avatar
 				img.img-circle(src='images/a3.png', alt='...')
-				i.on.b-black.bottom
 			span.clear
 				| {{sentence.sentence}}
 				a.btn.btn-rounded.btn-sm.btn-icon.btn-info.m-l-xs.btn-invite-rate(ng-show="sentence.showButton", ng-click="sendInvitationToRate(sentence)")

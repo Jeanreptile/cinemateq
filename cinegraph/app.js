@@ -80,6 +80,8 @@ app.use('/api/notif', notif);
 app.use('/api/actions', actions);
 
 
+
+
 //app.get('/partials/mycinegraphSingle', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/mycinegraph', expressJwt({secret : 'SecretStory'}), routes.partials);
 app.get('/partials/restricted', expressJwt({secret : 'SecretStory'}), routes.partials);

@@ -1109,11 +1109,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function displayFriendsTastes() {
             $http.get('/api/user/rating/' + scope.currentNode.id).success(function (rating) {
                 if (!rating.message) {
-                    $http.get('/api/friends/' + scope.currentUser.id).success(function (friends) {
-                        for (var i = 0; i < friends.length; i++) {
-                             getFriendsRatings(friends, i, scope.currentNode, rating);
-                        };
-                    });
+                  scope.friendsTastes = [];
+                  $http.get('/api/friends/' + scope.currentUser.id).success(function (friends) {
+                      for (var i = 0; i < friends.length; i++) {
+                           getFriendsRatings(friends, i, scope.currentNode, rating);
+                      };
+                  });
                 }
                 else {
                     scope.friendsTastes = [];
@@ -1667,7 +1668,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     line = testLine;
             }
             context.fillText(line, x, y, maxWidth);
-        }    
+        }
 
         function toScreenPosition(v)
         {
@@ -2479,6 +2480,12 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             // getting paths
             var startNode = findNode(mouseClickStart.cinegraphPath[0]);
             var endNode = findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);
+            console.log(startNode);
+            if (startNode == undefined || !startNode._id)
+            {
+              console.log("coca");
+              return;
+            }
             $http.get('/api/mycinegraph/path/' + startNode._id + "/" + endNode._id).success(function(paths) {
                 for (var i = 0; i < paths.length; i++) {
                     var path = paths[i];

@@ -13,7 +13,7 @@ $(document).ready(function(){
 var number = -1;
 
 $(document).ready(function(){
-  var randombgs=["bladerunner", "shining", "starwarsepv", "starwarsepvii", "fromdusk", "bladerunner", "theavengers", "attacktheblock", "her"];
+  var randombgs=["bladerunner", "wolf", "shining", "starwarsepv", "starwarsepvii", "fromdusk", "bladerunner", "theavengers", "attacktheblock", "her"];
   if (number == -1)
   {
     number = Math.floor(Math.random() * randombgs.length);

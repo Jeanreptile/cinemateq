@@ -20,7 +20,7 @@
 		.form-group
 			label Name
 			input.form-control(type='text', placeholder='"Cinegraph Sci-Fi" or "Cinegraph Thriller"', ng-model="cinegraphTitle")
-		input.btn.btn-success.pull-right(type="submit", ng-if="mycinegraphs >= 0", ng-click="createAndAddToCinegraph()", value="Create and add")
+		input.btn.btn-success.pull-right(type="submit", ng-if="mycinegraphs.length >= 0", ng-click="createAndAddToCinegraph()", value="Create and add")
 		input.btn.btn-success.pull-right(disabled="", ng-if="mycinegraphs == undefined", ng-click="createAndAddToCinegraph()", value="Create and add")
-		button.btn(type="submit", ng-if="mycinegraphs >= 0", ng-click='close()') Cancel
+		button.btn(type="submit", ng-if="mycinegraphs.length >= 0", ng-click='close()') Cancel
 		button.btn(disabled="", ng-if="mycinegraphs == undefined", ng-click='close()') Cancel

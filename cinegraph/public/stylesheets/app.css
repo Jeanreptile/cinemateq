@@ -190,7 +190,6 @@ a:hover .caret-white {
 }
 a.list-group-item:hover,
 a.list-group-item:focus {
-  background-color: #f9fafc;
 }
 .list-group-item.media {
   margin-top: 0;

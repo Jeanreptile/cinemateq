@@ -32,7 +32,7 @@ cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationPr
         .when('/register', { templateUrl: 'partials/register', controller: "UserCtrl" })
         .when('/profile', { templateUrl: 'partials/profile', controller: 'cinegraphController' })
         .when('/home', { templateUrl: 'partials/home', controller: 'UserCtrl' })
-        .when('/light', { templateUrl: 'partials/light', controller: 'cinegraphController' })
+        .when('/light', { templateUrl: 'partials/light', controller: 'cinegraphController', reloadOnSearch: false })
         .when('/light/cinegraph/:testId', { templateUrl: 'partials/light', controller: 'MyCinegraphCtrl' })
         .when('/restricted', { templateUrl: '/partials/restricted' })
         .when('/mycinegraph', { templateUrl: '/partials/mycinegraph', controller: 'MyCinegraphCtrl',
@@ -72,7 +72,13 @@ cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
             && !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
             $location.path("/unauthorized");
         }
+
+        if ($rootScope.shouldReload) {
+            $rootScope.shouldReload = false;
+            $route.reload();
+        }
     });
+
     $rootScope.$on("$routeUpdate", function() {
         if ($rootScope.shouldReload) {
             $rootScope.shouldReload = false;
@@ -108,6 +114,22 @@ cinegraphApp.filter('JobNameFormatter', function() {
     };
 });
 
+
+cinegraphApp.service('fileUpload', ['$http', function ($http) {
+    this.uploadFileToUrl = function(file, uploadUrl){
+        var fd = new FormData();
+        fd.append('image', file);
+        $http.post(uploadUrl, fd, {
+            transformRequest: angular.identity,
+            headers: {'Content-Type': undefined}
+        })
+        .success(function(){
+        })
+        .error(function(ee){
+          console.log("err is "  + JSON.stringify(ee));
+        });
+    }
+}]);
 var cinegraphController = cinegraphApp.controller('restrictedController',
     function($scope, $http, $window, $location, AuthService) {
     $(document).ready(function(){
@@ -118,13 +140,12 @@ var cinegraphController = cinegraphApp.controller('restrictedController',
 });
 
 var cinegraphController = cinegraphApp.controller('cinegraphController',
-    function($scope, $http, $window, $location, AuthService, $modal, socket) {
+    function($scope, $http, $window, $location, AuthService, $modal, socket, fileUpload) {
 
       /* Variables initialization */
 
       $scope.friendsTastes = [];
       $scope.currentNode = {};
-      $scope.alerts = [];
       /*var selectedNodeId = getParameterByName('id');
       if (selectedNodeId == undefined) {
           selectedNodeId = 719772;
@@ -142,15 +163,23 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         $scope.currentUserToEdit = angular.copy($scope.currentUser);
     });
 
-    $scope.sendInvitationToRate = function(friendName) {
+    $scope.sendInvitationToRate = function(sentence) {
+      var friendsTastesIndex = 0;
+      for (var i = 0; i < $scope.friendsTastes.length; i++) {
+        if ($scope.friendsTastes[i] == sentence) {
+          $scope.friendsTastes[i].alerts = [];
+          friendsTastesIndex = i;
+        }
+      };
+      var friendName = sentence.friendName;
       var dataOfNode = $scope.currentNode.type == 'Person' ? $scope.currentNode.firstname + " " + $scope.currentNode.lastname : $scope.currentNode.title;
       $http.post( "/api/notif/inviteToRate", {userName: $scope.currentUser.username , friendName: friendName, idToRate: $scope.currentNode.id, dataOfNode: dataOfNode})
         .success(function(res) {
           if (res == true)
-            $scope.alerts.push({success: 'true', msg:'You sent ' + friendName + ' an invitation to rate ' + dataOfNode + '!'});
+            $scope.friendsTastes[friendsTastesIndex].alerts.push({success: 'true', msg:'You sent ' + friendName + ' an invitation to rate ' + dataOfNode + '!'});
           else
-            $scope.alerts.push({error: 'true', msg:'An error occurred. Please try again.'});
-          console.log("Notif to rate sent to friend " + friendName);
+            $scope.friendsTastes[friendsTastesIndex].alerts.push({error: 'true', msg:'An error occurred. Please try again.'});
+          //console.log("Notif to rate sent to friend " + friendName);
       }).
         error(function() {
       });
@@ -165,6 +194,12 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
             $location.path('/profile');
         });
     }
+
+    $scope.uploadFile = function(userName){
+        var file = $scope.myFile;
+        var uploadUrl = "/users/upload/" + userName;
+        fileUpload.uploadFileToUrl(file, uploadUrl);
+    };
 
     $scope.logout = function(){
       AuthService.logout();
@@ -279,9 +314,10 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
                 proddesigner: false
             };
         }
-        for (var i = 0; i < $scope.currentDisplayedNodes.length; i++) {
+        var nodes = $scope.cinegraphId != undefined ? $scope.suggestedNodes : $scope.currentDisplayedNodes;
+        for (var i = 0; i < nodes.length; i++) {
             for (var job in $scope.selectedJobs) {
-                if ($scope.jobsRelationships[job] == $scope.currentDisplayedNodes[i].type) {
+                if ($scope.jobsRelationships[job] == nodes[i].type) {
                     $scope.selectedJobs[job] = true;
                 }
             }
@@ -403,6 +439,23 @@ cinegraphApp.controller('ModalInstanceCtrl', function($scope, $modalInstance, cu
     };
 });
 
+cinegraphApp.directive('fileModel', ['$parse', function ($parse) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            var model = $parse(attrs.fileModel);
+            var modelSetter = model.assign;
+
+            element.bind('change', function(){
+                scope.$apply(function(){
+                    modelSetter(scope, element[0].files[0]);
+                });
+            });
+        }
+    };
+}]);
+
+
 cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $location) {
 	return {
 		link: function link(scope, element, attrs) {
@@ -484,7 +537,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     if (scope.currentNode.type == "Person") {
                       scope.updateTypesAndLimitsFromFilter();
                     }
-                    removeByJobType(scope.currentDisplayedNodes);
+                    removeByJobType(nodes);
                     scope.getRelatedNodesForType(scope.currentNode, relationship, scope.findLimitForJob(relationship), 0,
                         nodes.length, scope.currentNode.sprite, scope.drawRelatedNodes);
                 }
@@ -997,7 +1050,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 var friendName = friends[index].username;
                 var nodeType = node.type.toLowerCase();
 
-                var sentences;
+                var sentences = [];
                 if (rating.message) { // Friend did not rate the node.
                   sentences = data.friendHasNotRated;
                 }
@@ -1012,7 +1065,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     sentences = data.friendHasNotWellRated;
                   }
                 }
-                pushCommunitySentences(sentences, friendName, nodeName, nodeType);
+                if (sentences.length)
+                  pushCommunitySentences(sentences, friendName, nodeName, nodeType);
               });
             });
         }
@@ -1064,7 +1118,11 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 }
                 else {
                     scope.friendsTastes = [];
-                    scope.friendsTastes.push("Hey buddy, rate this movie to compare it with your friends.");
+                    var sentenceObj = {
+                      showButton: false,
+                      sentence: "Hey buddy, rate this movie to compare it with your friends."
+                    }
+                    scope.friendsTastes.push(sentenceObj);
                 }
             });
         }
@@ -1094,7 +1152,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 updateBackground(node);
                 if (!scope.lightMode)
                   callback(node, nodePosition, shouldDrawRelatedNodes);
-                scope.updateSelectedJobs();
             });
         }
 
@@ -1143,16 +1200,16 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
             $http.get('/api/common/' + endpoint).success(function(node) {
                 var found = false;
-                $.each(array, function(j, obj) {
-                    var endpoint2 = obj.start;
+                for (var j = 0; j < array.length; j++) {
+                  var endpoint2 = array[j].start;
                     if (direction == "out") {
-                        endpoint2 = obj.end;
+                        endpoint2 = array[j].end;
                     }
                     if (endpoint === endpoint2) {
                         found = true;
                         return false;
                     }
-                });
+                }
                 if (scope.cinegraphId != undefined) {
                     $.each(scope.suggestedNodes, function(j, obj) {
                         var endpoint2 = obj.start;
@@ -1202,13 +1259,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                             else {
                                 array = scope.currentDisplayedNodes;
                             }
-                            $.each(array, function(j, obj) {
-                                if (relationships[i].id === obj.id) {
+                            for (var j = 0; j < array.length; j++) {
+                              if (relationships[i].id === array[j].id) {
                                     found = true;
                                     count.val++;
                                     return false;
                                 }
-                            });
+                            }
                             if (found == false) {
                                 pushRelations(array, i, count, direction, relationships, rels, function(relsResult) {
                                     callback(startNodeSprite, relsResult, index, limit, type);

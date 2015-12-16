@@ -1986,6 +1986,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             mouseClickStart.onNode = false;
             if (mouse.x != mouseClickStart.x || mouse.y != mouseClickStart.y)
                 return;
+
             // no intersection
             var intersection = getIntersection()[0];
             if (intersection == undefined){
@@ -1993,6 +1994,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 removeFilters();
                 return;
             }
+
             // intersection with a node
             var id = intersection.object._id;
             if (id != null) {
@@ -2004,9 +2006,10 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                             return false;
                         }
                     });
-                    if (alreadySuggestedNodes)
+                    // if node is a suggestion
+                    if (alreadySuggestedNodes) {
                         return;
-                    else {
+                    } else {
                         removeFilters();
                         removeSuggestions();
                     }
@@ -2025,10 +2028,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 var job = intersection.object.filterBackgroundJob;
                 // switch job button
                 if (intersection.object.isSwitchButton){
-                    //console.log(job, scope.selectedJobs[job]);
                     scope.selectedJobs[job] = !scope.selectedJobs[job];
                     scope.filterBy(job, scope.jobsRelationships[job]);
-                    //console.log(job, scope.selectedJobs[job]);
                     updateFilterBackgroundButtonSprite(intersection.object, scope.selectedJobs[job]);
                 }
                 // left pagination
@@ -2100,10 +2101,13 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function removeSuggestions() {
             if (scope.suggestedNodes.length > 0) {
                 for (var i = scope.suggestedNodes.length - 1; i >= 0; i--) {
-                    var point = scope.suggestedNodes[i].start;
+                    var id = scope.suggestedNodes[i].start;
                     if (scope.currentNode.type == 'Person')
-                        point = scope.suggestedNodes[i].end;
-                    removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
+                        id = scope.suggestedNodes[i].end;
+                    removeNode(id);
+                    removeRelationship(scope.suggestedNodes[i].start, scope.suggestedNodes[i].end);
+                    scope.suggestedNodes.splice(i, 1);
+                    //removeOneFromScene(scope.suggestedNodes, id, scope.currentNode.id);
                 }
             }
         }

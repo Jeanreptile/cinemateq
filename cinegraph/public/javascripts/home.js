@@ -2110,7 +2110,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function addFilters(id) {
             var n = findNode(id);
-            console.log(n);
             var slice = PI2 / 12;
             if (n != undefined){
                 var i = 4;
@@ -2337,6 +2336,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     .easing(TWEEN.Easing.Quartic.InOut).onComplete(function (){
                 }).yoyo(true).repeat(Infinity);
                 c.tween.start();
+                c.IsSuggestionCircle = true;
                 c.gradientRemoveDisable = true;
                 n.IsSuggested = true;
                 n.add(c);
@@ -2346,14 +2346,19 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         function unsetNodeAsSuggestion(id) {
             var n = findNode(id);
             if (n != undefined){
-                var c = n.children[0];
-                c.tween.stop();
-                new TWEEN.Tween(c.scale).to({x: 0, y:0, z:0}, 500)
-                    .easing(TWEEN.Easing.Linear.None).onComplete(function (){
-                        c.geometry.dispose();
-                        c.material.dispose();
-                        n.remove(c);
-                    }).start();
+                var c = null;
+                for (var i = n.children.length - 1; i >= 0; i--)
+                    if (n.children[i].IsSuggestionCircle)
+                        c = n.children[i];
+                if (c != null) {
+                    c.tween.stop();
+                    new TWEEN.Tween(c.scale).to({x: 0, y:0, z:0}, 500)
+                        .easing(TWEEN.Easing.Linear.None).onComplete(function (){
+                            c.geometry.dispose();
+                            c.material.dispose();
+                            n.remove(c);
+                        }).start();
+                }
                 n.IsSuggested = false;
             }
         }

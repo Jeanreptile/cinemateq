@@ -71,7 +71,7 @@ nav.nav-primary.m-t-xs.hidden-xs.community-element(ng-show="currentUser && !curr
 	ul.list-group.auto.no-radius.m-b-none.list-group-lg.community-list.no-borders
 		li.list-group-item(ng-repeat="sentence in friendsTastes")
 			span.pull-left.thumb-sm.avatar
-				img.img-circle(src='images/a3.png', alt='...')
+				img.img-circle(src="users/default.jpg" , alt='...')
 			span.clear
 				| {{sentence.sentence}}
 				a.btn.btn-rounded.btn-sm.btn-icon.btn-info.m-l-xs.btn-invite-rate(ng-show="sentence.showButton", ng-click="sendInvitationToRate(sentence)")

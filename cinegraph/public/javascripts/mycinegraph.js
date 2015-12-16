@@ -1,6 +1,7 @@
 cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $location, AuthService, $routeParams, $modal) {
 
 	$scope.cinegraphId = $routeParams.testId;
+	$scope.currentCinegraph = null;
 	$scope.lightMode = $location.path().startsWith("/light/cinegraph");
 
 	$scope.$watch( AuthService.isLoggedIn, function ( isLoggedIn ) {

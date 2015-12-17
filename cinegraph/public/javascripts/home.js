@@ -1,4 +1,4 @@
-var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute', 'angular-google-analytics']);
+var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
 
 cinegraphApp.factory('socket', function ($rootScope) {
   var socket = io.connect('https://cinemateq.eu/');
@@ -24,8 +24,7 @@ cinegraphApp.factory('socket', function ($rootScope) {
   };
 });
 
-cinegraphApp.config(['$locationProvider', '$routeProvider', 'AnalyticsProvider', function($locationProvider, $routeProvider, AnalyticsProvider) {
-    AnalyticsProvider.setAccount('UA-71550708-1');
+cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
     $locationProvider.html5Mode(true);
     $routeProvider
         .when('/', { templateUrl: 'partials/search', controller: 'TypeaheadCtrl' })
@@ -67,6 +66,15 @@ function getParameterByName(name) {
 
 cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
     $rootScope.shouldReload = false;
+    $rootScope
+        .$on('$stateChangeSuccess',
+            function(event){
+
+                if (!$window.ga)
+                    return;
+
+                $window.ga('send', 'pageview', { page: $location.path() });
+        });
     $rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
         //redirect only if both isAuthenticated is false and no token is set
         if (nextRoute != null && nextRoute.access != null && nextRoute.access.requiredAuthentication

@@ -1,4 +1,4 @@
-var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute']);
+var cinegraphApp = angular.module('cinegraphApp', ['ui.bootstrap', 'ngRoute', 'angular-google-analytics']);
 
 cinegraphApp.factory('socket', function ($rootScope) {
   var socket = io.connect();
@@ -24,7 +24,9 @@ cinegraphApp.factory('socket', function ($rootScope) {
   };
 });
 
-cinegraphApp.config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
+cinegraphApp.config(['$locationProvider', '$routeProvider', 'AnalyticsProvider', function($locationProvider, $routeProvider, AnalyticsProvider) {
+    AnalyticsProvider.startOffline(true)
+                     .setAccount('UA-71550708-1');
     $locationProvider.html5Mode(true);
     $routeProvider
         .when('/', { templateUrl: 'partials/search', controller: 'TypeaheadCtrl' })

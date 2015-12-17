@@ -66,16 +66,9 @@ function getParameterByName(name) {
 
 cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
     $rootScope.shouldReload = false;
-    $rootScope
-        .$on('$stateChangeSuccess',
-            function(event){
-
-                if (!$window.ga)
-                    return;
-
-                $window.ga('send', 'pageview', { page: $location.path() });
-        });
     $rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
+        if ($window.ga)
+            $window.ga('send', 'pageview', { page: $location.path() });
         //redirect only if both isAuthenticated is false and no token is set
         if (nextRoute != null && nextRoute.access != null && nextRoute.access.requiredAuthentication
             && !AuthService.isLoggedIn() && !$window.sessionStorage.token) {
@@ -89,6 +82,8 @@ cinegraphApp.run(function($rootScope, $location, $window, AuthService, $route) {
     });
 
     $rootScope.$on("$routeUpdate", function() {
+        if ($window.ga)
+            $window.ga('send', 'pageview', { page: $location.path() });
         if ($rootScope.shouldReload) {
             $rootScope.shouldReload = false;
             $route.reload();

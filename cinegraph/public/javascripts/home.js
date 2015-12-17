@@ -25,8 +25,7 @@ cinegraphApp.factory('socket', function ($rootScope) {
 });
 
 cinegraphApp.config(['$locationProvider', '$routeProvider', 'AnalyticsProvider', function($locationProvider, $routeProvider, AnalyticsProvider) {
-    AnalyticsProvider.startOffline(true)
-                     .setAccount('UA-71550708-1');
+    AnalyticsProvider.setAccount('UA-71550708-1');
     $locationProvider.html5Mode(true);
     $routeProvider
         .when('/', { templateUrl: 'partials/search', controller: 'TypeaheadCtrl' })

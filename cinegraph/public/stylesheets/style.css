@@ -499,6 +499,15 @@ video#bgvid {
 }
 
 /* GRAPH */
+
+#graph {
+  overflow: hidden;
+}
+
+#graph canvas{
+  position: absolute;
+  top: 0;
+}
 .canvasNodeFilter {
   position: absolute;
   z-index: 1;
@@ -534,4 +543,21 @@ video#bgvid {
   color: #4B4B4B;
   top:0;
   padding-left: 15px;
+}
+
+.canvasBackground {
+  width:100%;
+  height:100%;
+  position: relative;
+  top:0;
+  filter:blur(15px);
+  background-position: center;
+  background-size: cover;
+  opacity: 0;
+  -webkit-transition: opacity 0.5s ease-in-out;
+  -moz-transition: opacity 0.5s ease-in-out;
+  -o-transition: opacity 0.5s ease-in-out;
+  -ms-transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.5s ease-in-out;
+  transform: scale(1.05);
 }

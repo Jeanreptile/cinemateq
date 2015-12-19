@@ -585,7 +585,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             colors['ACTED_IN'] = '#319ef1'; colors['PRODUCED'] = '#27ae60'; colors['DIRECTED'] = '#8e44ad';
             colors['WROTE'] = '#f1c40f'; colors['EDITED'] = '#e33244'; colors['DIRECTED_PHOTOGRAPHY'] = '#fc6e51';
             colors['COMPOSED_MUSIC'] = '#00d6ce'; colors['DESIGNED_COSTUMES'] = '#ec87c0'; colors['DESIGNED_PRODUCTION'] = '#ac92ec';
-            var composerBackground, composerLines, composer, blendComposer;
+            var composerLines, composer, blendComposer;
             const PI2 = 2 * Math.PI;
             const blurAmount = 25;
             const borderFraction = 24;
@@ -643,9 +643,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 renderer.setSize(viewWidth, viewHeight);
                 var vW = viewWidth * sampleRatio * qualityScale, vH = viewHeight * sampleRatio * qualityScale;
 
-                composerBackground.setSize(vW / 4, vH / 4);
-                background.bgCanvas.width = vW / 4;
-                background.bgCanvas.height = vH / 4;
                 composerLines.setSize(vW, vH);
                 var lineShader = composerLines.passes[1];
                 lineShader.uniforms.totalWidth.value = vW;
@@ -655,9 +652,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 blendComposer.setSize(vW / sampleRatio, vH / sampleRatio);
 
                 var blendPass = blendComposer.passes[0];
-                blendPass.uniforms['tBase'].value = composerBackground.renderTarget1;
-                blendPass.uniforms['tAdd'].value = composerLines.renderTarget1;
-                blendPass.uniforms['tAdd2'].value = composer.renderTarget1;
+                blendPass.uniforms['tBase'].value = composerLines.renderTarget1;
+                blendPass.uniforms['tAdd'].value = composer.renderTarget1;
 
                 renderNeedsUpdate = true;
             }
@@ -665,10 +661,9 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             function switchRenderMode(e) {
                 switch(e.which) {
                     case 112: // F1
-                        renderMode = (renderMode + 1) % 4;
-                        composerBackground.passes[composerBackground.passes.length - 1].renderToScreen = (renderMode == 1);
-                        composerLines.passes[composerLines.passes.length - 1].renderToScreen = (renderMode == 2);
-                        composer.passes[composer.passes.length - 1].renderToScreen = (renderMode == 3);
+                        renderMode = (renderMode + 1) % 3;
+                        composerLines.passes[composerLines.passes.length - 1].renderToScreen = (renderMode == 1);
+                        composer.passes[composer.passes.length - 1].renderToScreen = (renderMode == 2);
                         blendComposer.passes[blendComposer.passes.length - 1].renderToScreen = (renderMode == 0);
                         renderNeedsUpdate = true;
                         break;
@@ -693,24 +688,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 //camera = new THREE.OrthographicCamera(viewWidth / - 32, viewWidth / 32, viewHeight / 32, viewHeight / -32, 1, 1000 );
                 renderer.setSize(viewWidth, viewHeight);
                 document.getElementById('graph').appendChild(renderer.domElement);
-
-                // background scene
-                var bgCanvas = generateBackgroundCanvas(viewWidth, viewHeight, defaultImg, blurAmount);
-                var bgTexture = new THREE.Texture(bgCanvas);
-                bgTexture.minFilter = THREE.LinearFilter;
-                background = new THREE.Mesh(
-                    new THREE.PlaneBufferGeometry(2, 2, 0),
-                    new THREE.MeshBasicMaterial({map: bgTexture})
-                );
-                background.bgCanvas = bgCanvas;
-                background.bgTexture = bgTexture;
-                background.bgTexture.needsUpdate = true;
-                background.material.depthTest = false;
-                background.material.depthWrite = false;
-                bgScene = new THREE.Scene();
-                bgCam = new THREE.Camera();
-                bgScene.add(bgCam);
-                bgScene.add(background);
 
                 // lines scene
                 linesScene.add(camera);
@@ -742,13 +719,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                     format: THREE.RGBAFormat,
                     stencilBuffer: false
                 };
-                // background
-                var renderTargetBackground = new THREE.WebGLRenderTarget(viewWidth * sampleRatio / 4, viewHeight * sampleRatio / 4, parameters);
-                var renderBackgroundScene = new THREE.RenderPass(bgScene, bgCam);
-                var effectCopyBackground = new THREE.ShaderPass(THREE.CopyShader);
-                composerBackground = new THREE.EffectComposer(renderer, renderTargetBackground);
-                composerBackground.addPass(renderBackgroundScene);
-                composerBackground.addPass(effectCopyBackground);
                 // lines
                 var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
                 var renderLinesScene = new THREE.RenderPass(linesScene, camera);
@@ -768,9 +738,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 composer.addPass(effectCopy);
                 // blend
                 var blendPass = new THREE.ShaderPass(THREE.BlendShader);
-                blendPass.uniforms['tBase'].value = composerBackground.renderTarget1;
-                blendPass.uniforms['tAdd'].value = composerLines.renderTarget1;
-                blendPass.uniforms['tAdd2'].value = composer.renderTarget1;
+                blendPass.uniforms['tBase'].value = composerLines.renderTarget1;
+                blendPass.uniforms['tAdd'].value = composer.renderTarget1;
                 blendComposer = new THREE.EffectComposer(renderer);
                 blendComposer.addPass(blendPass);
                 blendPass.renderToScreen = true;
@@ -2548,73 +2517,36 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         /* BACKGROUND HANDLING */
         /* ------------------- */
 
-        function generateBackgroundCanvas(width, height, image, blur) {
-            var bgCanvas = document.createElement('canvas');
-            bgCanvas.width = width;
-            bgCanvas.height = height;
-            var bgContext = bgCanvas.getContext('2d');
-            drawImageProp(bgContext, image, 0, 0, bgCanvas.width, bgCanvas.height);
-            stackBlurCanvasRGB(bgCanvas, 0, 0, bgCanvas.width, bgCanvas.height, blur);
-            return bgCanvas;
-        }
-
-        function crossFadeBackgroundCanvas(canvas, startCanvas, endCanvas, percentage) {
-            var bgContext = canvas.getContext('2d');
-            bgContext.fillStyle = "#000000";
-            bgContext.fillRect(0, 0, canvas.width, canvas.height);
-            bgContext.globalAlpha = 1 - (percentage / 100);
-            bgContext.drawImage(startCanvas, 0, 0, canvas.width, canvas.height);
-            bgContext.globalAlpha = percentage / 100;
-            bgContext.drawImage(endCanvas, 0, 0, canvas.width, canvas.height);
-            bgContext.globalAlpha = 1;
-        }
-
-        function cloneCanvas(canvas) {
-            var newCanvas = document.createElement('canvas');
-            newCanvas.width = canvas.width;
-            newCanvas.height = canvas.height;
-            newCanvasContext = newCanvas.getContext('2d');
-            newCanvasContext.drawImage(canvas, 0, 0, newCanvas.width, newCanvas.height);
-            return newCanvas;
-        }
-
         function updateBackground(node) {
-            var crossFade = new Object();
-            var backgroundImage;
-            crossFade.startCanvas = cloneCanvas(background.bgCanvas);
+            var oldBg = $("#graph").find('.canvasBackground');
+            var bg = $('<div class="canvasBackground"></div>');
+            $("#graph").find('canvas').before(bg);
+
             if (node.img == undefined || node.img == false) {
-                backgroundImage = defaultImg;
-                crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, blurAmount);
-                crossFade.percentage = 0;
-                var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
-                    .easing(TWEEN.Easing.Linear.None)
-                    .onUpdate(function (){
-                        crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
-                            crossFade.endCanvas, crossFade.percentage);
-                        background.bgTexture.needsUpdate = true;
-                    }).start();
-            }
-            else {
-                backgroundImage = new Image();
+                bg.css('opacity'); // prevent transition from not firing
+                bg.css({
+                    'background-image': 'url("' + defaultImg.src + '")',
+                    'opacity': 1,
+                    'top': oldBg.length > 0 ? '-100%' : '0'
+                });
+                setTimeout(function() { oldBg.remove(); bg.css('top','0'); }, 1000);
+            } else {
+                var backgroundImage = new Image();
                 if (node.title == undefined)
                     backgroundImage.src = 'images/persons/' + sanitizeFileName(node.fullname) + '.jpg';
                 else
                     backgroundImage.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/backdrop.jpg';
                 backgroundImage.onerror = function () {
-                    // fallback if no backdrop
                     this.src = 'images/movies/' + sanitizeFileName(node.title + node.released) + '/poster.jpg';
                     backgroundImage.onerror = function () { this.src = 'images/default.jpg'; };
                 };
                 backgroundImage.onload = function () {
-                    crossFade.endCanvas = generateBackgroundCanvas(viewWidth, viewHeight, backgroundImage, blurAmount);
-                    crossFade.percentage = 0;
-                    var tween = new TWEEN.Tween(crossFade).to({percentage : 100}, 500)
-                        .easing(TWEEN.Easing.Linear.None)
-                        .onUpdate(function (){
-                            crossFadeBackgroundCanvas(background.bgCanvas, crossFade.startCanvas,
-                                crossFade.endCanvas, crossFade.percentage);
-                            background.bgTexture.needsUpdate = true;
-                        }).start();
+                    bg.css({
+                        'background-image': 'url("'+ backgroundImage.src + '")',
+                        'opacity': 1,
+                        'top': oldBg.length > 0 ? '-100%' : '0'
+                    });
+                    setTimeout(function() { oldBg.remove(); bg.css('top','0'); }, 1000);
                 };
             }
         }
@@ -2732,7 +2664,6 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 
         function render() {
             renderer.clear();
-            composerBackground.render();
             composerLines.render();
             updateHoverLabelPosition();
             updateGradientLayer();

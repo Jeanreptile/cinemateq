@@ -601,6 +601,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             var qualityScale = 1;
             const lineThickness = 5;
             var pathPanel = new Object();
+            const cameraFov = 70;
+            const cameraDist = 33;
 
             // monitoring panels
             var rendererStats = new THREEx.RendererStats();
@@ -684,7 +686,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 $('#graph').css('height','100%');
                 viewWidth = $('#graph').width();
                 viewHeight = $('#graph').height();
-                camera = new THREE.PerspectiveCamera(45, viewWidth / viewHeight, nearDistance, 1000);
+                camera = new THREE.PerspectiveCamera(cameraFov, viewWidth / viewHeight, nearDistance, 1000);
                 //camera = new THREE.OrthographicCamera(viewWidth / - 32, viewWidth / 32, viewHeight / 32, viewHeight / -32, 1, 1000 );
                 renderer.setSize(viewWidth, viewHeight);
                 document.getElementById('graph').appendChild(renderer.domElement);
@@ -693,7 +695,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 linesScene.add(camera);
 
                 // camera
-                camera.position.set(0, 0, 55);
+                camera.position.set(0,0,cameraDist);
                 cameraControls = new THREE.TrackballControls(camera, document.getElementById('graph'));
                 cameraControls.rotateSpeed = 2.0;
                 cameraControls.zoomSpeed = 1.2;
@@ -2596,7 +2598,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
         /* ---------- */
 
         function cameraLookAtPosition(pos){
-            var p = new THREE.Vector3().copy(camera.position).sub(pos).setLength(55).add(pos);
+            var p = new THREE.Vector3().copy(camera.position).sub(pos).setLength(cameraDist).add(pos);
             new TWEEN.Tween(camera.position).to({x: p.x, y: p.y, z: p.z}, 1000)
                 .easing(TWEEN.Easing.Exponential.Out).start();
             new TWEEN.Tween(cameraControls.target).to({x: pos.x, y: pos.y, z: pos.z}, 1000)

@@ -5,7 +5,9 @@ var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
 
 var config = require('../config');
-var db = require("seraph")(config.database_url);
+var db = require("seraph")({ server : config.neo4j.url,
+                                  user: config.neo4j.user,
+                                  pass: config.neo4j.password});
 
 
 router.get('/:userId/rating/:movieId', function(req, res) {
@@ -183,7 +185,7 @@ function authenticate(req, res, next) {
 	}
 	if (token)
 	{
-	jwt.verify(token, 'SecretStory', function(err, decoded) {
+	jwt.verify(token, config.jwtPass, function(err, decoded) {
 		 if (err) {
 			 return res.json({ success: false, message: 'Failed to authenticate token.' });
 		 } else {

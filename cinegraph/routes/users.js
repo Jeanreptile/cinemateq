@@ -6,7 +6,9 @@ var jwt = require('jsonwebtoken');
 var path = require("path");
 var config = require('../config');
 
-var db = require("seraph")(config.database_url);
+var db = require("seraph")({ server : config.neo4j.url,
+                                  user: config.neo4j.user,
+                                  pass: config.neo4j.password});
 var multer = require('multer');
 
 
@@ -34,12 +36,12 @@ router.post('/login', authenticate, function(req, res) {
      return res.json(401, { message: 'no user' });
    }
    //user has authenticated correctly thus we create a JWT token
-   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresIn : "6 days"});
+   var token = jwt.sign({ username: user.username}, config.jwtPass, { expiresIn : "6 days"});
    res.json({ token : token, user : user });
 });
 
 router.get('/refreshToken', function(req, res) {
-   var token = jwt.sign({ username: req.query.username}, 'SecretStory', { expiresIn : "6 days"});
+   var token = jwt.sign({ username: req.query.username}, config.jwtPass, { expiresIn : "6 days"});
    res.json({ token : token});
 });
 
@@ -49,7 +51,7 @@ router.post('/register', findOrCreateUser, function(req, res) {
      return res.json(401, { error: 'no user' });
    }
    //user has authenticated correctly thus we create a JWT token
-   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresIn : "6 days"});
+   var token = jwt.sign({ username: user.username}, config.jwtPass, { expiresIn : "6 days"});
    res.json({ token : token, user : user });
 });
 

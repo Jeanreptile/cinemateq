@@ -3,7 +3,10 @@ var http = require('http');
 var request = require('request');
 var router = express.Router();
 var config = require('../config');
-var dbLocal = require("seraph")(config.database_url);
+
+var dbLocal = require("seraph")({ server : config.neo4j.url,
+                                  user: config.neo4j.user,
+                                  pass: config.neo4j.password});
 
 function pushNumberOfRelations(index, id, relTypes, count, callback) {
 	dbLocal.relationships(id, "out", relTypes[index]["name"], function(err, relationships) {

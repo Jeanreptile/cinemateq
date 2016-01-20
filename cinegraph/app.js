@@ -7,6 +7,8 @@ var bodyParser = require('body-parser');
 var dbLocal = require("seraph")(); // default is http://localhost:7474/db/data
 var socket_io    = require( "socket.io" );
 
+var config = require('./config.js');
+
 var redisClient = require('./redis-db.js')
 
 var expressJwt = require('express-jwt');
@@ -63,7 +65,7 @@ app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.static(path.join(__dirname, '/public/videos')));
 
 
-//app.use('/restricted', expressJwt({secret: 'SecretStory'}));
+//app.use('/restricted', expressJwt({secret: config.jwtPass}));
 
 app.get('/', routes.index);
 
@@ -81,9 +83,9 @@ app.use('/api/actions', actions);
 
 
 
-//app.get('/partials/mycinegraphSingle', expressJwt({secret : 'SecretStory'}), routes.partials);
-app.get('/partials/mycinegraph', expressJwt({secret : 'SecretStory'}), routes.partials);
-app.get('/partials/restricted', expressJwt({secret : 'SecretStory'}), routes.partials);
+//app.get('/partials/mycinegraphSingle', expressJwt({secret : 'toto'}), routes.partials);
+app.get('/partials/mycinegraph', expressJwt({secret : config.jwtPass}), routes.partials);
+app.get('/partials/restricted', expressJwt({secret : config.jwtPass}), routes.partials);
 app.get('/partials/:name', routes.partials);
 app.get('*', routes.index);
 

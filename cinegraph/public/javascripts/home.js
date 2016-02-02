@@ -146,6 +146,7 @@ var cinegraphController = cinegraphApp.controller('restrictedController',
 var cinegraphController = cinegraphApp.controller('cinegraphController',
     function($scope, $http, $window, $location, AuthService, $modal, socket, fileUpload) {
 
+
       /* Variables initialization */
 
       $scope.friendsTastes = [];
@@ -166,6 +167,28 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         $scope.currentUser = AuthService.currentUser();
         $scope.currentUserToEdit = angular.copy($scope.currentUser);
     });
+
+
+	$scope.openSendFeedbackModal = function() {
+		var sendFeedbackModal = $modal.open({
+			animation: $scope.animationsEnabled,
+			templateUrl: 'partials/feedback',
+			controller: 'FeedbackCtrl',
+			size: 'md',
+			resolve: {
+				currentNode: function() {
+					return $scope.currentNode;
+				}
+			}
+		});
+
+		sendFeedbackModal.result.then(function(newCinegraph) {
+      //console.log("ok" + newCinegraph);
+      //$scope.mycinegraphs.push(newCinegraph);
+		}, function () {
+			console.log("Error");
+		});
+	};
 
     $scope.sendInvitationToRate = function(sentence) {
       var friendsTastesIndex = 0;

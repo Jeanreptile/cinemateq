@@ -76,7 +76,6 @@ THREE.BlendShader = {
     uniforms: {
         "tBase": { type: "t", value: null },
         "tAdd": { type: "t", value: null },
-        "tAdd2": { type: "t", value: null },
         "tDiffuse": { type: "t", value: null },
         "opacity":  { type: "f", value: 1.0 }
     },
@@ -92,20 +91,13 @@ THREE.BlendShader = {
     fragmentShader: [
         "uniform sampler2D tBase;",
         "uniform sampler2D tAdd;",
-        "uniform sampler2D tAdd2;",
         "uniform float amount;",
         "varying vec2 vUv;",
 
         "void main() {",
             "vec4 t1 = texture2D( tBase, vUv );",
             "vec4 t2 = texture2D( tAdd, vUv );",
-            "vec4 t3 = texture2D( tAdd2, vUv );",
-/*            "float f = 0.76;",
-            "if (t4.a == 1.0 && t4.r == 0.0 && t4.g == 0.0 && t4.b == 0.0)",
-            "    t4.a = 0.0;",*/
-            "gl_FragColor = (t1 * (1.0 - t2.a) + t2 * t2.a) * (1.0 - t3.a) + t3 * t3.a;",
-            /*"gl_FragColor = vec4(t4[0],t4[1],t4[2],1.0) * t4.a;",*/
-            /*"gl_FragColor = ((t1 * (1.0 - t2.a) + t2 * t2.a) * (1.0 - t3.a) + t3 * t3.a) * (1.0 - t4.a) + t4 * t4.a;",*/
+            "gl_FragColor = t1 * (1.0 - t2.a) + t2 * t2.a;",
         "}"
     ].join("\n")
 };

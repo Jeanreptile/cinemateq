@@ -5,8 +5,11 @@ var expressJwt = require('express-jwt');
 var jwt = require('jsonwebtoken');
 var path = require("path");
 var config = require('../config');
+var nodemailer = require('nodemailer');
 
-var db = require("seraph")(config.database_url);
+var db = require("seraph")({ server : config.neo4j.url,
+                                  user: config.neo4j.user,
+                                  pass: config.neo4j.password});
 var multer = require('multer');
 
 
@@ -34,12 +37,37 @@ router.post('/login', authenticate, function(req, res) {
      return res.json(401, { message: 'no user' });
    }
    //user has authenticated correctly thus we create a JWT token
-   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresIn : "6 days"});
+   var token = jwt.sign({ username: user.username}, config.jwtPass, { expiresIn : "6 days"});
    res.json({ token : token, user : user });
 });
 
+
+router.post('/sendMail', function(req, res) {
+
+var transporter = nodemailer.createTransport('smtps://admin%40cinemateq.eu:adm1ngand1!@mail.gandi.net');
+
+// setup e-mail data with unicode symbols
+
+var mailOptions = {
+    from: 'Cinemateq <admin@cinemateq.eu>', // sender address
+    to: 'hellocinemateq@gmail.com', // list of receivers
+    subject: '[FEEDBACK]', // Subject line
+    text: req.body.feedbackText, // plaintext body
+};
+
+// send mail with defined transport object
+transporter.sendMail(mailOptions, function(error, info){
+    if(error){
+        return console.log(error);
+    }
+    console.log('Message sent: ' + info.response);
+    res.json({"status": "OK"});
+});
+
+});
+
 router.get('/refreshToken', function(req, res) {
-   var token = jwt.sign({ username: req.query.username}, 'SecretStory', { expiresIn : "6 days"});
+   var token = jwt.sign({ username: req.query.username}, config.jwtPass, { expiresIn : "6 days"});
    res.json({ token : token});
 });
 
@@ -49,7 +77,7 @@ router.post('/register', findOrCreateUser, function(req, res) {
      return res.json(401, { error: 'no user' });
    }
    //user has authenticated correctly thus we create a JWT token
-   var token = jwt.sign({ username: user.username}, 'SecretStory', { expiresIn : "6 days"});
+   var token = jwt.sign({ username: user.username}, config.jwtPass, { expiresIn : "6 days"});
    res.json({ token : token, user : user });
 });
 

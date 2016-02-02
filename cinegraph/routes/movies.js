@@ -3,7 +3,9 @@ var http = require('http');
 var router = express.Router();
 var config = require('../config');
 
-var dbLocal = require("seraph")(config.database_url);
+var dbLocal = require("seraph")({ server : config.neo4j.url,
+                                  user: config.neo4j.user,
+                                  pass: config.neo4j.password});
 
 /* GET movies listing. */
 router.get('/all', function(req, res) {

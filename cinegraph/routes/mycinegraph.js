@@ -2,8 +2,11 @@ var express = require('express');
 var http = require('http');
 var router = express.Router();
 var config = require('../config');
+var expressJwt = require('express-jwt');
 
-var dbLocal = require("seraph")(config.database_url);
+var dbLocal = require("seraph")({ server : config.neo4j.url,
+                                  user: config.neo4j.user,
+                                  pass: config.neo4j.password});
 
 /* For tests only. */
 router.get('/query', function(req, res) {

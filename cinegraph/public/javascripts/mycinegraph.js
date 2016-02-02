@@ -13,6 +13,27 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 	  AuthService.logout();
 	}
 
+	$scope.openSendFeedbackModal = function() {
+		var sendFeedbackModal = $modal.open({
+			animation: $scope.animationsEnabled,
+			templateUrl: 'partials/feedback',
+			controller: 'FeedbackCtrl',
+			size: 'md',
+			resolve: {
+				currentNode: function() {
+					return $scope.currentNode;
+				}
+			}
+		});
+
+		sendFeedbackModal.result.then(function(newCinegraph) {
+      //console.log("ok" + newCinegraph);
+      //$scope.mycinegraphs.push(newCinegraph);
+		}, function () {
+			console.log("Error");
+		});
+	};
+
 	if (AuthService.isLoggedIn()) {
 		$http.get('/api/mycinegraph/all/' + AuthService.currentUser().id).success(function (data, status, headers, config) {
 			$scope.mycinegraphs = data;

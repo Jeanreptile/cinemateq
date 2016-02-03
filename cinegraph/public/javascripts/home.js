@@ -1941,7 +1941,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
                 var intersected = getIntersection();
                 if (intersected.length > 0){
                     var id = intersected[0].object._id;
-                    if ($.inArray(id, mouseClickStart.cinegraphPath) == -1)
+                    if (id != undefined && $.inArray(id, mouseClickStart.cinegraphPath) == -1)
                         mouseClickStart.cinegraphPath.push(id);
                 }
                 linedraw(mouseClickStart.clientX, mouseClickStart.clientY, mouse.clientX, mouse.clientY);
@@ -2478,12 +2478,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             // getting paths
             var startNode = findNode(mouseClickStart.cinegraphPath[0]);
             var endNode = findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);
-            console.log(startNode);
-            if (startNode == undefined || !startNode._id)
-            {
-              console.log("coca");
+            if (startNode == undefined || endNode == undefined)
               return;
-            }
             $http.get('/api/mycinegraph/path/' + startNode._id + "/" + endNode._id).success(function(paths) {
                 for (var i = 0; i < paths.length; i++) {
                     var path = paths[i];

@@ -1,7 +1,8 @@
-var CINEGRAPH = CINEGRAPH || (function () {
+var CINEGRAPH = (function (self) {
 
-    // global vars
-    var scene, linesScene, camera, cameraControls, bgScene, bgCam, viewWidth, viewHeight, background;
+    // private variables
+
+    var camera, cameraControls, bgScene, bgCam, viewWidth, viewHeight, background;
     var renderer, raycaster;
     var mouse = new THREE.Vector2();
     var mouseClickStart = new Object();
@@ -37,6 +38,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
     const cameraDist = 33;
     var scope;
     var stats, rendererStats;
+
+    // private functions
 
     function onWindowResize() {
         viewWidth = $('#graph').find('canvas').width(0).parent().width();
@@ -186,8 +189,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
         // Clean everything
         scope.$on('$destroy', function(){
             cancelAnimationFrame(idAnimationFrame);
-            scene = null;
-            linesScene = null;
+            self.scene = null;
+            self.linesScene = null;
             cameraControls = null;
             raycaster = null;
             document.body.removeChild(stats.domElement);
@@ -224,8 +227,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
 
     function initScene() {
         // global variables init
-        scene = new THREE.Scene();
-        linesScene = new THREE.Scene();
+        self.scene = new THREE.Scene();
+        self.linesScene = new THREE.Scene();
         renderer = new THREE.WebGLRenderer({ antialias: false, alpha:true, autoClear: false });
         raycaster = new THREE.Raycaster();
         $('#graph').css('height','100%');
@@ -236,8 +239,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
         renderer.setSize(viewWidth, viewHeight);
         document.getElementById('graph').appendChild(renderer.domElement);
 
-        // lines scene
-        linesScene.add(camera);
+        // lines self.scene
+        self.linesScene.add(camera);
 
         // camera
         camera.position.set(0,0,cameraDist);
@@ -268,7 +271,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
         };
         // lines
         var renderLinesTarget = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
-        var renderLinesScene = new THREE.RenderPass(linesScene, camera);
+        var renderLinesScene = new THREE.RenderPass(self.linesScene, camera);
         var lineShader = new THREE.ShaderPass(THREE.ThickLineShader);
         lineShader.uniforms.totalWidth.value = viewWidth * sampleRatio;
         lineShader.uniforms.totalHeight.value = viewHeight * sampleRatio;
@@ -276,9 +279,9 @@ var CINEGRAPH = CINEGRAPH || (function () {
         composerLines = new THREE.EffectComposer(renderer, renderLinesTarget);
         composerLines.addPass(renderLinesScene);
         composerLines.addPass(lineShader);
-        // main scene
+        // main self.scene
         var renderTarget = new THREE.WebGLRenderTarget(viewWidth * sampleRatio, viewHeight * sampleRatio, parameters);
-        var renderScene = new THREE.RenderPass(scene, camera);
+        var renderScene = new THREE.RenderPass(self.scene, camera);
         var effectCopy = new THREE.ShaderPass(THREE.CopyShader);
         composer = new THREE.EffectComposer(renderer, renderTarget);
         composer.addPass(renderScene);
@@ -375,8 +378,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
     }
 
     function updateGradientLayer() {
-        for (var i = 0; i < scene.children.length; i++){
-            var sprite = scene.children[i];
+        for (var i = 0; i < self.scene.children.length; i++){
+            var sprite = self.scene.children[i];
             // calculating circle radius
             var circleRadius = getSpriteRadius(sprite.position, sprite.scale.x);
             if (circleRadius <= 2)
@@ -390,8 +393,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
             for (var k = 0; k < sprite.children.length; k++)
                 sprite.children[k].gradientIsActive = false;
             // getting lines related to node
-            for (var j = linesScene.children.length - 1; j >= 0; j--){
-                var line = linesScene.children[j];
+            for (var j = self.linesScene.children.length - 1; j >= 0; j--){
+                var line = self.linesScene.children[j];
                 if (line.type != "Line")
                     continue;
                 var startIndex;
@@ -472,19 +475,19 @@ var CINEGRAPH = CINEGRAPH || (function () {
     }
 
     function removeOneFromScene(array, idToRemove, excludedId) {
-        var length = linesScene.children.length;
+        var length = self.linesScene.children.length;
         for (var i = length - 1; i >= 0; i--)
         {
-            var line = linesScene.children[i];
+            var line = self.linesScene.children[i];
             if (line.endNodeId == idToRemove || line.startNodeId == idToRemove) {
-                linesScene.remove(line);
+                self.linesScene.remove(line);
             }
         }
 
-        length = scene.children.length;
+        length = self.scene.children.length;
         for (var i = length - 1; i >= 0; i--)
         {
-            var node = scene.children[i];
+            var node = self.scene.children[i];
             var index = -1;
             $.each(array, function(j, obj) {
                 var endpoint = obj.start;
@@ -503,7 +506,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
                 new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
                     .easing(TWEEN.Easing.Linear.None)
                     .onComplete(function (){
-                        scene.remove(n);
+                        self.scene.remove(n);
                     }).start();
             }
         }
@@ -513,31 +516,31 @@ var CINEGRAPH = CINEGRAPH || (function () {
     {
         // getting id of center node to keep
         var originId;
-        for (var i = 0; i < linesScene.children.length; i++)
+        for (var i = 0; i < self.linesScene.children.length; i++)
         {
-            var line = linesScene.children[i];
+            var line = self.linesScene.children[i];
             if (line.startNodeId == targetId)
                 originId = line.endNodeId;
             else if (line.endNodeId == targetId)
                 originId = line.startNodeId;
         }
         // removing lines
-        var length = linesScene.children.length;
+        var length = self.linesScene.children.length;
         for (var i = length - 1; i >= 0; i--)
         {
-            var line = linesScene.children[i];
+            var line = self.linesScene.children[i];
             if (line.type == "Line" && line.startNodeId != targetId && line.endNodeId != targetId){
                 line.geometry.dispose();
                 line.material.dispose();
-                linesScene.remove(line);
+                self.linesScene.remove(line);
             }
         }
         // removing sprites
-        length = scene.children.length;
+        length = self.scene.children.length;
         toRemove = [];
         for (var i = length - 1; i >= 0; i--)
         {
-            var node = scene.children[i];
+            var node = self.scene.children[i];
             var index = -1;
             $.each(array, function(j, obj) {
                 if (node._id == obj.start || node._id == obj.end) {
@@ -555,7 +558,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
                         toRemove[0].geometry.dispose();
                         toRemove[0].material.dispose();
                         toRemove[0].texture.dispose();
-                        scene.remove(toRemove[0]);
+                        self.scene.remove(toRemove[0]);
                         toRemove.splice(0,1);
                     }).start();
             }
@@ -844,7 +847,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
         gradientSprite.position.set(0,0,-0.000001);
         sprite.add(gradientSprite);
         // adding sprite
-        scene.add(sprite);
+        self.scene.add(sprite);
         if (startNodeSprite !== undefined){
             sprite.position.set(startNodeSprite.position.x, startNodeSprite.position.y, startNodeSprite.position.z);
             if (scope.cinegraphId != undefined)
@@ -872,7 +875,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
             line = new THREE.Line(lineGeom, lineMat);
             line.endNodeId = sprite._id;
             line.startNodeId = startNodeSprite._id;
-            linesScene.add(line);
+            self.linesScene.add(line);
             // animation object
             var animObj = new Object();
             animObj.sprite = sprite;
@@ -916,10 +919,10 @@ var CINEGRAPH = CINEGRAPH || (function () {
     function getOccupiedPositions()
     {
         var positions = [];
-        // sprites already on the scene
-        for (var i = scene.children.length - 1; i >= 0; i--)
-            if (scene.children[i].type == "Sprite")
-                positions.push(scene.children[i].position);
+        // sprites already on the self.scene
+        for (var i = self.scene.children.length - 1; i >= 0; i--)
+            if (self.scene.children[i].type == "Sprite")
+                positions.push(self.scene.children[i].position);
         // sprites to be added
         for (var i = TWEEN.getAll().length - 1; i >= 0; i--){
             var targetPos = TWEEN.getAll()[i].getValuesEnd();
@@ -959,14 +962,14 @@ var CINEGRAPH = CINEGRAPH || (function () {
         var start = relation.start, end = relation.end;
         if (start != null && positions[start] == undefined){
             var centerPos = positions[end] != undefined ? positions[end] : new THREE.Vector3(0,0,0);
-            var n = findNode(start);
+            var n = self.findNode(start);
             positions[start] = (n != undefined && !refreshScene) ?
                 n.position : getNextPosition(occupiedPositions, centerPos);
             occupiedPositions.push(positions[start]);
         }
         if (end != null && positions[end] == undefined) {
             var centerPos = positions[start] != undefined ? positions[start] : new THREE.Vector3(0,0,0);
-            var n = findNode(end);
+            var n = self.findNode(end);
             positions[end] = (n != undefined && !refreshScene) ?
                 n.position : getNextPosition(occupiedPositions, centerPos);
             occupiedPositions.push(positions[end]);
@@ -1001,7 +1004,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
     function displayLines(i, cinegraphNodes, lineGeom) {
         var relation = cinegraphNodes[i], type = relation.type;
         $http.get('/api/common/' + relation.end).success(function(endNode) {
-            if (findRelationship(relation.start, relation.end) != undefined)
+            if (self.findRelationship(relation.start, relation.end) != undefined)
                 return;
             if (endNode.name)
                 var startColor = colors[type], endColor = orangeColor;
@@ -1013,7 +1016,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
             line = new THREE.Line(lineGeom, lineMat);
             line.endNodeId = relation.end;
             line.startNodeId = relation.start;
-            linesScene.add(line);
+            self.linesScene.add(line);
         });
     }
 
@@ -1036,7 +1039,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
         var positions = getCinegraphPositions(cinegraphNodes, refreshScene);
         // drawing nodes
         for (var i in positions){
-            var n = findNode(i);
+            var n = self.findNode(i);
             if (n == undefined || n.IsSuggested) {
                 (function (i) {
                     $http.get('/api/common/' + i).success(function(node) {
@@ -1062,7 +1065,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
         for (var i = 0; i < cinegraphNodes.length; i++){
             var relation = cinegraphNodes[i];
             if (relation.start != null && relation.end != null) {
-                var line = findRelationship(relation.start, relation.end);
+                var line = self.findRelationship(relation.start, relation.end);
                 if (line == undefined) { // create line if not present
                     var lineGeom = new THREE.Geometry();
                     lineGeom.vertices.push(positions[relation.end], positions[relation.start]);
@@ -1602,9 +1605,9 @@ var CINEGRAPH = CINEGRAPH || (function () {
                             removeOneFromScene(scope.suggestedNodes, point, scope.currentNode.id);
                         else {
                             // setting line opacity to 1
-                            for (var k = linesScene.children.length - 1; k >= 0; k--)
-                                if(linesScene.children[k].startNodeId == point || linesScene.children[k].endNodeId == point)
-                                    linesScene.children[k].material.opacity = 1;
+                            for (var k = self.linesScene.children.length - 1; k >= 0; k--)
+                                if(self.linesScene.children[k].startNodeId == point || self.linesScene.children[k].endNodeId == point)
+                                    self.linesScene.children[k].material.opacity = 1;
                             // removing suggestion style
                             unsetNodeAsSuggestion(id);
                         }
@@ -1626,8 +1629,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
                 var id = scope.suggestedNodes[i].start;
                 if (scope.currentNode.type == 'Person')
                     id = scope.suggestedNodes[i].end;
-                removeNode(id);
-                removeRelationship(scope.suggestedNodes[i].start, scope.suggestedNodes[i].end);
+                self.removeNode(id);
+                self.removeRelationship(scope.suggestedNodes[i].start, scope.suggestedNodes[i].end);
                 scope.suggestedNodes.splice(i, 1);
                 //removeOneFromScene(scope.suggestedNodes, id, scope.currentNode.id);
             }
@@ -1635,15 +1638,15 @@ var CINEGRAPH = CINEGRAPH || (function () {
     }
 
     function addFilters(id) {
-        var n = findNode(id);
+        var n = self.findNode(id);
         var slice = PI2 / 12;
         if (n != undefined){
             var i = 4;
             for (job in scope.selectedJobs){
                 i++;
                 var found = false;
-                for (var j = 0; j < scene.children.length; j++) {
-                    if (scene.children[j].filterButtonJob == job){
+                for (var j = 0; j < self.scene.children.length; j++) {
+                    if (self.scene.children[j].filterButtonJob == job){
                         found = true;
                         break;
                     }
@@ -1666,8 +1669,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
     }
 
     function removeFilters() {
-        for (var i = scene.children.length - 1; i >= 0; i--){
-            var sprite = scene.children[i];
+        for (var i = self.scene.children.length - 1; i >= 0; i--){
+            var sprite = self.scene.children[i];
             for (var j = sprite.children.length - 1; j >= 0; j--){
                 var child = sprite.children[j];
                 if (child.isFilterButton || child.isFilterBackground || child.isFilterBackgroundButton){
@@ -1681,7 +1684,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
     }
 
     function unsetNodeAsFilter(id){
-        var n = findNode(id);
+        var n = self.findNode(id);
         if (n != undefined){
             for (var i = n.children.length - 1; i >= 0; i--){
                 var child = n.children[i];
@@ -1698,7 +1701,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
     }
 
     function setNodeAsFilter(id, job){
-        var n = findNode(id);
+        var n = self.findNode(id);
         if (n != undefined && n.isSetAsFilter != job){
             var addBackground = true, addSwitchButton = true, addRightButton = true, addLeftButton = true;
             for (var i = 0; i < n.children.length; i++){
@@ -1797,7 +1800,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
 
     function getIntersection() {
         raycaster.setFromCamera(mouse, camera);
-        return raycaster.intersectObjects(scene.children, true);
+        return raycaster.intersectObjects(self.scene.children, true);
     }
 
     function updateIntersection() {
@@ -1841,7 +1844,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
 
 
     function setNodeAsSuggestion(id) {
-        var n = findNode(id);
+        var n = self.findNode(id);
         if (n != undefined){
             var material = new THREE.MeshBasicMaterial({
                 color: new THREE.Color(n.mainJob != undefined ? colors[n.mainJob] : orangeColor),
@@ -1863,7 +1866,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
     }
 
     function unsetNodeAsSuggestion(id) {
-        var n = findNode(id);
+        var n = self.findNode(id);
         if (n != undefined){
             var c = null;
             for (var i = n.children.length - 1; i >= 0; i--)
@@ -1886,49 +1889,6 @@ var CINEGRAPH = CINEGRAPH || (function () {
     /* CINEGRAPH PATH HANDLING */
     /* ----------------------- */
 
-    function findNode(id)
-    {
-        for (var i = 0; i < scene.children.length; i++)
-            if (scene.children[i]._id == id)
-                return scene.children[i];
-        return undefined;
-    }
-
-    function findRelationship(start, end)
-    {
-        for (var i = 0; i < linesScene.children.length; i++) {
-            var line = linesScene.children[i];
-            if (line.type == "Line")
-                if (start == line.startNodeId && end == line.endNodeId
-                    || end == line.startNodeId && start == line.endNodeId)
-                    return line;
-        }
-        return undefined;
-    }
-
-    function removeRelationship(start, end)
-    {
-        var r = findRelationship(start, end);
-        if (r != undefined) {
-            r.geometry.dispose();
-            r.material.dispose();
-            linesScene.remove(r);
-        }
-    }
-
-    function removeNode(id)
-    {
-        var n = findNode(id);
-        if (n != undefined) {
-            new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
-                .easing(TWEEN.Easing.Linear.None).onComplete(function (){
-                    n.geometry.dispose();
-                    n.material.dispose();
-                    n.texture.dispose();
-                    scene.remove(n);
-                }).start();
-        }
-    }
 
     function removePath(array) {
         for (var i = 0; i < array.length; i++){
@@ -1944,11 +1904,11 @@ var CINEGRAPH = CINEGRAPH || (function () {
                     removeEndNode = false;
             }
             if (removeLine)
-                removeRelationship(r1.start, r1.end);
+                self.removeRelationship(r1.start, r1.end);
             if (removeStartNode)
-                removeNode(r1.start);
+                self.removeNode(r1.start);
             if (removeEndNode)
-                removeNode(r1.end);
+                self.removeNode(r1.end);
         }
     }
 
@@ -1992,8 +1952,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
         var pathPanel = $('<div id="canvasPathPanel"><h3 class="inline">Searching for paths...</h3></div>');
         $('#graph').after(pathPanel.hide().slideDown(500));
         // getting paths
-        var startNode = findNode(mouseClickStart.cinegraphPath[0]);
-        var endNode = findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);
+        var startNode = self.findNode(mouseClickStart.cinegraphPath[0]);
+        var endNode = self.findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);
         if (startNode == undefined || endNode == undefined)
           return;
         $http.get('/api/mycinegraph/path/' + startNode._id + "/" + endNode._id).success(function(paths) {
@@ -2141,7 +2101,7 @@ var CINEGRAPH = CINEGRAPH || (function () {
     }
 
     function cameraLookAtNode(id){
-        var n = findNode(id);
+        var n = self.findNode(id);
         if (n != undefined)
             cameraLookAtPosition(n.position);
     }
@@ -2164,8 +2124,8 @@ var CINEGRAPH = CINEGRAPH || (function () {
         var oldTweenCount = tweenCount;
         tweenCount = TWEEN.getAll().length;
         if (renderNeedsUpdate || tweenCount > 0 || oldTweenCount > 0 && tweenCount == 0){
-            for (var i = 0; i < scene.children.length; i++){
-                var sprite = scene.children[i];
+            for (var i = 0; i < self.scene.children.length; i++){
+                var sprite = self.scene.children[i];
                 if (sprite.type == 'Sprite') {
                     sprite.lookAt(camera.position);
                     sprite.quaternion.copy(camera.quaternion);
@@ -2207,20 +2167,26 @@ var CINEGRAPH = CINEGRAPH || (function () {
         composer.render();
         blendComposer.render();
     }
-    
-    // public fields
-    return {
-        init: function (s, http, location) {
-            $http = http;
-            $location = location;
-            initScope(s);
-            $('#graph').css('opacity', 0);
-            //defaultImg.onload = function () {
-                initScene();
-                initStats();
-                animate();
-                $('#graph').animate({"opacity":1}, 2000);
-            //}
-        }
-    };
-})();
+
+
+    // public variables
+    self.scene = null;
+    self.linesScene = null;
+
+    // public functions
+
+    self.init = function (s, http, location) {
+        $http = http;
+        $location = location;
+        initScope(s);
+        $('#graph').css('opacity', 0);
+        //defaultImg.onload = function () {
+            initScene();
+            initStats();
+            animate();
+            $('#graph').animate({"opacity":1}, 2000);
+        //}
+    }
+
+    return self;
+})(CINEGRAPH || {});

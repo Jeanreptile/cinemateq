@@ -136,34 +136,6 @@ var CINEGRAPH = (function (self) {
         scope.refreshGraph = self.refreshGraph;
     }
 
-    function initScene() {
-        // global variables init
-        self.scene = new THREE.Scene();
-        self.linesScene = new THREE.Scene();
-        $('#graph').css('height','100%');
-        self.viewWidth = $('#graph').width();
-        self.viewHeight = $('#graph').height();
-
-        self.initCamera();
-        self.initRender();
-        // lines scene
-        self.linesScene.add(self.camera);
-        self.initTexture();
-        self.initInput();
-
-        // cinegraph init
-        if (scope.cinegraphId != undefined) {
-            $http.get('/api/mycinegraph/' + self.scope.cinegraphId).success(function (cinegraph) {
-                cinegraph.nodes = JSON.parse(cinegraph.nodes);
-                self.scope.currentCinegraph = cinegraph;
-                self.displayCinegraphNodes(self.scope.currentCinegraph.nodes, false);
-            });
-        }
-        //explore init
-        else
-            self.getNode(getParameterByName('id'), new THREE.Vector3(0, 0, 0));
-    }
-
     function getFriendsRatings(friends, index, node, currentUserRating) {
         $http.get('/api/user/'+ friends[index].id + '/rating/' + node.id).success(function (rating) {
           $http.get('community-sentences.json').success(function(data) {
@@ -228,7 +200,33 @@ var CINEGRAPH = (function (self) {
       scope.friendsTastes.push(sentenceObj);
     }
 
-    // public functions
+    function initScene() {
+        // global variables init
+        self.scene = new THREE.Scene();
+        self.linesScene = new THREE.Scene();
+        $('#graph').css('height','100%');
+        self.viewWidth = $('#graph').width();
+        self.viewHeight = $('#graph').height();
+
+        self.initCamera();
+        self.initRender();
+        // lines scene
+        self.linesScene.add(self.camera);
+        self.initTexture();
+        self.initInput();
+
+        /*// cinegraph init
+        if (scope.cinegraphId != undefined) {
+            $http.get('/api/mycinegraph/' + self.scope.cinegraphId).success(function (cinegraph) {
+                cinegraph.nodes = JSON.parse(cinegraph.nodes);
+                self.scope.currentCinegraph = cinegraph;
+                self.displayCinegraphNodes(self.scope.currentCinegraph.nodes, false);
+            });
+        }
+        //explore init
+        else
+            self.getNode(getParameterByName('id'), new THREE.Vector3(0, 0, 0));*/
+    }
 
     self.init = function (s, http, location) {
         $http = http;

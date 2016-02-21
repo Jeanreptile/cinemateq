@@ -95,6 +95,26 @@ router.get('/:id', function(req, res) {
 	// TODO: Handle errors
 });
 
+/* GET the related nodes */
+router.get('/related/:id/:types', function(req, res) {
+	var types = JSON.parse(req.params.types);
+	var query = [];
+	for (var i = 0; i < types.length; i++) {
+		var t = types[i];
+		query.push('MATCH (n1)-[r:' + t.type +']-(n2) '
+			+ 'WHERE id(n1)={id} RETURN type(r) as type, n2 as node, head(labels(n2)) as label '
+			+ 'SKIP ' + t.skip + ' LIMIT ' + t.limit);
+	}
+
+	dbLocal.query(query.join(" UNION ALL "), {
+		id : parseInt(req.params.id)
+	}, function(err, result) {
+		if (err)
+			throw err;
+		res.json(result);
+	});
+});
+
 /*
 var setImg = function(object, type){
 	if (result[0].type == "Perso ")
@@ -104,7 +124,7 @@ var setImg = function(object, type){
 	}
 }
 */
-
+/*
 router.get('/:id/relationships/:direction', function(req, res) {
 	dbLocal.relationships(req.params.id, req.params.direction, function(err, relationships) {
 		var nodes = [];
@@ -127,21 +147,21 @@ router.get('/:id/relationships/:direction', function(req, res) {
 		else
 			res.json(null);
 	});
-});
+});*/
 
-router.get('/:id/relationshipsRaw/:direction', function(req, res) {
+/*router.get('/:id/relationshipsRaw/:direction', function(req, res) {
 	dbLocal.relationships(req.params.id, req.params.direction, function(err, relationships) {
 		res.json(relationships);
 	});
-});
+});*/
 
-router.get('/:id/relationshipsRaw/:direction/:type', function(req, res) {
+/*router.get('/:id/relationshipsRaw/:direction/:type', function(req, res) {
 	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
 		res.json(relationships);
 	});
-});
+});*/
 
-router.get('/:id/relationshipsRaw/:direction/:type/:limit/:offset?', function(req, res) {
+/*router.get('/:id/relationshipsRaw/:direction/:type/:limit/:offset?', function(req, res) {
 	var offset = req.params.offset ? req.params.offset : "";
 	if (req.params.direction == "in") {
 		if (req.params.type == "ACTED_IN")
@@ -174,8 +194,8 @@ router.get('/:id/relationshipsRaw/:direction/:type/:limit/:offset?', function(re
 	dbLocal.query(cypher, function (err, relationships) {
 		res.json(relationships);
 	});
-});
-
+});*/
+/*
 router.get('/:id/relationships/:direction/:type', function(req, res) {
 	if (req.params.type == "ACTED_IN")
 	{
@@ -233,8 +253,8 @@ router.get('/:id/relationships/:direction/:type', function(req, res) {
 			res.json(null);
 	});
 }
-});
-
+});*/
+/*
 router.get('/:id/relationships/:direction/:type/:limit', function(req, res) {
 	dbLocal.relationships(req.params.id, req.params.direction, req.params.type, function(err, relationships) {
 		var nodes = [];
@@ -257,7 +277,7 @@ router.get('/:id/relationships/:direction/:type/:limit', function(req, res) {
 		else
 			res.json(null);
 	});
-});
+});*/
 
 
 module.exports = router;

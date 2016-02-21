@@ -10,6 +10,10 @@ var CINEGRAPH = (function (self) {
         return true;
     }
 
+    self.getNewPosition = function(){
+        return self.getNextPosition(self.getOccupiedPositions(), new THREE.Vector3(0,0,0));
+    };
+
     self.getOccupiedPositions = function(){
         var positions = [];
         // sprites already on the self.scene
@@ -30,7 +34,7 @@ var CINEGRAPH = (function (self) {
         var sphereRadius = 18;
         var nextPosition = centerNodePosition.clone();
         var i = 0;
-        do {
+        while (!positionIsValid(occupiedPositions, nextPosition)) {
             if (i < 10 && self.scope.cinegraphId == undefined){
                 nextPosition.x = Math.round(centerNodePosition.x + sphereRadius * Math.cos(slice * i));
                 nextPosition.y = Math.round(centerNodePosition.y + sphereRadius * Math.sin(slice * i));
@@ -45,7 +49,7 @@ var CINEGRAPH = (function (self) {
             i++;
             if (i % 50 == 0)
                 sphereRadius = 18 * (1 + i / 50);
-        } while (!positionIsValid(occupiedPositions, nextPosition))
+        } 
         return nextPosition;
     };
 

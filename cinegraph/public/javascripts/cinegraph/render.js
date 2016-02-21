@@ -1,17 +1,14 @@
 var CINEGRAPH = (function (self) {
 
     var renderer, composerLines, composer, blendComposer;
-    var performanceTotal;
-    var performanceSampleCount;
+    var performanceTotal, performanceSampleCount;
     var idAnimationFrame;
-    var stats;
-    var rendererStats;
+    var stats, rendererStats;
     var renderMode;
     var qualityScale;
     var tweenCount;
     const sampleRatio = 1;
     const lineThickness = 5;
-
     self.renderNeedsUpdate = false;
 
     self.initRender = function(){

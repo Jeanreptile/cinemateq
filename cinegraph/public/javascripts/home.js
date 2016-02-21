@@ -486,7 +486,12 @@ cinegraphApp.directive('fileModel', ['$parse', function ($parse) {
 cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $location) {
 	return {
 		link: function link(scope, element, attrs) {
-            CINEGRAPH.init(scope, $http, $location);
+            var c = CINEGRAPH, id = parseInt(getParameterByName('id'));
+            c.init(scope, $http, $location);
+            c.addNode(id);
+            setTimeout(function() {
+                c.moveToNode(id);
+            }, 1500);
         }
     }
 }]);

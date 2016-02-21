@@ -195,7 +195,7 @@ var CINEGRAPH = (function (self) {
             if (self.scope.cinegraphId != undefined)
                 self.getNodeCinegraphMode(id, intersection.object.position, true);
             else
-                self.getNode(id, intersection.object.position);
+                self.moveToNode(id);
         } else if (intersection.object.isFilterBackgroundButton) {
             var job = intersection.object.filterBackgroundJob;
             // switch job button

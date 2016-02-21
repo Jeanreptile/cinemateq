@@ -90,7 +90,7 @@ router.get('/:id', function(req, res) {
 });
 
 /* GET ACTED_IN relationships for one person. */
-router.get('/:id/actor', function(req, res) {
+/*router.get('/:id/actor', function(req, res) {
 	var cypher = "MATCH (n:Person) WHERE id(n) = {personId} RETURN n";
 	dbLocal.query(cypher, {personId: parseInt(req.params.id)}, function(err, result) {
 		if (err) throw err;
@@ -106,10 +106,10 @@ router.get('/:id/actor', function(req, res) {
 		});
 	});
 	// TODO: Handle errors
-});
+});*/
 
 /* GET ACTED_IN relationships for one person. */
-router.get('/:id/actor/movies', function(req, res) {
+/*router.get('/:id/actor/movies', function(req, res) {
 	var cypher = "MATCH (n:Person) WHERE id(n) = {personId} RETURN n";
 	dbLocal.query(cypher, {personId: parseInt(req.params.id)}, function(err, result) {
 		if (err) throw err;
@@ -138,6 +138,6 @@ router.get('/:id/actor/movies', function(req, res) {
 		});
 	});
 	// TODO: Handle errors
-});
+});*/
 
 module.exports = router;

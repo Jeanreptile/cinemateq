@@ -192,10 +192,14 @@ var CINEGRAPH = (function (self) {
             self.cameraLookAtNode(id);
             // updating current node
             self.scope.currentNode.sprite = intersection.object;
-            if (self.scope.cinegraphId != undefined)
-                self.getNodeCinegraphMode(id, intersection.object.position, true);
-            else
-                self.moveToNode(id);
+            if (self.scope.cinegraphId != undefined) {
+                self.selectNode(id);
+                // TODO
+            }
+            else {
+                self.selectNode(id);
+                self.addRelatedNodes(id);
+            }
         } else if (intersection.object.isFilterBackgroundButton) {
             var job = intersection.object.filterBackgroundJob;
             // switch job button

@@ -8,6 +8,9 @@ var CINEGRAPH = (function (self) {
     self.camera = null;
 
     self.initCamera = function(){
+        $('#graph').css('height','100%');
+        self.viewWidth = $('#graph').width();
+        self.viewHeight = $('#graph').height();
         self.camera = new THREE.PerspectiveCamera(cameraFov, self.viewWidth / self.viewHeight, nearDistance, 1000);
         self.camera.position.set(0, 0, cameraDist);
         self.cameraControls = new THREE.TrackballControls(self.camera, document.getElementById('graph'));

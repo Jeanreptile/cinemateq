@@ -488,10 +488,22 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
 		link: function link(scope, element, attrs) {
             var c = CINEGRAPH, id = parseInt(getParameterByName('id'));
             c.init(scope, $http, $location);
-            c.addNode(id);
-            setTimeout(function() {
-                c.moveToNode(id);
-            }, 1500);
+
+            // DISCOVER mode
+            if (scope.cinegraphId === undefined){
+                c.addNode(id).then(function(){
+                    c.selectNode(id);
+                    c.addRelatedNodes(id);
+                });
+            }
+            // CINEGRAPH mode
+            else {
+                $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
+                    cinegraph.nodes = JSON.parse(cinegraph.nodes);
+                    c.scope.currentCinegraph = cinegraph;
+                    c.displayCinegraphNodes(c.scope.currentCinegraph.nodes, false);
+                });
+            }
         }
     }
 }]);

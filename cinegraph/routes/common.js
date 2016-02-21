@@ -95,7 +95,7 @@ router.get('/:id', function(req, res) {
 	// TODO: Handle errors
 });
 
-/* GET the related nodes */
+/* GET related nodes */
 router.get('/related/:id/:types', function(req, res) {
 	var types = JSON.parse(req.params.types);
 	var query = [];

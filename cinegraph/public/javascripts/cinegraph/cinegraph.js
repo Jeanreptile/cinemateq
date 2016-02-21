@@ -144,19 +144,15 @@ var CINEGRAPH = (function (self) {
             var nodeType = node.type.toLowerCase();
 
             var sentences = [];
-            if (rating.message) { // Friend did not rate the node.
+            if (rating.message) // Friend did not rate the node.
               sentences = data.friendHasNotRated;
-            }
             else {
-              if (rating.love >= 4 && currentUserRating.love >= 4) { // bothWellRated
+              if (rating.love >= 4 && currentUserRating.love >= 4) // bothWellRated
                 sentences = data.bothWellRated;
-              }
-              else if (rating.love >= 4 && currentUserRating.love <= 1) { // oppositeRates
+              else if (rating.love >= 4 && currentUserRating.love <= 1) // oppositeRates
                 sentences = data.oppositeRates;
-              }
-              else if (rating.love <= 1 && currentUserRating.love >= 3) { // friendHasNotWellRated
+              else if (rating.love <= 1 && currentUserRating.love >= 3) // friendHasNotWellRated
                 sentences = data.friendHasNotWellRated;
-              }
             }
             if (sentences.length)
               pushCommunitySentences(sentences, friendName, nodeName, nodeType);
@@ -174,21 +170,14 @@ var CINEGRAPH = (function (self) {
         var parameter = sentenceParameters[i];
         var parameterKey = "parameter" + (i+1);
         var completedSentence = null;
-        if (parameter[parameterKey] == "friendName") {
+        if (parameter[parameterKey] == "friendName")
             sentence = sentence.replace("{" + parameterKey + "}", friendName);
-        }
-        else if (parameter[parameterKey] == "nodeName") {
+        else if (parameter[parameterKey] == "nodeName")
             sentence = sentence.replace("{" + parameterKey + "}", nodeName);
-        }
-        else if (parameter[parameterKey] == "showButton") {
+        else if (parameter[parameterKey] == "showButton")
             showButton = true;
-        }
-        else if (parameter[parameterKey] == "nodeType") {
+        else if (parameter[parameterKey] == "nodeType")
             sentence = sentence.replace("{" + parameterKey + "}", nodeType);
-        }
-        else {
-
-        }
 
         var sentenceObj = {
           showButton: showButton,
@@ -200,33 +189,11 @@ var CINEGRAPH = (function (self) {
       scope.friendsTastes.push(sentenceObj);
     }
 
-    function initScene() {
-        // global variables init
+    self.initScene = function() {
         self.scene = new THREE.Scene();
         self.linesScene = new THREE.Scene();
-        $('#graph').css('height','100%');
-        self.viewWidth = $('#graph').width();
-        self.viewHeight = $('#graph').height();
-
-        self.initCamera();
-        self.initRender();
-        // lines scene
         self.linesScene.add(self.camera);
-        self.initTexture();
-        self.initInput();
-
-        /*// cinegraph init
-        if (scope.cinegraphId != undefined) {
-            $http.get('/api/mycinegraph/' + self.scope.cinegraphId).success(function (cinegraph) {
-                cinegraph.nodes = JSON.parse(cinegraph.nodes);
-                self.scope.currentCinegraph = cinegraph;
-                self.displayCinegraphNodes(self.scope.currentCinegraph.nodes, false);
-            });
-        }
-        //explore init
-        else
-            self.getNode(getParameterByName('id'), new THREE.Vector3(0, 0, 0));*/
-    }
+    };
 
     self.init = function (s, http, location) {
         $http = http;
@@ -234,7 +201,11 @@ var CINEGRAPH = (function (self) {
         initScope(s);
         $('#graph').css('opacity', 0);
         //defaultImg.onload = function () {
-            initScene();
+            self.initCamera();
+            self.initScene();
+            self.initRender();
+            self.initTexture();
+            self.initInput();
             self.animate();
             $('#graph').animate({"opacity":1}, 2000);
         //}

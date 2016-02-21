@@ -30,5 +30,18 @@ var CINEGRAPH = (function (self) {
             }).start();
     };
 
+    self.animateLine = function (line, startPosition, endPosition) {
+        new TWEEN.Tween(line.geometry.vertices[1])
+            .to({ x: startPosition.x, y: startPosition.y, z: startPosition.z}, 1000)
+            .easing(TWEEN.Easing.Linear.None).onUpdate(function(){
+                line.geometry.verticesNeedUpdate = true;
+            }).start();
+        new TWEEN.Tween(line.geometry.vertices[0])
+            .to({x: endPosition.x, y: endPosition.y, z: endPosition.z}, 1000)
+            .easing(TWEEN.Easing.Linear.None).onUpdate(function(){
+                line.geometry.verticesNeedUpdate = true;
+            }).start();
+    };
+
     return self;
 })(CINEGRAPH || {});

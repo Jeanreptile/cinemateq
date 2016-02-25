@@ -1,20 +1,47 @@
 var CINEGRAPH = (function (self) {
 
-    var types = [ { type: 'ACTED_IN', skip: 0, limit: 4 },
-                  { type: 'DIRECTED', skip: 0, limit: 1 },
-                  { type: 'PRODUCED', skip: 0, limit: 1 },
-                  { type: 'COMPOSED_MUSIC', skip: 0, limit: 1 },
-                  { type: 'DIRECTED_PHOTOGRAPHY', skip: 0, limit: 1 },
-                  { type: 'WROTE', skip: 0, limit: 1 },
-                  { type: 'EDITED', skip: 0, limit: 1 },
-                  { type: 'DESIGNED_PRODUCTION', skip: 0, limit: 1 },
-                  { type: 'DESIGNED_COSTUMES', skip: 0, limit: 1 }
-                ];
+    var relationships = {
+        'ACTED_IN': { limit: 4, color: '#319ef1' },
+        'DIRECTED': { limit: 1, color: '#8e44ad' },
+        'PRODUCED': { limit: 1, color: '#27ae60' },
+        'COMPOSED_MUSIC': { limit: 1, color: '#00d6ce' },
+        'DIRECTED_PHOTOGRAPHY': { limit: 1, color: '#fc6e51' },
+        'WROTE': { limit: 1, color: '#f1c40f' },
+        'EDITED': { limit: 1, color: '#e33244' },
+        'DESIGNED_PRODUCTION': { limit: 1, color: '#ac92ec' },
+        'DESIGNED_COSTUMES': { limit: 1, color: '#ec87c0' }
+    };
+
+    var types = {
+        'Movie': { color: '#ffa226' }
+    };
+
+    function getRelationshipsSettings(count){
+        var r = {};
+        for (var rel in relationships) {
+            r[rel] = {
+                skip: 0,
+                limit: relationships[rel].limit,
+                active: true,
+                count: count[rel] !== undefined ? count[rel] : 0
+            };
+        }
+        return r;
+    }
+
+    function convertArrayToMap(array){
+        var r = {};
+        for (var i = 0; i < array.length; i++)
+            r[array[i][0]] = array[i][1];
+        return r;
+    }
 
     self.addNode = function(id, position){
         return new Promise((resolve, reject) => {
             if (self.findNode(id) === undefined) {
-                $http.get('/api/common/' + id).success(function(node) {
+                $http.get('/api/common/' + id).success(function(data) {
+                    var node = data.node;
+                    node._relationships = getRelationshipsSettings(data.relationships);
                     var sprite = getNodeSprite(node);
                     sprite.scale.set(0, 0, 0);
                     position = position !== undefined ? position : self.getNewPosition();
@@ -32,13 +59,14 @@ var CINEGRAPH = (function (self) {
         return new Promise((resolve, reject) => {
             var n = self.findNode(id);
             if (n !== undefined) {
-                $http.get('/api/common/related/' + id + '/' + JSON.stringify(types)).success(function(res) {
+                $http.get('/api/common/related/' + id + '/' + JSON.stringify(n.node._relationships)).success(function(res) {
                     var occupiedPositions = self.getOccupiedPositions();
-                    // for each related node
+                    // for each relationship
                     for (var i = 0; i < res.length; i++){
                         var node = res[i].node;
-                        node.type = res[i].label;
                         if (self.findNode(node.id) === undefined){
+                            node.label = res[i].label;
+                            node._relationships = getRelationshipsSettings(convertArrayToMap(res[i].relationships));
                             // TO DO: check if duplicate in related nodes
                             // adding node
                             var sprite = getNodeSprite(node);
@@ -85,9 +113,9 @@ var CINEGRAPH = (function (self) {
         lineGeom.vertices.push(position.clone(), position.clone());
         var startColor, endColor;
         if (direction)
-            startColor = self.colors[type], endColor = self.orangeColor;
+            startColor = relationships[type].color, endColor = types['Movie'].color;
         else
-            startColor = self.orangeColor, endColor = self.colors[type];
+            startColor = types['Movie'].color, endColor = relationships[type].color;
         lineGeom.colors.push(new THREE.Color(startColor));
         lineGeom.colors.push(new THREE.Color(endColor));
         return new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true }));
@@ -105,7 +133,7 @@ var CINEGRAPH = (function (self) {
         sprite.name = text;
         sprite.canvas = canvas;
         sprite.texture = texture;
-        sprite.mainJob = node.jobs != undefined ? node.jobs[0].name : undefined;
+        sprite.mainJob = Object.keys(node._relationships)[0];
         sprite.node = node;
         // image loading
         if (node.img == undefined || node.img == false)

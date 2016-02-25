@@ -8,25 +8,57 @@ var dbLocal = require("seraph")({ server : config.neo4j.url,
                                   user: config.neo4j.user,
                                   pass: config.neo4j.password});
 
-function pushNumberOfRelations(index, id, relTypes, count, callback) {
-	dbLocal.relationships(id, "out", relTypes[index]["name"], function(err, relationships) {
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+
+/* GET a node with the number of relationships by type */
+router.get('/:id', function(req, res) {
+	var query = 'MATCH (n) WHERE id(n) = {id} OPTIONAL MATCH (n)-[r]-() '
+		+ 'RETURN n as node, head(labels(n)) as label, type(r) as type, count(r) as count '
+		+ 'ORDER BY count DESC';
+	dbLocal.query(query, { id : parseInt(req.params.id) }, function(err, result) {
+		if (err || result.length === 0)
+			throw err;
+		var n = result[0].node;
+		n.label = result[0].label;
+
+		var relationships = {};
+		for (var i = 0; i < result.length; i++)
+			if (result[i].type != null)
+				relationships[result[i].type] = result[i].count;
+
+		res.json({ node: n, relationships: relationships });
+	});
+});
+
+/* GET related nodes with, for each related node, the number of relationships by type */
+router.get('/related/:id/:types', function(req, res) {
+	var types = JSON.parse(req.params.types);
+	var query = [];
+	for (var t in types) {
+		if (types[t].active){
+			query.push('MATCH (n1)-[r1:ACTED_IN]-(n2) WHERE id(n1)={id} '
+				+ 'WITH type(r1) as type1, n2 as node, head(labels(n2)) as label '
+				+ 'SKIP ' + types[t].skip + ' LIMIT ' + types[t].limit + ' '
+				+ 'MATCH (node)-[r2]-() '
+				+ 'WITH type1 as type, node, label, count(r2) as count2, type(r2) as type2 '
+				+ 'ORDER BY count2 DESC '
+				+ 'RETURN type, node, label, collect([type2, count2]) as relationships');
+		}
+	}
+
+	dbLocal.query(query.join(" UNION ALL "), {
+		id : parseInt(req.params.id)
+	}, function(err, result) {
 		if (err)
 			throw err;
-		if (relationships.length > 0) {
-			var length = relationships.length;
-			relTypes[index]["number"] = length;
-		}
-		count.val += 1;
-		if (count.val == relTypes.length) {
-			callback(relTypes);
-		}
-	});
-};
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
+		res.json(result);
+	});
+});
+
 
 /* GET a node by id. */
-router.get('/:id', function(req, res) {
+/*router.get('/:id', function(req, res) {
 	var cypher = "MATCH (n) WHERE id(n) = {nodeId} RETURN n";
 	dbLocal.query(cypher, {nodeId: parseInt(req.params.id)}, function(err, result) {
 		if (err)
@@ -93,27 +125,7 @@ router.get('/:id', function(req, res) {
 		});
 	});
 	// TODO: Handle errors
-});
-
-/* GET related nodes */
-router.get('/related/:id/:types', function(req, res) {
-	var types = JSON.parse(req.params.types);
-	var query = [];
-	for (var i = 0; i < types.length; i++) {
-		var t = types[i];
-		query.push('MATCH (n1)-[r:' + t.type +']-(n2) '
-			+ 'WHERE id(n1)={id} RETURN type(r) as type, n2 as node, head(labels(n2)) as label '
-			+ 'SKIP ' + t.skip + ' LIMIT ' + t.limit);
-	}
-
-	dbLocal.query(query.join(" UNION ALL "), {
-		id : parseInt(req.params.id)
-	}, function(err, result) {
-		if (err)
-			throw err;
-		res.json(result);
-	});
-});
+});*/
 
 /*
 var setImg = function(object, type){

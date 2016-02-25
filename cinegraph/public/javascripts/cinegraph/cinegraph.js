@@ -6,22 +6,11 @@ var CINEGRAPH = (function (self) {
     self.linesScene = null;
     self.viewWidth = 0;
     self.viewHeight = 0;
-    self.orangeColor = '#ffa226';
-    self.colors = [];
-    self.colors['ACTED_IN'] = '#319ef1';
-    self.colors['PRODUCED'] = '#27ae60';
-    self.colors['DIRECTED'] = '#8e44ad';
-    self.colors['WROTE'] = '#f1c40f';
-    self.colors['EDITED'] = '#e33244';
-    self.colors['DIRECTED_PHOTOGRAPHY'] = '#fc6e51';
-    self.colors['COMPOSED_MUSIC'] = '#00d6ce';
-    self.colors['DESIGNED_COSTUMES'] = '#ec87c0';
-    self.colors['DESIGNED_PRODUCTION'] = '#ac92ec';
 
     function initScope(s) {
         self.scope = s;
         scope = self.scope;
-        scope.jobsNames = {
+/*        scope.jobsNames = {
             actor: 'Actor',
             writer: 'Writer',
             producer: 'Producer',
@@ -55,7 +44,7 @@ var CINEGRAPH = (function (self) {
             proddesigner: 0
         };
         scope.currentDisplayedNodes = [];
-        scope.suggestedNodes = [];
+        scope.suggestedNodes = [];*/
 
         scope.clearOffsets = function () {
             for (var job in scope.jobsOffset)

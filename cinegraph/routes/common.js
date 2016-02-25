@@ -36,7 +36,7 @@ router.get('/related/:id/:types', function(req, res) {
 	var query = [];
 	for (var t in types) {
 		if (types[t].active){
-			query.push('MATCH (n1)-[r1:ACTED_IN]-(n2) WHERE id(n1)={id} '
+			query.push('MATCH (n1)-[r1:' + t + ']-(n2) WHERE id(n1)={id} '
 				+ 'WITH type(r1) as type1, n2 as node, head(labels(n2)) as label '
 				+ 'SKIP ' + types[t].skip + ' LIMIT ' + types[t].limit + ' '
 				+ 'MATCH (node)-[r2]-() '

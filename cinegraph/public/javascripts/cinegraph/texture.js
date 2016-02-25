@@ -92,7 +92,7 @@ var CINEGRAPH = (function (self) {
                     continue;
                 // if line and node have same color, skip
                 var c = '#' + line.geometry.colors[startIndex].getHexString();
-                if (sprite.mainJob == undefined && c == self.orangeColor || c == self.colors[sprite.mainJob])
+                if (c === sprite.node._color)
                     continue;
                 // adding gradient sprites and updating existing ones
                 var startPos = self.toScreenPosition(line.geometry.vertices[startIndex]);
@@ -128,7 +128,9 @@ var CINEGRAPH = (function (self) {
         }
     };
 
-    self.generateSpriteBackground = function(job) {
+
+
+    self.generateSpriteBackground = function(sprite) {
         var canvas = document.createElement('canvas');
         canvas.width = 256;
         canvas.height = 256;
@@ -137,7 +139,7 @@ var CINEGRAPH = (function (self) {
         var halfWidth = canvas.width / 2;
         context.arc(halfWidth, halfWidth, halfWidth, 0, PI2);
         context.clip();
-        context.fillStyle = job != undefined ? self.colors[job] : self.orangeColor;
+        context.fillStyle = sprite.node._color;
         context.fillRect(0, 0, canvas.width, canvas.height);
         var texture = new THREE.Texture(canvas);
         var material = new THREE.SpriteMaterial({ map: texture });

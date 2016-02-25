@@ -1,6 +1,6 @@
 var CINEGRAPH = (function (self) {
 
-    var relationships = {
+    self.relationships = {
         'ACTED_IN': { limit: 4, color: '#319ef1' },
         'DIRECTED': { limit: 1, color: '#8e44ad' },
         'PRODUCED': { limit: 1, color: '#27ae60' },
@@ -12,16 +12,26 @@ var CINEGRAPH = (function (self) {
         'DESIGNED_COSTUMES': { limit: 1, color: '#ec87c0' }
     };
 
-    var types = {
+    self.types = {
         'Movie': { color: '#ffa226' }
     };
 
+    function getMainColor(node){
+        if (self.types[node.label] !== undefined && self.types[node.label].color !== undefined)
+            return self.types[node.label].color;
+        var max = Object.keys(node._relationships)[0];
+        for (var r in node._relationships)
+            if (node._relationships[r].count > node._relationships[max].count)
+                max = r;
+        return self.relationships[max].color;
+    }
+
     function getRelationshipsSettings(count){
         var r = {};
-        for (var rel in relationships) {
+        for (var rel in self.relationships) {
             r[rel] = {
                 skip: 0,
-                limit: relationships[rel].limit,
+                limit: self.relationships[rel].limit,
                 active: true,
                 count: count[rel] !== undefined ? count[rel] : 0
             };
@@ -42,6 +52,8 @@ var CINEGRAPH = (function (self) {
                 $http.get('/api/common/' + id).success(function(data) {
                     var node = data.node;
                     node._relationships = getRelationshipsSettings(data.relationships);
+                    node._color = getMainColor(node);
+                    console.log("addNode", node);
                     var sprite = getNodeSprite(node);
                     sprite.scale.set(0, 0, 0);
                     position = position !== undefined ? position : self.getNewPosition();
@@ -67,6 +79,8 @@ var CINEGRAPH = (function (self) {
                         if (self.findNode(node.id) === undefined){
                             node.label = res[i].label;
                             node._relationships = getRelationshipsSettings(convertArrayToMap(res[i].relationships));
+                            node._color = getMainColor(node);
+                            console.log("addRelatedNodes", node);
                             // TO DO: check if duplicate in related nodes
                             // adding node
                             var sprite = getNodeSprite(node);
@@ -113,9 +127,9 @@ var CINEGRAPH = (function (self) {
         lineGeom.vertices.push(position.clone(), position.clone());
         var startColor, endColor;
         if (direction)
-            startColor = relationships[type].color, endColor = types['Movie'].color;
+            startColor = self.relationships[type].color, endColor = self.types['Movie'].color;
         else
-            startColor = types['Movie'].color, endColor = relationships[type].color;
+            startColor = self.types['Movie'].color, endColor = self.relationships[type].color;
         lineGeom.colors.push(new THREE.Color(startColor));
         lineGeom.colors.push(new THREE.Color(endColor));
         return new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true }));
@@ -151,7 +165,7 @@ var CINEGRAPH = (function (self) {
             };
         }
         // outline
-        var gradientSprite = self.generateSpriteBackground(sprite.mainJob);
+        var gradientSprite = self.generateSpriteBackground(sprite);
         gradientSprite.material.depthWrite = false;
         gradientSprite.isOutlineSprite = true;
         gradientSprite.position.set(0,0,-0.000001);

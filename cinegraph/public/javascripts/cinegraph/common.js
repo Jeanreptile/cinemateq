@@ -37,6 +37,8 @@ var CINEGRAPH = (function (self) {
                     var node = data.node;
                     node._relationships = getRelationshipsSettings(data.relationships);
                     node._color = getMainColor(node);
+                    node._depth = 0;
+                    node._neighbours = [];
                     //console.log("addNode", node);
                     var sprite = getNodeSprite(node);
                     sprite.scale.set(0, 0, 0);
@@ -64,6 +66,9 @@ var CINEGRAPH = (function (self) {
                             node.label = res[i].label;
                             node._relationships = getRelationshipsSettings(convertArrayToMap(res[i].relationships));
                             node._color = getMainColor(node);
+                            node._depth = n._depth + 1;
+                            node._neighbours = [n.node.id];
+                            n.node._neighbours.push(node.id);
                             //console.log("addRelatedNodes", node);
                             // TO DO: check if duplicate in related nodes
                             // adding node
@@ -94,7 +99,30 @@ var CINEGRAPH = (function (self) {
         });
     };
 
-    self.currentNode = {};
+    self.removeOutOfDepthNodes = function(){
+        updateDepth(self.currentNode, -1, []);
+        for (var i = 0; i < self.scene.children.length; i++){
+            if (self.scene.children[i].node !== undefined){
+                var n = self.scene.children[i].node;
+                if (n._depth > self.options.maxDepth)
+                    self.removeNodeWithRelationships(n.id);
+            }
+        }
+    };
+
+    function updateDepth(node, parentDepth, visited){
+        node._depth = parentDepth + 1;
+        visited.push(node.id);
+
+        for (var i = node._neighbours.length - 1; i >= 0; i--){
+            var neighbour = self.findNode(node._neighbours[i]);
+            if (neighbour !== undefined){
+                if (visited.indexOf(neighbour.node.id) === -1 || parentDepth + 1 < neighbour.node._depth)
+                    updateDepth(neighbour.node, node._depth, visited);
+            } else
+                node._neighbours.splice(i, 1);
+        } 
+    }
 
     self.selectNode = function(id) {
         var n = self.findNode(id);
@@ -203,6 +231,18 @@ var CINEGRAPH = (function (self) {
             } else
                 reject('Node not found');
         });
+    };
+
+    self.removeNodeWithRelationships = function(id){
+        self.removeNode(id);
+        for (var i = self.linesScene.children.length - 1; i >= 0; i--) {
+            var line = self.linesScene.children[i];
+            if (line.type == "Line" && (line.startNodeId == id || line.endNodeId == id)){
+                line.geometry.dispose();
+                line.material.dispose();
+                self.linesScene.remove(line);
+            }
+        }
     };
 
     self.displayCinegraphNodes= function(cinegraphNodes, refreshScene) {

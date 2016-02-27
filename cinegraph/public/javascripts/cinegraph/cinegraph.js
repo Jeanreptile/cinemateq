@@ -7,7 +7,8 @@ var CINEGRAPH = (function (self) {
     self.currentNode = null;
 
     self.options = {
-        enablePathfinding: false
+        enablePathfinding: false,
+        maxDepth: 1
     };
 
     self.relationships = {

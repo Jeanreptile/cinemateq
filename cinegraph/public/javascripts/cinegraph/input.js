@@ -169,8 +169,8 @@ var CINEGRAPH = (function (self) {
         if (intersection.object.isOutlineSprite)
             intersection.object = intersection.object.parent;
         // intersection with a node
-        var id = intersection.object._id;
-        if (id != null) {
+        if (intersection.object.node != undefined) {
+            var id = intersection.object.node.id;
             /*if (self.scope.cinegraphId != undefined) {
                 var alreadySuggestedNodes = false;
                 $.each(self.scope.suggestedNodes, function (i, obj) {
@@ -192,8 +192,10 @@ var CINEGRAPH = (function (self) {
             // updating current node
             self.currentNode.sprite = intersection.object;
             self.selectNode(id);
-            self.addRelatedNodes(id);
-        } else if (intersection.object.isFilterBackgroundButton) {
+            self.addRelatedNodes(id).then(function(id){
+                self.removeOutOfDepthNodes();
+            });
+        } /*else if (intersection.object.isFilterBackgroundButton) {
             var job = intersection.object.filterBackgroundJob;
             // switch job button
             if (intersection.object.isSwitchButton){
@@ -217,7 +219,7 @@ var CINEGRAPH = (function (self) {
                     self.updateFilterBackgroundButtonSprite(intersection.object, false);
                 }, 300);
             }
-        }
+        }*/
     }
 
     function onRightClick(event) {

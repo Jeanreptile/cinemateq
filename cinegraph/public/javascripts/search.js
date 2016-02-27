@@ -42,14 +42,14 @@ angular.module('cinegraphApp').controller('TypeaheadCtrl', function($scope, $htt
   }
 
   $scope.getLocation = function(val) {
-    console.log('Go Search !');
+    //console.log('Go Search !');
     return $http.get('/api/search/' + $scope.selectedItem, {
       params: {
         query: val
       }
     }).then(function(response){
       $scope.response = [];
-      console.log("response front is: " + JSON.stringify(response));
+      //console.log("response front is: " + JSON.stringify(response));
       if (response.data.length == 0) {
         $scope.noResults = true;
         return [];

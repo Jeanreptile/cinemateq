@@ -35,17 +35,17 @@ var CINEGRAPH = (function (self) {
         var nextPosition = centerNodePosition.clone();
         var i = 0;
         while (!positionIsValid(occupiedPositions, nextPosition)) {
-            if (i < 10 && self.scope.cinegraphId == undefined){
+            /*if (i < 10 && self.scope.cinegraphId == undefined){
                 nextPosition.x = Math.round(centerNodePosition.x + sphereRadius * Math.cos(slice * i));
                 nextPosition.y = Math.round(centerNodePosition.y + sphereRadius * Math.sin(slice * i));
                 nextPosition.z = 0;
             }
-            else {
+            else {*/
                 nextPosition.x = Math.random() * 2 - 1;
                 nextPosition.y = Math.random() * 2 - 1;
                 nextPosition.z = Math.random() * 2 - 1;
                 nextPosition.setLength(sphereRadius).round().add(centerNodePosition);
-            }
+            //}
             i++;
             if (i % 50 == 0)
                 sphereRadius = 18 * (1 + i / 50);

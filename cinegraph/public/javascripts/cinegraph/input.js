@@ -110,8 +110,7 @@ var CINEGRAPH = (function (self) {
         setMousePosition(event);
         if (!mouseIsDown)
             updateIntersection();
-        else if (self.scope.cinegraphId != undefined && mouseClickStart.onNode)
-        {
+        else if (self.options.enablePathfinding && mouseClickStart.onNode){
             var intersected = getIntersection();
             if (intersected.length > 0){
                 var id = intersected[0].object._id;
@@ -130,7 +129,7 @@ var CINEGRAPH = (function (self) {
         mouseClickStart.clientY = mouse.clientY;
         mouseClickStart.onNode = false;
         mouseClickStart.cinegraphPath = [];
-        if (self.scope.cinegraphId != undefined) { // cinegraph mode
+        if (self.options.enablePathfinding){
             if (event.which == 1) { // left click
                 var intersected = getIntersection();
                 if (intersected.length > 0) {
@@ -172,7 +171,7 @@ var CINEGRAPH = (function (self) {
         // intersection with a node
         var id = intersection.object._id;
         if (id != null) {
-            if (self.scope.cinegraphId != undefined) {
+            /*if (self.scope.cinegraphId != undefined) {
                 var alreadySuggestedNodes = false;
                 $.each(self.scope.suggestedNodes, function (i, obj) {
                     if (id == obj.start || id == obj.end) {
@@ -185,21 +184,15 @@ var CINEGRAPH = (function (self) {
                     return;
                 else
                     self.removeSuggestions();
-            }
+            }*/
             self.removeFilters();
-            self.scope.clearOffsets();
+            //self.scope.clearOffsets();
             addFilters(id);
             self.cameraLookAtNode(id);
             // updating current node
-            self.scope.currentNode.sprite = intersection.object;
-            if (self.scope.cinegraphId != undefined) {
-                self.selectNode(id);
-                // TODO
-            }
-            else {
-                self.selectNode(id);
-                self.addRelatedNodes(id);
-            }
+            self.currentNode.sprite = intersection.object;
+            self.selectNode(id);
+            self.addRelatedNodes(id);
         } else if (intersection.object.isFilterBackgroundButton) {
             var job = intersection.object.filterBackgroundJob;
             // switch job button
@@ -233,7 +226,7 @@ var CINEGRAPH = (function (self) {
         if (intersection == undefined)
             return;
         var id = intersection.object._id;
-        if (id != null && id != self.scope.currentNode.id) {
+        if (id != null && id != self.currentNode.id) {
             var relationship = null;
             $.each(self.scope.suggestedNodes, function(i, obj) {
                 if (id == obj.start || id == obj.end) {
@@ -260,10 +253,10 @@ var CINEGRAPH = (function (self) {
                 }).success(function(res) {
                     for (var i = self.scope.suggestedNodes.length - 1; i >= 0; i--) {
                         var point = self.scope.suggestedNodes[i].start;
-                        if (self.scope.currentNode.type == 'Person')
+                        if (self.currentNode.type == 'Person')
                             point = self.scope.suggestedNodes[i].end;
                         if (self.scope.suggestedNodes[i].id != relationship.id)
-                            self.scope.removeOneFromScene(self.scope.suggestedNodes, point, self.scope.currentNode.id);
+                            self.scope.removeOneFromScene(self.scope.suggestedNodes, point, self.currentNode.id);
                         else {
                             // setting line opacity to 1
                             for (var k = self.linesScene.children.length - 1; k >= 0; k--)
@@ -285,7 +278,7 @@ var CINEGRAPH = (function (self) {
     }
 
     function addFilters(id) {
-        var n = self.findNode(id);
+        /*var n = self.findNode(id);
         var slice = Math.PI / 6;
         if (n != undefined){
             var i = 4;
@@ -312,7 +305,7 @@ var CINEGRAPH = (function (self) {
                 }
             }
             unsetNodeAsFilter(id);
-        }
+        }*/
     }
 
     self.removeFilters = function() {

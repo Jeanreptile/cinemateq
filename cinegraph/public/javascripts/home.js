@@ -151,16 +151,6 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
 
       $scope.friendsTastes = [];
       $scope.currentNode = {};
-      /*var selectedNodeId = getParameterByName('id');
-      if (selectedNodeId == undefined) {
-          selectedNodeId = 719772;
-      }
-      $http.get('/api/common/' + selectedNodeId).success(function(node) {
-          $scope.currentNode = node;
-          $scope.updateSelectedJobs();
-          $scope.updateTypesAndLimits();
-      });
-      */
 
     $scope.$watch(AuthService.isLoggedIn, function (isLoggedIn) {
         $scope.isLoggedIn = isLoggedIn;
@@ -359,6 +349,80 @@ var cinegraphController = cinegraphApp.controller('cinegraphController',
         }
     };
 
+    $scope.displayFriendsTastes = function() {
+        $http.get('/api/user/rating/' + $scope.currentNode.id).success(function (rating) {
+            if (!rating.message) {
+                $scope.friendsTastes = [];
+                $http.get('/api/friends/' + $scope.currentUser.id).success(function (friends) {
+                    for (var i = 0; i < friends.length; i++)
+                        getFriendsRatings(friends, i, $scope.currentNode, rating);
+                });
+            }
+            else {
+                $scope.friendsTastes = [];
+                var sentenceObj = {
+                    showButton: false,
+                    sentence: "Hey buddy, rate this " + $scope.currentNode.label.toLowerCase()
+                        + " to compare it with your friends."
+                };
+                $scope.friendsTastes.push(sentenceObj);
+            }
+        });
+    };
+
+    function getFriendsRatings(friends, index, node, currentUserRating) {
+        $http.get('/api/user/'+ friends[index].id + '/rating/' + node.id).success(function (rating) {
+          $http.get('community-sentences.json').success(function(data) {
+            var nodeName = (node.label == 'Person' ? node.name : node.title);
+            var friendName = friends[index].username;
+            var nodeType = node.label.toLowerCase();
+
+            var sentences = [];
+            if (rating.message) // Friend did not rate the node.
+              sentences = data.friendHasNotRated;
+            else {
+              if (rating.love >= 4 && currentUserRating.love >= 4) // bothWellRated
+                sentences = data.bothWellRated;
+              else if (rating.love >= 4 && currentUserRating.love <= 1) // oppositeRates
+                sentences = data.oppositeRates;
+              else if (rating.love <= 1 && currentUserRating.love >= 3) // friendHasNotWellRated
+                sentences = data.friendHasNotWellRated;
+            }
+            if (sentences.length)
+              pushCommunitySentences(sentences, friendName, nodeName, nodeType);
+          });
+        });
+    }
+
+    function pushCommunitySentences(sentences, friendName, nodeName, nodeType) {
+      var JSONsentence = sentences[Math.floor(Math.random() * sentences.length)];
+      var sentence = JSONsentence.sentence;
+      var sentenceParameters = JSONsentence.parameters;
+      var showButton = false;
+
+      for (var i = 0; i < sentenceParameters.length; i++) {
+        var parameter = sentenceParameters[i];
+        var parameterKey = "parameter" + (i+1);
+        var completedSentence = null;
+        if (parameter[parameterKey] == "friendName")
+            sentence = sentence.replace("{" + parameterKey + "}", friendName);
+        else if (parameter[parameterKey] == "nodeName")
+            sentence = sentence.replace("{" + parameterKey + "}", nodeName);
+        else if (parameter[parameterKey] == "showButton")
+            showButton = true;
+        else if (parameter[parameterKey] == "nodeType")
+            sentence = sentence.replace("{" + parameterKey + "}", nodeType);
+
+        var sentenceObj = {
+          showButton: showButton,
+          sentence: sentence,
+          friendName: friendName
+        }
+
+      };
+      $scope.friendsTastes.push(sentenceObj);
+    }
+
     $scope.open = function (size) {
         var modalInstance = $modal.open({
             animation: $scope.animationsEnabled,
@@ -486,23 +550,36 @@ cinegraphApp.directive('fileModel', ['$parse', function ($parse) {
 cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $location) {
 	return {
 		link: function link(scope, element, attrs) {
-            var c = CINEGRAPH, id = parseInt(getParameterByName('id'));
-            c.init(scope, $http, $location);
+
+            // Initialization
+            var c = CINEGRAPH;
+            c.init($http);
+
+            // Bindings with Angular
+            document.getElementById('graph').addEventListener('currentNode', function () {
+                scope.currentNode = c.currentNode;
+                $location.search('id', c.currentNode.id);
+                scope.displayFriendsTastes();
+            }, false);
+            scope.$on('$destroy', function(){
+                c.destroy();
+            });
+            scope.sanitizeFileName = c.sanitizeFileName;
 
             // DISCOVER mode
             if (scope.cinegraphId === undefined){
-                c.addNode(id).then(function(){
+                c.addNode(parseInt(getParameterByName('id'))).then(function(id){
                     c.selectNode(id);
                     c.addRelatedNodes(id);
                 });
             }
             // CINEGRAPH mode
             else {
-                $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
+                /*$http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
                     cinegraph.nodes = JSON.parse(cinegraph.nodes);
                     c.scope.currentCinegraph = cinegraph;
                     c.displayCinegraphNodes(c.scope.currentCinegraph.nodes, false);
-                });
+                });*/
             }
         }
     }

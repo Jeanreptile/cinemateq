@@ -1,10 +1,10 @@
 div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 	div.bg-shadow-top
 		div.h4.m-t
-			a.golden-color(href='#', ng-show="currentNode.type == 'Person'", ng-click="open('lg')")
+			a.golden-color(href='#', ng-show="currentNode.label == 'Person'", ng-click="open('lg')")
 				{{currentNode.firstname}} {{currentNode.lastname}}
 				i.golden-color.i.i-info.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
-			a.golden-color(href='#', ng-show="currentNode.type == 'Movie'", ng-click="open('lg')")
+			a.golden-color(href='#', ng-show="currentNode.label == 'Movie'", ng-click="open('lg')")
 				{{currentNode.title}}
 				//i.i.i-info.text-lt.m-l-xs(data-toggle="tooltip", data-placement="bottom", title="Click to see more", style="font-size: 16px;")
 			.btn-group.m-l-sm(dropdown='', ng-controller="MyCinegraphCtrl")
@@ -13,19 +13,19 @@ div.pos-rlt.node-details.text-center(ng-show="currentNode").hidden-nav-xs
 			//.btn-group.m-l-xs(dropdown='', ng-click='sendInvitationToRate()')
 				button.add-cinegraph-btn.btn.btn-rounded.btn-sm.btn-icon.btn-default.dropdown-toggle.btn-dark(type='button', dropdown-toggle='')
 					i.i.i-share.i-lg
-		small.text-muted.m-b(ng-show="currentNode.type == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
+		//small.text-muted.m-b(ng-show="currentNode.label == 'Person'", ng-repeat="job in currentNode.jobs | limitTo: 3")
 			| {{job.name | JobNameFormatter }}
 			i.i.i-dot(ng-hide="$last")
-		small.text-muted.m-b(ng-show="currentNode.type == 'Movie'", ng-repeat="genre in currentNode.genre")
+		//small.text-muted.m-b(ng-show="currentNode.label == 'Movie'", ng-repeat="genre in currentNode.genre")
 			| {{genre}}
 			i.i.i-dot(ng-hide="$last")
 
 	a(href='#', ng-click="open('lg')")
-		div.m-t-lg(ng-show="currentNode.img != true")
+		div.m-t-lg(ng-show="!currentNode.img")
 			img(src="images/default.jpg")
-		div.m-t-lg(ng-show="currentNode.type == 'Person' && currentNode.img == true")
+		div.m-t-lg(ng-show="currentNode.label == 'Person' && currentNode.img")
 			img(ng-src="images/persons/{{sanitizeFileName(currentNode.fullname)}}.jpg")
-		div.m-t-lg(ng-show="currentNode.type == 'Movie' && currentNode.img == true")
+		div.m-t-lg(ng-show="currentNode.label == 'Movie' && currentNode.img")
 			img(ng-src="images/movies/{{sanitizeFileName(currentNode.title + currentNode.released)}}/poster.jpg")
 
 	div.bg-shadow-bottom

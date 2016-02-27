@@ -1,21 +1,5 @@
 var CINEGRAPH = (function (self) {
 
-    self.relationships = {
-        'ACTED_IN': { limit: 4, color: '#319ef1' },
-        'DIRECTED': { limit: 1, color: '#8e44ad' },
-        'PRODUCED': { limit: 1, color: '#27ae60' },
-        'COMPOSED_MUSIC': { limit: 1, color: '#00d6ce' },
-        'DIRECTED_PHOTOGRAPHY': { limit: 1, color: '#fc6e51' },
-        'WROTE': { limit: 1, color: '#f1c40f' },
-        'EDITED': { limit: 1, color: '#e33244' },
-        'DESIGNED_PRODUCTION': { limit: 1, color: '#ac92ec' },
-        'DESIGNED_COSTUMES': { limit: 1, color: '#ec87c0' }
-    };
-
-    self.types = {
-        'Movie': { color: '#ffa226' }
-    };
-
     function getMainColor(node){
         if (self.types[node.label] !== undefined && self.types[node.label].color !== undefined)
             return self.types[node.label].color;
@@ -53,7 +37,7 @@ var CINEGRAPH = (function (self) {
                     var node = data.node;
                     node._relationships = getRelationshipsSettings(data.relationships);
                     node._color = getMainColor(node);
-                    console.log("addNode", node);
+                    //console.log("addNode", node);
                     var sprite = getNodeSprite(node);
                     sprite.scale.set(0, 0, 0);
                     position = position !== undefined ? position : self.getNewPosition();
@@ -80,7 +64,7 @@ var CINEGRAPH = (function (self) {
                             node.label = res[i].label;
                             node._relationships = getRelationshipsSettings(convertArrayToMap(res[i].relationships));
                             node._color = getMainColor(node);
-                            console.log("addRelatedNodes", node);
+                            //console.log("addRelatedNodes", node);
                             // TO DO: check if duplicate in related nodes
                             // adding node
                             var sprite = getNodeSprite(node);
@@ -110,15 +94,15 @@ var CINEGRAPH = (function (self) {
         });
     };
 
+    self.currentNode = {};
+
     self.selectNode = function(id) {
         var n = self.findNode(id);
         if (n !== undefined){
             self.cameraLookAtPosition(n.position);
-            $location.search('id', id);
-            self.scope.currentNode = n.node;
-            //self.scope.updateTypesAndLimits();
+            self.currentNode = n.node;
+            document.getElementById('graph').dispatchEvent(new Event('currentNode'));
             self.updateBackground(n.node);
-            displayFriendsTastes();
         }
     };
 
@@ -288,17 +272,17 @@ var CINEGRAPH = (function (self) {
     };
 
     self.removeSuggestions = function() {
-        if (self.scope.suggestedNodes.length > 0) {
+        /*if (self.scope.suggestedNodes.length > 0) {
             for (var i = self.scope.suggestedNodes.length - 1; i >= 0; i--) {
                 var id = self.scope.suggestedNodes[i].start;
-                if (self.scope.currentNode.type == 'Person')
+                if (self.currentNode.type == 'Person')
                     id = self.scope.suggestedNodes[i].end;
                 self.removeNode(id);
                 self.removeRelationship(self.scope.suggestedNodes[i].start, self.scope.suggestedNodes[i].end);
                 self.scope.suggestedNodes.splice(i, 1);
-                //removeOneFromScene(self.scope.suggestedNodes, id, self.scope.currentNode.id);
+                //removeOneFromScene(self.scope.suggestedNodes, id, self.currentNode.id);
             }
-        }
+        }*/
     };
 
     function setNodeAsSuggestion(id) {
@@ -341,27 +325,6 @@ var CINEGRAPH = (function (self) {
             }
             n.IsSuggested = false;
         }
-    }
-
-    function displayFriendsTastes() {
-        $http.get('/api/user/rating/' + self.scope.currentNode.id).success(function (rating) {
-            if (!rating.message) {
-                self.scope.friendsTastes = [];
-                $http.get('/api/friends/' + self.scope.currentUser.id).success(function (friends) {
-                    for (var i = 0; i < friends.length; i++)
-                        getFriendsRatings(friends, i, self.scope.currentNode, rating);
-                });
-            }
-            else {
-                self.scope.friendsTastes = [];
-                var sentenceObj = {
-                    showButton: false,
-                    sentence: "Hey buddy, rate this " + self.scope.currentNode.type.toLowerCase()
-                        + " to compare it with your friends."
-                };
-                self.scope.friendsTastes.push(sentenceObj);
-            }
-        });
     }
 
     return self;

@@ -97,7 +97,8 @@ var CINEGRAPH = (function (self) {
             line.style.left = x1 + "px";
             var nCos = (x2-x1)/length;
             var nSin = (y2-y1)/length;
-            line.style.filter = "progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand', M11=" + nCos + ", M12=" + -1*nSin + ", M21=" + nSin + ", M22=" + nCos + ")";
+            line.style.filter = "progid:DXImageTransform.Microsoft.Matrix(sizingMethod='auto expand', M11="
+                + nCos + ", M12=" + -1*nSin + ", M21=" + nSin + ", M22=" + nCos + ")";
         } else {
             var angle = Math.atan((y2-y1)/(x2-x1));
             line.style.top = y1 + 0.5*length*Math.sin(angle) + "px";
@@ -139,7 +140,7 @@ var CINEGRAPH = (function (self) {
                 mouseIsDown = true;
             } else if (event.which == 3) // right click
                 onRightClick(event);
-        } else // explore mode
+        } else
             mouseIsDown = true;
     }
 
@@ -147,12 +148,13 @@ var CINEGRAPH = (function (self) {
         setMousePosition(event);
         mouseIsDown = false;
         self.cameraControls.enabled = true;
-        // cinegraph path handling
-        $('#line').remove();
-        if (mouseClickStart.onNode && mouseClickStart.cinegraphPath.length > 1) {
-            var startNode = self.findNode(mouseClickStart.cinegraphPath[0]);
-            var endNode = self.findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);
-            self.findCinegraphPath(startNode, endNode);
+        if (self.options.enablePathfinding){
+            $('#line').remove();
+            if (mouseClickStart.onNode && mouseClickStart.cinegraphPath.length > 1) {
+                var startNode = self.findNode(mouseClickStart.cinegraphPath[0]);
+                var endNode = self.findNode(mouseClickStart.cinegraphPath[mouseClickStart.cinegraphPath.length - 1]);
+                self.findCinegraphPath(startNode, endNode);
+            }
         }
         mouseClickStart.onNode = false;
         if (mouse.x != mouseClickStart.x || mouse.y != mouseClickStart.y)
@@ -162,7 +164,7 @@ var CINEGRAPH = (function (self) {
         var intersection = getIntersection()[0];
         if (intersection == undefined){
             self.removeSuggestions();
-            self.removeFilters();
+            self.removeFilters(self.currentNode.id);
             return;
         }
         // handling raycasting error
@@ -171,55 +173,19 @@ var CINEGRAPH = (function (self) {
         // intersection with a node
         if (intersection.object.node != undefined) {
             var id = intersection.object.node.id;
-            /*if (self.scope.cinegraphId != undefined) {
-                var alreadySuggestedNodes = false;
-                $.each(self.scope.suggestedNodes, function (i, obj) {
-                    if (id == obj.start || id == obj.end) {
-                        alreadySuggestedNodes = true;
-                        return false;
-                    }
-                });
-                // if node is a suggestion
-                if (alreadySuggestedNodes)
-                    return;
-                else
-                    self.removeSuggestions();
-            }*/
-            self.removeFilters();
-            //self.scope.clearOffsets();
-            addFilters(id);
+            self.removeFilters(self.currentNode.id);
+            if (id === self.currentNode.id)
+                addFilters(id);
             self.cameraLookAtNode(id);
-            // updating current node
             self.currentNode.sprite = intersection.object;
             self.selectNode(id);
             self.addRelatedNodes(id).then(function(id){
                 self.removeOutOfDepthNodes();
             });
-        } /*else if (intersection.object.isFilterBackgroundButton) {
-            var job = intersection.object.filterBackgroundJob;
-            // switch job button
-            if (intersection.object.isSwitchButton){
-                self.scope.selectedJobs[job] = !self.scope.selectedJobs[job];
-                self.scope.filterBy(job, self.scope.jobsRelationships[job]);
-                self.updateFilterBackgroundButtonSprite(intersection.object, self.scope.selectedJobs[job]);
-            }
-            // left pagination
-            else if (intersection.object.isLeftButton) {
-                self.scope.paginateBy(job, self.scope.jobsRelationships[job], 'Left');
-                self.updateFilterBackgroundButtonSprite(intersection.object, true);
-                setTimeout(function(){
-                    self.updateFilterBackgroundButtonSprite(intersection.object, false);
-                }, 300);
-            }
-            // right pagination
-            else if (intersection.object.isRightButton) {
-                self.scope.paginateBy(job, self.scope.jobsRelationships[job], 'Right');
-                self.updateFilterBackgroundButtonSprite(intersection.object, true);
-                setTimeout(function(){
-                    self.updateFilterBackgroundButtonSprite(intersection.object, false);
-                }, 300);
-            }
-        }*/
+        } else if (intersection.object.isChildButton) {
+            console.log(intersection.object);
+            intersection.object.onClick();
+        }
     }
 
     function onRightClick(event) {
@@ -279,50 +245,72 @@ var CINEGRAPH = (function (self) {
         }
     }
 
+    self.addChildButton = function(sprite, distance, angle, scale, text, color, callback){
+        var buttonSprite = self.getButtonSprite(text, color);
+        buttonSprite.scale.set(0, 0, 0);
+        buttonSprite.position.set(
+            Math.cos(angle) * distance,
+            Math.sin(angle) * distance,
+            0
+        );
+        buttonSprite.onClick = callback;
+        buttonSprite.transition = 0;
+        buttonSprite.onHover = function(){
+            $('#graph').css({'cursor':'pointer'});
+            if (buttonSprite.transition === 0){
+                console.log("onHover");
+                new TWEEN.Tween(buttonSprite).to({transition: 1 }, 100)
+                    .easing(TWEEN.Easing.Linear.None).onUpdate(function (){
+                        self.updateButtonSprite(buttonSprite, this.transition);
+                    }).start();
+            }
+        };
+        buttonSprite.onLeave = function(){
+            $('#graph').css({'cursor':'default'});
+            if (buttonSprite.transition !== 0){
+                console.log("onLeave");
+                new TWEEN.Tween(buttonSprite).to({transition: 0 }, 100)
+                    .easing(TWEEN.Easing.Linear.None).onUpdate(function (){
+                        self.updateButtonSprite(buttonSprite, this.transition);
+                    }).start();
+            }
+        }
+        sprite.add(buttonSprite);
+        self.animateNodeScale(buttonSprite, scale, 180, 0);
+    };
+
     function addFilters(id) {
-        /*var n = self.findNode(id);
+        var n = self.findNode(id);
         var slice = Math.PI / 6;
         if (n != undefined){
             var i = 4;
-            for (job in self.scope.selectedJobs){
+            for (job in self.relationships){
                 i++;
-                var found = false;
-                for (var j = 0; j < self.scene.children.length; j++) {
-                    if (self.scene.children[j].filterButtonJob == job){
-                        found = true;
-                        break;
-                    }
+                var callback = function(){
+                    alert(job);
                 }
-                if (!found){
-                    var buttonSprite = self.generateFilterButtonSprite(job);
-                    var scale = 0.33;
-                    buttonSprite.scale.set(scale, scale, scale);
-                    buttonSprite.position.set(
-                        Math.cos(slice * i) * 0.65,
-                        Math.sin(slice * i) * 0.65,
-                        0.1
-                    );
-                    buttonSprite.filterButtonNodeId = n._id;
-                    n.add(buttonSprite);
-                }
-            }
-            unsetNodeAsFilter(id);
-        }*/
-    }
-
-    self.removeFilters = function() {
-        for (var i = self.scene.children.length - 1; i >= 0; i--){
-            var sprite = self.scene.children[i];
-            for (var j = sprite.children.length - 1; j >= 0; j--){
-                var child = sprite.children[j];
-                if (child.isFilterButton || child.isFilterBackground || child.isFilterBackgroundButton){
-                    child.geometry.dispose();
-                    child.material.dispose();
-                    sprite.remove(child);
-                }
+                self.addChildButton(n, 0.667, slice * i, 0.33, job, self.relationships[job].color, callback);
             }
         }
-        self.renderNeedsUpdate = true;
+    }
+
+    self.removeFilters = function(id) {
+        var n = self.findNode(id);
+        if (n !== undefined){
+            for (var j = n.children.length - 1; j >= 0; j--){
+                var child = n.children[j];
+                if (child.isChildButton){
+                    (function(child){
+                        new TWEEN.Tween(child.scale).to({x: 0, y:0, z:0}, 180)
+                            .easing(TWEEN.Easing.Linear.None).onComplete(function (){
+                                child.geometry.dispose();
+                                child.material.dispose();
+                                n.remove(child);
+                            }).start();
+                    })(child);
+                }
+            }   
+        }
     };
 
     function unsetNodeAsFilter(id){
@@ -335,7 +323,7 @@ var CINEGRAPH = (function (self) {
                     child.material.dispose();
                     n.remove(child);
                 } else if (child.isFilterButton)
-                    self.updateFilterButtonSprite(child, self.scope.selectedJobs[child.filterButtonJob]);
+                    self.updateFilterButtonSprite(child, n.node._relationships[child.filterButtonJob].active);
             }
             self.renderNeedsUpdate = true;
             n.isSetAsFilter = null;
@@ -448,14 +436,17 @@ var CINEGRAPH = (function (self) {
     function updateIntersection() {
         var intersects = getIntersection();
         if (intersects.length > 0){
-            if (intersects[0].object == currentIntersected){
+            var intersected = intersects[0].object;
+            if (intersected == currentIntersected){
                 return;
             }
-            var intersected = intersects[0].object;
             // node intersection
-            if (intersected._id !== undefined) {
+            if (intersected.node !== undefined) {
+                if (currentIntersected && currentIntersected.isChildButton)
+                    currentIntersected.onLeave();
                 // restoring node state when leaving it
-                if (currentIntersected && (currentIntersected._id != intersected._id)) {
+                if (currentIntersected && currentIntersected.node &&
+                        (currentIntersected.node.id !== intersected.node.id)) {
                     self.updateTexture(currentIntersected.mainJob, currentIntersected.nodeImage,
                         currentIntersected.canvas, currentIntersected.name);
                     currentIntersected.texture.needsUpdate = true;
@@ -464,20 +455,24 @@ var CINEGRAPH = (function (self) {
                 currentIntersected = intersected;
                 updateHoverLabel(currentIntersected.name);
                 currentIntersected.animationOpacity = self.getNodeOpacity();
-                var tween = new TWEEN.Tween(currentIntersected).to({animationOpacity : 1}, 200)
-                .easing(TWEEN.Easing.Linear.None)
-                .onUpdate(function (){
-                    self.updateTexture(currentIntersected.mainJob, currentIntersected.nodeImage,
-                        currentIntersected.canvas, currentIntersected.name, currentIntersected.animationOpacity);
-                    currentIntersected.texture.needsUpdate = true;
-                }).start()
+                new TWEEN.Tween(currentIntersected).to({animationOpacity : 1}, 200)
+                    .easing(TWEEN.Easing.Linear.None)
+                    .onUpdate(function (){
+                        self.updateTexture(currentIntersected.mainJob,
+                            currentIntersected.nodeImage,
+                            currentIntersected.canvas, currentIntersected.name,
+                            currentIntersected.animationOpacity);
+                        currentIntersected.texture.needsUpdate = true;
+                    }).start();
             }
             // filter button intersection
-            else if (intersected.isFilterButton == true)
-                setNodeAsFilter(intersected.filterButtonNodeId, intersected.filterButtonJob);
-            else if (intersected.isFilterBackgroundButton) {
-                //updateFilterBackgroundButtonSprite(intersected, true);
+            else if (intersected.isChildButton){
+                intersected.onHover();
+                currentIntersected = intersected
             }
+        } else {
+            if (currentIntersected && currentIntersected.isChildButton)
+                currentIntersected.onLeave();
         }
     }
 

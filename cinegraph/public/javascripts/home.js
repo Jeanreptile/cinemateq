@@ -575,11 +575,9 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
             // CINEGRAPH mode
             else {
-                /*$http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
-                    cinegraph.nodes = JSON.parse(cinegraph.nodes);
-                    c.scope.currentCinegraph = cinegraph;
-                    c.displayCinegraphNodes(c.scope.currentCinegraph.nodes, false);
-                });*/
+                $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
+                    c.displayCinegraphNodes(JSON.parse(cinegraph.nodes), false);
+                });
             }
         }
     }

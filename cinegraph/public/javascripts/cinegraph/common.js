@@ -40,7 +40,7 @@ var CINEGRAPH = (function (self) {
                     node._depth = 0;
                     node._neighbours = [];
                     //console.log("addNode", node);
-                    var sprite = getNodeSprite(node);
+                    var sprite = self.getNodeSprite(node);
                     sprite.scale.set(0, 0, 0);
                     position = position !== undefined ? position : self.getNewPosition();
                     sprite.position.set(position.x, position.y, position.z);
@@ -72,7 +72,7 @@ var CINEGRAPH = (function (self) {
                             //console.log("addRelatedNodes", node);
                             // TO DO: check if duplicate in related nodes
                             // adding node
-                            var sprite = getNodeSprite(node);
+                            var sprite = self.getNodeSprite(node);
                             sprite.scale.set(0, 0, 0);
                             position = self.getNextPosition(occupiedPositions, n.position);
                             occupiedPositions.push(position);
@@ -80,7 +80,7 @@ var CINEGRAPH = (function (self) {
                             self.scene.add(sprite);
                             // adding line
                             var line = getLineGeometry(n.position, res[i].type, node.name);
-                            line.endNodeId = sprite._id;
+                            line.endNodeId = sprite.node.id;
                             line.startNodeId = id;
                             self.linesScene.add(line);
                             // animating
@@ -147,47 +147,9 @@ var CINEGRAPH = (function (self) {
         return new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true }));
     }
 
-    function getNodeSprite(node){
-        var text = node.name ? (node.firstname + " " + node.lastname) : node.title
-        var canvas = self.generateTexture(node.jobs != undefined ? node.jobs[0].name : undefined,
-            self.getDefaultImage(), text);
-        var texture = new THREE.Texture(canvas);
-        texture.minFilter = THREE.LinearFilter;
-        texture.needsUpdate = true;
-        var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
-        sprite._id = node.id;
-        sprite.name = text;
-        sprite.canvas = canvas;
-        sprite.texture = texture;
-        sprite.mainJob = Object.keys(node._relationships)[0];
-        sprite.node = node;
-        // image loading
-        if (node.img == undefined || node.img == false)
-            sprite.nodeImage = self.getDefaultImage();
-        else {
-            sprite.nodeImage = new Image();
-            if (node.title == undefined)
-                sprite.nodeImage.src = 'images/persons/' + self.sanitizeFileName(node.fullname) + '.jpg';
-            else
-                sprite.nodeImage.src = 'images/movies/' + self.sanitizeFileName(node.title + node.released) + '/poster.jpg';
-            sprite.nodeImage.onerror = function () { this.src = 'images/default.jpg'; };
-            sprite.nodeImage.onload = function () {
-                self.updateTexture(sprite.mainJob, sprite.nodeImage, sprite.canvas, sprite.name);
-                sprite.texture.needsUpdate = true;
-            };
-        }
-        // outline
-        var gradientSprite = self.generateSpriteBackground(sprite);
-        gradientSprite.material.depthWrite = false;
-        gradientSprite.isOutlineSprite = true;
-        gradientSprite.position.set(0,0,-0.000001);
-        sprite.add(gradientSprite);
-        return sprite;
-    }
-
     self.findNode = function(id) {
         for (var i = 0; i < self.scene.children.length; i++)
-            if (self.scene.children[i]._id == id)
+            if (self.scene.children[i].node.id == id)
                 return self.scene.children[i];
         return undefined;
     };

@@ -119,7 +119,7 @@ var CINEGRAPH = (function (self) {
             // removing gradient sprite when not needed anymore
             for (var k = 0; k < sprite.children.length; k++){
                 var gradientSprite = sprite.children[k];
-                if (gradientSprite.gradientRemoveDisable != true && gradientSprite.gradientIsActive != true) {
+                if (!gradientSprite.gradientRemoveDisable && !gradientSprite.gradientIsActive) {
                     gradientSprite.geometry.dispose();
                     gradientSprite.material.dispose();
                     sprite.remove(gradientSprite);
@@ -128,7 +128,43 @@ var CINEGRAPH = (function (self) {
         }
     };
 
-
+    self.getNodeSprite = function(node){
+        var text = node.name ? (node.firstname + " " + node.lastname) : node.title
+        var canvas = self.generateTexture(node.jobs != undefined ? node.jobs[0].name : undefined,
+            self.getDefaultImage(), text);
+        var texture = new THREE.Texture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+        texture.needsUpdate = true;
+        var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
+        sprite._id = node.id;
+        sprite.name = text;
+        sprite.canvas = canvas;
+        sprite.texture = texture;
+        sprite.mainJob = Object.keys(node._relationships)[0];
+        sprite.node = node;
+        // image loading
+        if (node.img == undefined || node.img == false)
+            sprite.nodeImage = self.getDefaultImage();
+        else {
+            sprite.nodeImage = new Image();
+            if (node.title == undefined)
+                sprite.nodeImage.src = 'images/persons/' + self.sanitizeFileName(node.fullname) + '.jpg';
+            else
+                sprite.nodeImage.src = 'images/movies/' + self.sanitizeFileName(node.title + node.released) + '/poster.jpg';
+            sprite.nodeImage.onerror = function () { this.src = 'images/default.jpg'; };
+            sprite.nodeImage.onload = function () {
+                self.updateTexture(sprite.mainJob, sprite.nodeImage, sprite.canvas, sprite.name);
+                sprite.texture.needsUpdate = true;
+            };
+        }
+        // outline
+        var gradientSprite = self.generateSpriteBackground(sprite);
+        gradientSprite.material.depthWrite = false;
+        gradientSprite.isOutlineSprite = true;
+        gradientSprite.position.set(0,0,-0.000001);
+        sprite.add(gradientSprite);
+        return sprite;
+    }
 
     self.generateSpriteBackground = function(sprite) {
         var canvas = document.createElement('canvas');
@@ -213,9 +249,9 @@ var CINEGRAPH = (function (self) {
         context.fillText(line, x, y, maxWidth);
     }
 
-    var filterButtonSprites = [];
+    /*var filterButtonSprites = [];*/
 
-    self.generateFilterButtonSprite = function(job) {
+    /*self.generateFilterButtonSprite = function(job) {
         if (filterButtonSprites[job] == undefined){
             var canvas = document.createElement('canvas');
             canvas.width = 256;
@@ -232,11 +268,11 @@ var CINEGRAPH = (function (self) {
             context.fillStyle = '#222222';
             context.fillRect(0, 0, canvas.width, canvas.height);
             // drawing text
-            context.fillStyle = self.colors[self.scope.jobsRelationships[job]];
+            context.fillStyle = self.relationships[job].color;
             context.font = "bold 100px Arial";
             context.textAlign = "center";
             context.textBaseline = 'middle';
-            context.fillText(self.scope.jobsNames[job].toUpperCase().substring(0,2), halfWidth, halfWidth);
+            context.fillText(job.toUpperCase().substring(0,2), halfWidth, halfWidth);
             // generating sprite
             var texture = new THREE.Texture(canvas);
             var material = new THREE.SpriteMaterial({ map: texture });
@@ -249,9 +285,9 @@ var CINEGRAPH = (function (self) {
             filterButtonSprites[job] = sprite;
         }
         return filterButtonSprites[job];
-    };
+    };*/
 
-    self.updateFilterButtonSprite = function(sprite, selected){
+    /*self.updateFilterButtonSprite = function(sprite, selected){
         selected = selected != true ? false : true;
         var context = sprite.material.map.image.getContext('2d');
         var width = 256;
@@ -269,9 +305,9 @@ var CINEGRAPH = (function (self) {
             context.fillText(self.scope.jobsNames[sprite.filterButtonJob].toUpperCase().substring(0,2), halfWidth, halfWidth);
             sprite.material.map.needsUpdate = true;
         }
-    };
+    };*/
 
-    var filterBackgroundButtonSprites = [];
+    /*var filterBackgroundButtonSprites = [];
 
     self.generateFilterBackgroundButtonSprite = function (text) {
         if (filterBackgroundButtonSprites[text] == undefined){
@@ -307,9 +343,9 @@ var CINEGRAPH = (function (self) {
             filterBackgroundButtonSprites[text] = sprite;
         }
         return filterBackgroundButtonSprites[text];
-    };
+    };*/
 
-    self.updateFilterBackgroundButtonSprite = function(sprite, selected){
+    /*self.updateFilterBackgroundButtonSprite = function(sprite, selected){
         selected = selected != true ? false : true;
         var context = sprite.material.map.image.getContext('2d');
         var width = 256;
@@ -327,9 +363,9 @@ var CINEGRAPH = (function (self) {
             context.fillText(sprite.filterBackgroundButtonText, halfWidth, halfWidth);
             sprite.material.map.needsUpdate = true;
         }
-    };
+    };*/
 
-    var filterBackgroundSprites = [];
+    /*var filterBackgroundSprites = [];
 
     self.generateSpriteFilterBackground = function(job) {
         var canvas = document.createElement('canvas');
@@ -358,9 +394,9 @@ var CINEGRAPH = (function (self) {
         //texture.minFilter = THREE.LinearFilter;
         texture.needsUpdate = true;
         return sprite;
-    };
+    };*/
 
-    self.updateSpriteFilterBackground = function(context, job) {
+    /*self.updateSpriteFilterBackground = function(context, job) {
         var width = 256;
         var borderThickness = width / borderFraction;
         context.clearRect(0,0,width,width);
@@ -374,11 +410,49 @@ var CINEGRAPH = (function (self) {
         context.globalAlpha = 1;
         wrapText(context, self.scope.jobsNames[job].toUpperCase(), width / 2, width / 2.5,
             width -  5 * borderThickness, width / 6);
+    };*/
+
+    self.getButtonSprite = function(text, color) {
+        var canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        // generating sprite
+        var texture = new THREE.Texture(canvas);
+        var material = new THREE.SpriteMaterial({ map: texture });
+        var sprite = new THREE.Sprite(material);
+        //texture.minFilter = THREE.LinearFilter;
+        sprite.isChildButton = true;
+        sprite.text = text;
+        sprite.color = new THREE.Color(color);
+        sprite.canvas = canvas;
+        sprite.gradientRemoveDisable = true;
+        sprite.texture = texture;
+        self.updateButtonSprite(sprite, 0);
+        return sprite;
     };
 
-    /* ------------------- */
-    /* BACKGROUND HANDLING */
-    /* ------------------- */
+    self.updateButtonSprite = function(sprite, transition){
+        var backgroundColor = new THREE.Color('#222222');
+        var halfWidth = sprite.canvas.width / 2;
+        var halfHeight = sprite.canvas.height / 2;
+        var context = sprite.canvas.getContext('2d');
+        context.clearRect(0,0,sprite.canvas.width,sprite.canvas.height);
+        // clipping to circle
+        context.beginPath();
+        context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
+        context.clip();
+        // background color
+        context.fillStyle = '#' + backgroundColor.clone().lerp(sprite.color, transition).getHexString();
+        context.fillRect(0, 0, sprite.canvas.width, sprite.canvas.height);
+        // drawing text
+        context.fillStyle = '#' + sprite.color.clone().lerp(backgroundColor, transition).getHexString();
+        context.font = "bold 100px Arial";
+        context.textAlign = "center";
+        context.textBaseline = 'middle';
+        context.fillText(sprite.text.toUpperCase().substring(0,2), halfWidth, halfWidth);
+        sprite.texture.needsUpdate = true;
+        self.renderNeedsUpdate = true;
+    };
 
     self.sanitizeFileName = function(filename){
         if (filename == undefined)
@@ -463,7 +537,6 @@ var CINEGRAPH = (function (self) {
         // fill image in dest. rectangle
         ctx.drawImage(img, cx, cy, cw, ch,  x, y, w, h);
     }
-
 
     return self;
 })(CINEGRAPH || {});

@@ -121,12 +121,12 @@ var CINEGRAPH = (function (self) {
                 //console.log("average is: ", avg);
                 if (avg > 33.33 && qualityScale > 0.5) { // < 30 fps
                     qualityScale = Math.max(0.5, qualityScale * 0.75);
-                    onWindowResize();
+                    self.onWindowResize();
                     //console.log('decreasing quality: ', qualityScale);
                 }
                 else if (avg < 20 && qualityScale < 1){ // > 50 fps
                     qualityScale = Math.min(1, qualityScale * 1.25);
-                    onWindowResize();
+                    self.onWindowResize();
                     //console.log('increasing quality: ', qualityScale);
                 }
                 performanceTotal = 0;

@@ -163,6 +163,19 @@ var CINEGRAPH = (function (self) {
         gradientSprite.isOutlineSprite = true;
         gradientSprite.position.set(0,0,-0.000001);
         sprite.add(gradientSprite);
+        // overlay
+        var overlaySprite = self.generateSpriteOverlay(text);
+        overlaySprite.material.depthWrite = false;
+        overlaySprite.isOverlaySprite = true;
+        overlaySprite.position.set(0,0,0.0001);
+        sprite.add(overlaySprite);
+        // animation
+        sprite.onHover = function(){
+            overlaySprite.onHover();
+        };
+        sprite.onLeave = function(){
+            overlaySprite.onLeave();
+        };
         return sprite;
     }
 
@@ -186,6 +199,49 @@ var CINEGRAPH = (function (self) {
         return sprite;
     };
 
+    self.generateSpriteOverlay = function(text) {
+        var canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        var borderThickness = canvas.width / borderFraction;
+        var halfWidth = canvas.width / 2;
+        var halfHeight = canvas.height / 2;
+        var context = canvas.getContext('2d');
+        // clipping to circle
+        context.beginPath();
+        context.arc(halfWidth, halfHeight, halfWidth - borderThickness, 0, PI2);
+        context.clip();
+        // black background
+        context.fillStyle = '#000000';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        // drawing text
+        context.fillStyle = "#ffffff";
+        context.font = "bold " + (canvas.width / 9) + "px Arial";
+        context.textAlign = "center";
+        wrapText(context, text.toUpperCase(), halfWidth, canvas.height / 2.5,
+            canvas.width -  5 * borderThickness, canvas.height / 6);
+        // creating sprite
+        var texture = new THREE.Texture(canvas);
+        var material = new THREE.SpriteMaterial({ map: texture, transparent:true, opacity: 0.6 });
+        var sprite = new THREE.Sprite(material);
+        sprite.gradientRemoveDisable = true;
+        //texture.minFilter = THREE.LinearFilter;
+        texture.needsUpdate = true;
+        // animations
+        sprite.onHover = function(){
+            console.log("onHover sprite overlay");
+            console.log(this.material);
+            new TWEEN.Tween(this.material).to({opacity: 0}, 300)
+                .easing(TWEEN.Easing.Linear.None).start();
+        };
+        sprite.onLeave = function(){
+            console.log("onLeave sprite overlay");
+            new TWEEN.Tween(this.material).to({opacity: 0.6}, 300)
+                .easing(TWEEN.Easing.Linear.None).start();
+        };
+        return sprite;
+    };
+
     self.generateTexture = function(job, img, text) {
         var canvas = document.createElement('canvas');
         canvas.width = 256;
@@ -195,7 +251,6 @@ var CINEGRAPH = (function (self) {
     };
 
     self.updateTexture = function(job, img, canvas, text, opacity) {
-        var opacity = opacity !== undefined ? opacity : nodeOpacity;
         var borderThickness = canvas.width / borderFraction;
         var halfWidth = canvas.width / 2;
         var halfHeight = canvas.height / 2;
@@ -208,17 +263,8 @@ var CINEGRAPH = (function (self) {
         context.fillStyle = '#000000';
         context.fillRect(0, 0, canvas.width, canvas.height);
         // drawing image
-        context.globalAlpha = opacity;
         drawImageProp(context, img, borderThickness, borderThickness,
             canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
-        // drawing text
-        context.fillStyle = "#ffffff";
-        context.font = "bold " + (canvas.width / 9) + "px Arial";
-        context.textAlign = "center";
-        context.globalAlpha = (1 / (nodeOpacity - 1)) * (opacity - 1);
-        wrapText(context, text.toUpperCase(), halfWidth, canvas.height / 2.5,
-            canvas.width -  5 * borderThickness, canvas.height / 6);
-        context.globalAlpha = 1;
     };
 
     function wrapText(context, text, x, y, maxWidth, lineHeight) {

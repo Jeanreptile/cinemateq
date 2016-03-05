@@ -61,36 +61,33 @@ var CINEGRAPH = (function (self) {
                     var occupiedPositions = self.getOccupiedPositions();
                     // for each relationship
                     for (var i = 0; i < res.length; i++){
-                        var node = res[i].node;
-                        if (self.findNode(node.id) === undefined){
-                            node.label = res[i].label;
-                            node._relationships = getRelationshipsSettings(convertArrayToMap(res[i].relationships));
-                            node._color = getMainColor(node);
-                            node._depth = n._depth + 1;
-                            node._neighbours = [n.node.id];
-                            n.node._neighbours.push(node.id);
-                            //console.log("addRelatedNodes", node);
-                            // TO DO: check if duplicate in related nodes
-                            // adding node
-                            var sprite = self.getNodeSprite(node);
-                            sprite.scale.set(0, 0, 0);
-                            position = self.getNextPosition(occupiedPositions, n.position);
-                            occupiedPositions.push(position);
-                            sprite.position.set(n.position.x, n.position.y, n.position.z);
-                            self.scene.add(sprite);
-                            // adding line
-                            var line = getLineGeometry(n.position, res[i].type, node.name);
-                            line.endNodeId = sprite.node.id;
-                            line.startNodeId = id;
-                            self.linesScene.add(line);
-                            // animating
-                            (function(sprite, line, position, i){
-                                setTimeout(function(){
-                                    self.animateNodeScale(sprite);
-                                    self.animateNodeAndLine(sprite, line, position, 2000);
-                                }, 60 * i);
-                            })(sprite, line, position, i);
-                        }
+                        (function(i){ setTimeout(function(){
+                            if (self.findNode(res[i].node.id) === undefined){
+                                var node = res[i].node;
+                                node.label = res[i].label;
+                                node._relationships = getRelationshipsSettings(convertArrayToMap(res[i].relationships));
+                                node._color = getMainColor(node);
+                                node._depth = n._depth + 1;
+                                node._neighbours = [n.node.id];
+                                n.node._neighbours.push(node.id);
+                                //console.log("addRelatedNodes", node);
+                                // adding node
+                                var sprite = self.getNodeSprite(node);
+                                sprite.scale.set(0, 0, 0);
+                                position = self.getNextPosition(occupiedPositions, n.position);
+                                occupiedPositions.push(position);
+                                sprite.position.set(n.position.x, n.position.y, n.position.z);
+                                self.scene.add(sprite);
+                                // adding line
+                                var line = getLineGeometry(n.position, res[i].type, node.name);
+                                line.endNodeId = sprite.node.id;
+                                line.startNodeId = id;
+                                self.linesScene.add(line);
+                                // animating                            
+                                self.animateNodeScale(sprite);
+                                self.animateNodeAndLine(sprite, line, position, 2000);
+                            }
+                        }, 60 * i); })(i);
                     }
                     resolve(id);
                 });
@@ -184,9 +181,18 @@ var CINEGRAPH = (function (self) {
             if (n != undefined) {
                 new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
                     .easing(TWEEN.Easing.Linear.None).onComplete(function (){
+                        // removing children nodes
+                        for (var i = n.children.length - 1; i >= 0; i--){
+                            var child = n.children[i];
+                            child.geometry.dispose();
+                            child.material.map.dispose();
+                            child.material.dispose();
+                            n.remove(child);
+                        }
+                        // removing node
                         n.geometry.dispose();
+                        n.material.map.dispose();
                         n.material.dispose();
-                        n.texture.dispose();
                         self.scene.remove(n);
                         resolve();
                     }).start();

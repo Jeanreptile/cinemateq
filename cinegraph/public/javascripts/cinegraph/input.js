@@ -168,7 +168,7 @@ var CINEGRAPH = (function (self) {
             return;
         }
         // handling raycasting error
-        if (intersection.object.isOutlineSprite)
+        if (intersection.object.isOutlineSprite || intersection.object.isOverlaySprite)
             intersection.object = intersection.object.parent;
         // intersection with a node
         if (intersection.object.node != undefined) {
@@ -437,38 +437,24 @@ var CINEGRAPH = (function (self) {
         var intersects = getIntersection();
         if (intersects.length > 0){
             var intersected = intersects[0].object;
+            if (intersected.isOverlaySprite){
+                intersected = intersected.parent;
+            }
             if (intersected == currentIntersected){
                 return;
             }
             // node intersection
             if (intersected.node !== undefined) {
-                if (currentIntersected && currentIntersected.isChildButton)
+                if (currentIntersected && (currentIntersected.isChildButton || currentIntersected.node))
                     currentIntersected.onLeave();
-                // restoring node state when leaving it
-                if (currentIntersected && currentIntersected.node &&
-                        (currentIntersected.node.id !== intersected.node.id)) {
-                    self.updateTexture(currentIntersected.mainJob, currentIntersected.nodeImage,
-                        currentIntersected.canvas, currentIntersected.name);
-                    currentIntersected.texture.needsUpdate = true;
-                }
-                // updating intersected node and animating opacity
                 currentIntersected = intersected;
                 updateHoverLabel(currentIntersected.name);
-                currentIntersected.animationOpacity = self.getNodeOpacity();
-                new TWEEN.Tween(currentIntersected).to({animationOpacity : 1}, 200)
-                    .easing(TWEEN.Easing.Linear.None)
-                    .onUpdate(function (){
-                        self.updateTexture(currentIntersected.mainJob,
-                            currentIntersected.nodeImage,
-                            currentIntersected.canvas, currentIntersected.name,
-                            currentIntersected.animationOpacity);
-                        currentIntersected.texture.needsUpdate = true;
-                    }).start();
+                currentIntersected.onHover();
             }
             // filter button intersection
             else if (intersected.isChildButton){
                 intersected.onHover();
-                currentIntersected = intersected
+                currentIntersected = intersected;
             }
         } else {
             if (currentIntersected && currentIntersected.isChildButton)

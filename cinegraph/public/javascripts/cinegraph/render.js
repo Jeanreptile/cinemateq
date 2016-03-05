@@ -139,7 +139,7 @@ var CINEGRAPH = (function (self) {
     function render() {
         renderer.clear();
         composerLines.render();
-        self.updateHoverLabelPosition();
+        self.updateHoverLabelPosition(self.currentNode);
         self.updateGradientLayer();
         composer.render();
         blendComposer.render();

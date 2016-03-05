@@ -171,9 +171,11 @@ var CINEGRAPH = (function (self) {
         sprite.add(overlaySprite);
         // animation
         sprite.onHover = function(){
+            $('#graph').css({'cursor':'pointer'});
             overlaySprite.onHover();
         };
         sprite.onLeave = function(){
+            $('#graph').css({'cursor':'default'});
             overlaySprite.onLeave();
         };
         return sprite;
@@ -229,13 +231,10 @@ var CINEGRAPH = (function (self) {
         texture.needsUpdate = true;
         // animations
         sprite.onHover = function(){
-            console.log("onHover sprite overlay");
-            console.log(this.material);
             new TWEEN.Tween(this.material).to({opacity: 0}, 300)
                 .easing(TWEEN.Easing.Linear.None).start();
         };
         sprite.onLeave = function(){
-            console.log("onLeave sprite overlay");
             new TWEEN.Tween(this.material).to({opacity: 0.6}, 300)
                 .easing(TWEEN.Easing.Linear.None).start();
         };
@@ -295,209 +294,49 @@ var CINEGRAPH = (function (self) {
         context.fillText(line, x, y, maxWidth);
     }
 
-    /*var filterButtonSprites = [];*/
-
-    /*self.generateFilterButtonSprite = function(job) {
-        if (filterButtonSprites[job] == undefined){
-            var canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            var borderThickness = canvas.width / borderFraction;
-            var halfWidth = canvas.width / 2;
-            var halfHeight = canvas.height / 2;
-            var context = canvas.getContext('2d');
-            // clipping to circle
-            context.beginPath();
-            context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
-            context.clip();
-            // background color
-            context.fillStyle = '#222222';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            // drawing text
-            context.fillStyle = self.relationships[job].color;
-            context.font = "bold 100px Arial";
-            context.textAlign = "center";
-            context.textBaseline = 'middle';
-            context.fillText(job.toUpperCase().substring(0,2), halfWidth, halfWidth);
-            // generating sprite
-            var texture = new THREE.Texture(canvas);
-            var material = new THREE.SpriteMaterial({ map: texture });
-            var sprite = new THREE.Sprite(material);
-            //texture.minFilter = THREE.LinearFilter;
-            texture.needsUpdate = true;
-            sprite.isFilterButton = true;
-            sprite.filterButtonJob = job;
-            sprite.gradientRemoveDisable = true;
-            filterButtonSprites[job] = sprite;
-        }
-        return filterButtonSprites[job];
-    };*/
-
-    /*self.updateFilterButtonSprite = function(sprite, selected){
-        selected = selected != true ? false : true;
-        var context = sprite.material.map.image.getContext('2d');
-        var width = 256;
-        var halfWidth = width / 2;
-        if (context != undefined){
-            var color = self.colors[self.scope.jobsRelationships[sprite.filterButtonJob]];
-            // background color
-            context.fillStyle = selected ? color : '#222222';
-            context.fillRect(0, 0, width, width);
-            // drawing text
-            context.fillStyle = selected ? '#222222' : color;
-            context.font = "bold 100px Arial";
-            context.textAlign = "center";
-            context.textBaseline = 'middle';
-            context.fillText(self.scope.jobsNames[sprite.filterButtonJob].toUpperCase().substring(0,2), halfWidth, halfWidth);
-            sprite.material.map.needsUpdate = true;
-        }
-    };*/
-
-    /*var filterBackgroundButtonSprites = [];
-
-    self.generateFilterBackgroundButtonSprite = function (text) {
-        if (filterBackgroundButtonSprites[text] == undefined){
-            var canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            var borderThickness = canvas.width / borderFraction;
-            var halfWidth = canvas.width / 2;
-            var halfHeight = canvas.height / 2;
-            var context = canvas.getContext('2d');
-            // clipping to circle
-            context.beginPath();
-            context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
-            context.clip();
-            // background color
-            context.fillStyle = '#222222';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            // drawing text
-            context.fillStyle = '#ffffff';
-            context.font = "bold 100px Arial";
-            context.textAlign = "center";
-            context.textBaseline = 'middle';
-            context.fillText(text, halfWidth, halfWidth);
-            // generating sprite
-            var texture = new THREE.Texture(canvas);
-            var material = new THREE.SpriteMaterial({ map: texture });
-            var sprite = new THREE.Sprite(material);
-            //texture.minFilter = THREE.LinearFilter;
-            texture.needsUpdate = true;
-            sprite.isFilterBackgroundButton = true;
-            sprite.filterBackgroundButtonText = text;
-            sprite.gradientRemoveDisable = true;
-            filterBackgroundButtonSprites[text] = sprite;
-        }
-        return filterBackgroundButtonSprites[text];
-    };*/
-
-    /*self.updateFilterBackgroundButtonSprite = function(sprite, selected){
-        selected = selected != true ? false : true;
-        var context = sprite.material.map.image.getContext('2d');
-        var width = 256;
-        var halfWidth = width / 2;
-        if (context != undefined){
-            var color = '#ffffff';
-            // background color
-            context.fillStyle = selected ? color : '#222222';
-            context.fillRect(0, 0, width, width);
-            // drawing text
-            context.fillStyle = selected ? '#222222' : color;
-            context.font = "bold 100px Arial";
-            context.textAlign = "center";
-            context.textBaseline = 'middle';
-            context.fillText(sprite.filterBackgroundButtonText, halfWidth, halfWidth);
-            sprite.material.map.needsUpdate = true;
-        }
-    };*/
-
-    /*var filterBackgroundSprites = [];
-
-    self.generateSpriteFilterBackground = function(job) {
+    function generateButtonTexture(text, backgroundColor, textColor){
         var canvas = document.createElement('canvas');
         canvas.width = 256;
         canvas.height = 256;
-        var context = canvas.getContext('2d');
-        context.beginPath();
         var halfWidth = canvas.width / 2;
-        var borderThickness = canvas.width / borderFraction;
-        context.arc(halfWidth, halfWidth, halfWidth, 0, PI2);
-        context.clip();
-        context.fillStyle = job != undefined ? self.colors[self.scope.jobsRelationships[job]] : self.orangeColor;
-        context.globalAlpha = 0.9;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        // drawing text
-        context.fillStyle = "#ffffff";
-        context.font = "bold " + (canvas.width / 10) + "px Arial";
-        context.textAlign = "center";
-        context.globalAlpha = 1;
-        wrapText(context, self.scope.jobsNames[job].toUpperCase(), halfWidth, canvas.height / 2.5,
-            canvas.width -  5 * borderThickness, canvas.height / 6);
-        var texture = new THREE.Texture(canvas);
-        var material = new THREE.SpriteMaterial({ map: texture });
-        var sprite = new THREE.Sprite(material);
-        sprite.gradientRemoveDisable = true;
-        //texture.minFilter = THREE.LinearFilter;
-        texture.needsUpdate = true;
-        return sprite;
-    };*/
-
-    /*self.updateSpriteFilterBackground = function(context, job) {
-        var width = 256;
-        var borderThickness = width / borderFraction;
-        context.clearRect(0,0,width,width);
-        context.fillStyle = job != undefined ? self.colors[self.scope.jobsRelationships[job]] : self.orangeColor;
-        context.globalAlpha = 0.9;
-        context.fillRect(0, 0, width, width);
-        // drawing text
-        context.fillStyle = "#ffffff";
-        context.font = "bold " + (width / 10) + "px Arial";
-        context.textAlign = "center";
-        context.globalAlpha = 1;
-        wrapText(context, self.scope.jobsNames[job].toUpperCase(), width / 2, width / 2.5,
-            width -  5 * borderThickness, width / 6);
-    };*/
-
-    self.getButtonSprite = function(text, color) {
-        var canvas = document.createElement('canvas');
-        canvas.width = 256;
-        canvas.height = 256;
-        // generating sprite
-        var texture = new THREE.Texture(canvas);
-        var material = new THREE.SpriteMaterial({ map: texture });
-        var sprite = new THREE.Sprite(material);
-        //texture.minFilter = THREE.LinearFilter;
-        sprite.isChildButton = true;
-        sprite.text = text;
-        sprite.color = new THREE.Color(color);
-        sprite.canvas = canvas;
-        sprite.gradientRemoveDisable = true;
-        sprite.texture = texture;
-        self.updateButtonSprite(sprite, 0);
-        return sprite;
-    };
-
-    self.updateButtonSprite = function(sprite, transition){
-        var backgroundColor = new THREE.Color('#222222');
-        var halfWidth = sprite.canvas.width / 2;
-        var halfHeight = sprite.canvas.height / 2;
-        var context = sprite.canvas.getContext('2d');
-        context.clearRect(0,0,sprite.canvas.width,sprite.canvas.height);
+        var halfHeight = canvas.height / 2;
+        var context = canvas.getContext('2d');
         // clipping to circle
         context.beginPath();
         context.arc(halfWidth, halfHeight, halfWidth, 0, PI2);
         context.clip();
         // background color
-        context.fillStyle = '#' + backgroundColor.clone().lerp(sprite.color, transition).getHexString();
-        context.fillRect(0, 0, sprite.canvas.width, sprite.canvas.height);
+        context.fillStyle = backgroundColor;
+        context.fillRect(0, 0, canvas.width, canvas.height);
         // drawing text
-        context.fillStyle = '#' + sprite.color.clone().lerp(backgroundColor, transition).getHexString();
+        context.fillStyle = textColor;
         context.font = "bold 100px Arial";
         context.textAlign = "center";
         context.textBaseline = 'middle';
-        context.fillText(sprite.text.toUpperCase().substring(0,2), halfWidth, halfWidth);
-        sprite.texture.needsUpdate = true;
-        self.renderNeedsUpdate = true;
+        context.fillText(text.toUpperCase().substring(0,2), halfWidth, halfWidth);
+        return canvas;
+    }
+
+    self.getButtonSprite = function(text, color) {
+        var material = new THREE.SpriteMaterial({
+            map: new THREE.Texture(generateButtonTexture(text, '#222222', color))
+        });
+        var sprite = new THREE.Sprite(material);
+        sprite.material.map.needsUpdate = true;
+        sprite.isChildButton = true;
+        sprite.gradientRemoveDisable = true;
+        // overlay
+        var overlayMaterial = new THREE.SpriteMaterial({
+            map: new THREE.Texture(generateButtonTexture(text, color, '#222222'))
+        });
+        var overlaySprite = new THREE.Sprite(overlayMaterial);
+        overlaySprite.material.depthTest = false;
+        overlaySprite.material.opacity = 0;
+        overlaySprite.material.map.needsUpdate = true;
+        overlaySprite.isOverlaySprite = true;
+        overlaySprite.position.set(0,0,0.0001);
+        sprite.add(overlaySprite);
+        return sprite;
     };
 
     self.sanitizeFileName = function(filename){

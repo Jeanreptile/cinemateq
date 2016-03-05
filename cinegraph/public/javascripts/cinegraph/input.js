@@ -7,7 +7,7 @@ var CINEGRAPH = (function (self) {
         mouse = new THREE.Vector2();
         mouseClickStart = {};
         mouseIsDown = false;
-        currentIntersected = null;
+        currentIntersected = undefined;
         raycaster = new THREE.Raycaster();
 
         // listeners
@@ -109,8 +109,20 @@ var CINEGRAPH = (function (self) {
 
     function onMouseMove(event) {
         setMousePosition(event);
-        if (!mouseIsDown)
-            updateIntersection();
+        if (!mouseIsDown){
+            var intersects = getIntersection(), intersected = undefined;
+            if (intersects.length > 0){
+                intersected = intersects[0].object;
+                if (intersected.isOverlaySprite || intersected.isOutlineSprite)
+                    intersected = intersected.parent;
+                if (intersected === currentIntersected)
+                    return;
+                intersected.onHover();
+            }
+            if (currentIntersected !== undefined && currentIntersected.onLeave !== undefined)
+                currentIntersected.onLeave();
+            currentIntersected = intersected;
+        }
         else if (self.options.enablePathfinding && mouseClickStart.onNode){
             var intersected = getIntersection();
             if (intersected.length > 0){
@@ -138,8 +150,9 @@ var CINEGRAPH = (function (self) {
                     self.cameraControls.enabled = false;
                 }
                 mouseIsDown = true;
-            } else if (event.which == 3) // right click
-                onRightClick(event);
+            } else if (event.which == 3){ // right click
+                //onRightClick(event);
+            }
         } else
             mouseIsDown = true;
     }
@@ -159,9 +172,9 @@ var CINEGRAPH = (function (self) {
         mouseClickStart.onNode = false;
         if (mouse.x != mouseClickStart.x || mouse.y != mouseClickStart.y)
             return;
+        var intersection = getIntersection()[0];
 
         // no intersection
-        var intersection = getIntersection()[0];
         if (intersection == undefined){
             self.removeSuggestions();
             self.removeFilters(self.currentNode.id);
@@ -188,7 +201,7 @@ var CINEGRAPH = (function (self) {
         }
     }
 
-    function onRightClick(event) {
+/*    function onRightClick(event) {
         setMousePosition(event);
         var intersection = getIntersection()[0];
         if (intersection == undefined)
@@ -243,7 +256,7 @@ var CINEGRAPH = (function (self) {
                 });
             }
         }
-    }
+    }*/
 
     self.addChildButton = function(sprite, distance, angle, scale, text, color, callback){
         var buttonSprite = self.getButtonSprite(text, color);
@@ -254,26 +267,15 @@ var CINEGRAPH = (function (self) {
             0
         );
         buttonSprite.onClick = callback;
-        buttonSprite.transition = 0;
         buttonSprite.onHover = function(){
             $('#graph').css({'cursor':'pointer'});
-            if (buttonSprite.transition === 0){
-                console.log("onHover");
-                new TWEEN.Tween(buttonSprite).to({transition: 1 }, 100)
-                    .easing(TWEEN.Easing.Linear.None).onUpdate(function (){
-                        self.updateButtonSprite(buttonSprite, this.transition);
-                    }).start();
-            }
+            new TWEEN.Tween(buttonSprite.children[0].material).to({ opacity: 1 }, 300)
+                .easing(TWEEN.Easing.Linear.None).start();
         };
         buttonSprite.onLeave = function(){
             $('#graph').css({'cursor':'default'});
-            if (buttonSprite.transition !== 0){
-                console.log("onLeave");
-                new TWEEN.Tween(buttonSprite).to({transition: 0 }, 100)
-                    .easing(TWEEN.Easing.Linear.None).onUpdate(function (){
-                        self.updateButtonSprite(buttonSprite, this.transition);
-                    }).start();
-            }
+            new TWEEN.Tween(buttonSprite.children[0].material).to({ opacity: 0 }, 300)
+                .easing(TWEEN.Easing.Linear.None).start();
         }
         sprite.add(buttonSprite);
         self.animateNodeScale(buttonSprite, scale, 180, 0);
@@ -288,7 +290,7 @@ var CINEGRAPH = (function (self) {
                 i++;
                 var callback = function(){
                     alert(job);
-                }
+                };
                 self.addChildButton(n, 0.667, slice * i, 0.33, job, self.relationships[job].color, callback);
             }
         }
@@ -313,7 +315,7 @@ var CINEGRAPH = (function (self) {
         }
     };
 
-    function unsetNodeAsFilter(id){
+    /*function unsetNodeAsFilter(id){
         var n = self.findNode(id);
         if (n != undefined){
             for (var i = n.children.length - 1; i >= 0; i--){
@@ -328,9 +330,9 @@ var CINEGRAPH = (function (self) {
             self.renderNeedsUpdate = true;
             n.isSetAsFilter = null;
         }
-    }
+    }*/
 
-    function setNodeAsFilter(id, job){
+    /*function setNodeAsFilter(id, job){
         var n = self.findNode(id);
         if (n != undefined && n.isSetAsFilter != job){
             var addBackground = true, addSwitchButton = true, addRightButton = true, addLeftButton = true;
@@ -403,7 +405,7 @@ var CINEGRAPH = (function (self) {
         }
         self.renderNeedsUpdate = true;
     }
-
+*/
     // overriding Sprite raycasting with custom values
     THREE.Sprite.prototype.raycast = (function () {
         var matrixPosition = new THREE.Vector3();
@@ -431,35 +433,6 @@ var CINEGRAPH = (function (self) {
     function getIntersection() {
         raycaster.setFromCamera(mouse, self.camera);
         return raycaster.intersectObjects(self.scene.children, true);
-    }
-
-    function updateIntersection() {
-        var intersects = getIntersection();
-        if (intersects.length > 0){
-            var intersected = intersects[0].object;
-            if (intersected.isOverlaySprite){
-                intersected = intersected.parent;
-            }
-            if (intersected == currentIntersected){
-                return;
-            }
-            // node intersection
-            if (intersected.node !== undefined) {
-                if (currentIntersected && (currentIntersected.isChildButton || currentIntersected.node))
-                    currentIntersected.onLeave();
-                currentIntersected = intersected;
-                updateHoverLabel(currentIntersected.name);
-                currentIntersected.onHover();
-            }
-            // filter button intersection
-            else if (intersected.isChildButton){
-                intersected.onHover();
-                currentIntersected = intersected;
-            }
-        } else {
-            if (currentIntersected && currentIntersected.isChildButton)
-                currentIntersected.onLeave();
-        }
     }
 
     return self;

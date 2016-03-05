@@ -28,7 +28,7 @@ body, html {
 
 .header .right-menu {
   float: right;
-  margin: 12px;
+  margin: 14px 12px 12px 0px;
 }
 
 .connect {

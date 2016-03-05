@@ -575,6 +575,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             }
             // CINEGRAPH mode
             else {
+                c.options.enablePathFinding = true;
                 $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
                     c.displayCinegraphNodes(JSON.parse(cinegraph.nodes), false);
                 });

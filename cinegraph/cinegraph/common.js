@@ -233,7 +233,7 @@ var CINEGRAPH = (function (self) {
         // drawing nodes
         for (var id in positions){
             var n = self.findNode(id);
-            if (n == undefined || n.IsSuggested) {
+            if (n === undefined || n.IsSuggested) {
                 self.addNode(id, positions[id]).then(function(id){
                     if (id == Object.keys(positions)[0]) // if first node, select it
                         self.selectNode(id);
@@ -250,11 +250,11 @@ var CINEGRAPH = (function (self) {
             if (r.start != null && r.end != null) {
                 var line = self.findRelationship(r.start, r.end);
                 if (line === undefined) { // create line if not present
-                    line = getLineGeometry(positions[r.end], r.type, true);
+                    line = getLineGeometry(positions[r.end], r.type, false);
                     line.endNodeId = r.end;
                     line.startNodeId = r.start;
                     self.linesScene.add(line);
-                    self.animateLine(line, positions[r.end], positions[r.start]);
+                    self.animateLine(line, positions[r.start], positions[r.end]);
                 } else if (refreshScene)
                     self.animateLine(line, positions[r.start], positions[r.end]);
             }
@@ -275,7 +275,7 @@ var CINEGRAPH = (function (self) {
 
     self.refreshGraph = function() {
         self.removeFilters();
-        self.removeSuggestions();
+        //self.removeSuggestions();
         self.displayCinegraphNodes([], true);
     };
 

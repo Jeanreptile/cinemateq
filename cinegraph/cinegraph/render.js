@@ -8,7 +8,7 @@ var CINEGRAPH = (function (self) {
     var qualityScale;
     var tweenCount;
     const sampleRatio = 1;
-    const lineThickness = 5;
+    const lineThickness = 6;
     self.renderNeedsUpdate = false;
 
     self.initRender = function(){

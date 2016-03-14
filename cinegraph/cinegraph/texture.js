@@ -140,7 +140,7 @@ var CINEGRAPH = (function (self) {
         sprite.name = text;
         sprite.canvas = canvas;
         sprite.texture = texture;
-        sprite.mainJob = Object.keys(node._relationships)[0];
+        sprite.mainJob = Object.keys(node._relationships)[0]; // TODO remove
         sprite.node = node;
         // image loading
         if (node.img == undefined || node.img == false)
@@ -159,13 +159,13 @@ var CINEGRAPH = (function (self) {
         }
         // outline
         var gradientSprite = self.generateSpriteBackground(sprite);
-        gradientSprite.material.depthWrite = false;
+        gradientSprite.material.depthTest = false;
         gradientSprite.isOutlineSprite = true;
         gradientSprite.position.set(0,0,-0.000001);
         sprite.add(gradientSprite);
         // overlay
-        var overlaySprite = self.generateSpriteOverlay(text);
-        overlaySprite.material.depthWrite = false;
+        var overlaySprite = self.generateSpriteOverlay(text, sprite.node._color);
+        overlaySprite.material.depthTest = false;
         overlaySprite.isOverlaySprite = true;
         overlaySprite.position.set(0,0,0.0001);
         sprite.add(overlaySprite);
@@ -173,6 +173,7 @@ var CINEGRAPH = (function (self) {
         sprite.onHover = function(){
             $('#graph').css({'cursor':'pointer'});
             overlaySprite.onHover();
+            self.updateHoverLabel(this.name);
         };
         sprite.onLeave = function(){
             $('#graph').css({'cursor':'default'});
@@ -201,7 +202,7 @@ var CINEGRAPH = (function (self) {
         return sprite;
     };
 
-    self.generateSpriteOverlay = function(text) {
+    self.generateSpriteOverlay = function(text, color) {
         var canvas = document.createElement('canvas');
         canvas.width = 256;
         canvas.height = 256;
@@ -258,9 +259,6 @@ var CINEGRAPH = (function (self) {
         context.beginPath();
         context.arc(halfWidth, halfHeight, halfWidth - borderThickness, 0, PI2);
         context.clip();
-        // black background for opacity
-        context.fillStyle = '#000000';
-        context.fillRect(0, 0, canvas.width, canvas.height);
         // drawing image
         drawImageProp(context, img, borderThickness, borderThickness,
             canvas.width - 2 * borderThickness, canvas.height - 2 * borderThickness);
@@ -323,6 +321,7 @@ var CINEGRAPH = (function (self) {
         });
         var sprite = new THREE.Sprite(material);
         sprite.material.map.needsUpdate = true;
+        sprite.material.depthTest = false;
         sprite.isChildButton = true;
         sprite.gradientRemoveDisable = true;
         // overlay

@@ -559,7 +559,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             document.getElementById('graph').addEventListener('currentNode', function () {
                 scope.currentNode = c.currentNode;
                 $location.search('id', c.currentNode.id);
-                scope.displayFriendsTastes();
+                //scope.displayFriendsTastes();
             }, false);
             scope.$on('$destroy', function(){
                 c.destroy();

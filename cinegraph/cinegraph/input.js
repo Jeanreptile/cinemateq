@@ -36,13 +36,13 @@ var CINEGRAPH = (function (self) {
         $('#graph').off('mousemove');
     };
 
-    function updateHoverLabel(text){
+    self.updateHoverLabel = function(text){
         $('#canvasNodeLabel .labelText').text(text);
         self.updateHoverLabelPosition();
-    }
+    };
 
     self.updateHoverLabelPosition = function(){
-        if (currentIntersected != null){
+        if (currentIntersected !== undefined){
             var v = self.toScreenPosition(currentIntersected.position);
             var spriteRadius = self.getSpriteRadius(currentIntersected.position, currentIntersected.scale.x);
             var y = v.y - spriteRadius - $('#canvasNodeLabel').outerHeight();
@@ -278,7 +278,7 @@ var CINEGRAPH = (function (self) {
                 .easing(TWEEN.Easing.Linear.None).start();
         }
         sprite.add(buttonSprite);
-        self.animateNodeScale(buttonSprite, scale, 180, 0);
+        self.animateNodeScale(buttonSprite, scale, 250, 0);
     };
 
     function addFilters(id) {

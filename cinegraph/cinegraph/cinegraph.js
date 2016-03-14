@@ -43,7 +43,7 @@ var CINEGRAPH = (function (self) {
             self.initTexture();
             self.initInput();
             self.animate();
-            $('#graph').animate({"opacity":1}, 2000);
+            $('#graph').animate({"opacity":1}, 4000);
         //}
     };
 

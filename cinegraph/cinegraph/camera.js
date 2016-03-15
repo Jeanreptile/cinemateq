@@ -27,9 +27,9 @@ var CINEGRAPH = (function (self) {
     self.cameraLookAtPosition = function(pos){
         var p = new THREE.Vector3().copy(self.camera.position).sub(pos).setLength(cameraDist).add(pos);
         new TWEEN.Tween(self.camera.position).to({ x: p.x, y: p.y, z: p.z }, 1000)
-            .easing(TWEEN.Easing.Exponential.Out).start();
+            .easing(TWEEN.Easing.Quartic.InOut).start();
         new TWEEN.Tween(self.cameraControls.target).to({ x: pos.x, y: pos.y, z: pos.z }, 1000)
-            .easing(TWEEN.Easing.Exponential.Out).start();
+            .easing(TWEEN.Easing.Quartic.InOut).start();
     };
 
     self.cameraLookAtNode = function(id){

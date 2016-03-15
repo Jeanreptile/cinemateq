@@ -20,12 +20,12 @@ var CINEGRAPH = (function (self) {
         window.addEventListener('resize', self.onWindowResize, false);
 
         // label text init
-        label = $('<div id="canvasNodeLabel" style="text-align:center;"><div class="labelText"></div></div>');
+        /*label = $('<div id="canvasNodeLabel" style="text-align:center;"><div class="labelText"></div></div>');
         label.css({ 'position': 'absolute','z-index': '1','background-color': '#aaaaaa',
             'color': 'white','padding':'10px','left':'-10000'
         });
         $('#graph').parent().css('position','relative');
-        $('#graph').after(label);
+        $('#graph').after(label);*/
     };
 
     self.destroyInput = function(){
@@ -37,12 +37,12 @@ var CINEGRAPH = (function (self) {
     };
 
     self.updateHoverLabel = function(text){
-        $('#canvasNodeLabel .labelText').text(text);
-        self.updateHoverLabelPosition();
+        /*$('#canvasNodeLabel .labelText').text(text);
+        self.updateHoverLabelPosition()*/;
     };
 
     self.updateHoverLabelPosition = function(){
-        if (currentIntersected !== undefined){
+        /*if (currentIntersected !== undefined){
             var v = self.toScreenPosition(currentIntersected.position);
             var spriteRadius = self.getSpriteRadius(currentIntersected.position, currentIntersected.scale.x);
             var y = v.y - spriteRadius - $('#canvasNodeLabel').outerHeight();
@@ -52,7 +52,7 @@ var CINEGRAPH = (function (self) {
                 top: y,
                 left: v.x - $('#canvasNodeLabel').outerWidth() / 2
             });
-        }
+        }*/
     };
 
     function setMousePosition(event) {
@@ -150,9 +150,9 @@ var CINEGRAPH = (function (self) {
                     self.cameraControls.enabled = false;
                 }
                 mouseIsDown = true;
-            } else if (event.which == 3){ // right click
+            } /*else if (event.which == 3){ // right click
                 //onRightClick(event);
-            }
+            }*/
         } else
             mouseIsDown = true;
     }
@@ -196,7 +196,6 @@ var CINEGRAPH = (function (self) {
                 self.removeOutOfDepthNodes();
             });
         } else if (intersection.object.isChildButton) {
-            console.log(intersection.object);
             intersection.object.onClick();
         }
     }
@@ -258,7 +257,7 @@ var CINEGRAPH = (function (self) {
         }
     }*/
 
-    self.addChildButton = function(sprite, distance, angle, scale, text, color, callback){
+    self.addChildButton = function(sprite, distance, angle, scale, text, color, callback, active){
         var buttonSprite = self.getButtonSprite(text, color);
         buttonSprite.scale.set(0, 0, 0);
         buttonSprite.position.set(
@@ -266,16 +265,21 @@ var CINEGRAPH = (function (self) {
             Math.sin(angle) * distance,
             0
         );
+        buttonSprite.active = active;
+        if (buttonSprite.active)
+            buttonSprite.children[0].material.opacity = 1;
         buttonSprite.onClick = callback;
         buttonSprite.onHover = function(){
             $('#graph').css({'cursor':'pointer'});
-            new TWEEN.Tween(buttonSprite.children[0].material).to({ opacity: 1 }, 300)
-                .easing(TWEEN.Easing.Linear.None).start();
+            new TWEEN.Tween(buttonSprite.children[0].material).to({
+                opacity: this.active ? 0.8 : 1
+            }, 300).easing(TWEEN.Easing.Linear.None).start();
         };
         buttonSprite.onLeave = function(){
             $('#graph').css({'cursor':'default'});
-            new TWEEN.Tween(buttonSprite.children[0].material).to({ opacity: 0 }, 300)
-                .easing(TWEEN.Easing.Linear.None).start();
+            new TWEEN.Tween(buttonSprite.children[0].material).to({
+                opacity: this.active ? 1 : 0
+            }, 300).easing(TWEEN.Easing.Linear.None).start();
         }
         sprite.add(buttonSprite);
         self.animateNodeScale(buttonSprite, scale, 250, 0);
@@ -288,10 +292,25 @@ var CINEGRAPH = (function (self) {
             var i = 4;
             for (job in self.relationships){
                 i++;
-                var callback = function(){
-                    alert(job);
-                };
-                self.addChildButton(n, 0.667, slice * i, 0.33, job, self.relationships[job].color, callback);
+                var callback = (function(j){
+                    return (function(){
+                        var r = this.parent.node._relationships[j];
+                        r.active = !r.active;
+                        this.active = r.active;
+                        if (this.active) {
+                            this.onHover();
+                            var obj = {};
+                            obj[j] = r;
+                            self.addRelatedNodes(id, obj);
+                        }
+                        else {
+                            this.onLeave();
+                            self.removeRelatedNodes(id, j);
+                        }
+                    });
+                })(job);
+                self.addChildButton(n, 0.667, slice * i, 0.33, job,
+                    self.relationships[job].color, callback, n.node._relationships[job].active);
             }
         }
     }
@@ -315,97 +334,6 @@ var CINEGRAPH = (function (self) {
         }
     };
 
-    /*function unsetNodeAsFilter(id){
-        var n = self.findNode(id);
-        if (n != undefined){
-            for (var i = n.children.length - 1; i >= 0; i--){
-                var child = n.children[i];
-                if (child.isFilterBackground || child.isFilterBackgroundButton) {
-                    child.geometry.dispose();
-                    child.material.dispose();
-                    n.remove(child);
-                } else if (child.isFilterButton)
-                    self.updateFilterButtonSprite(child, n.node._relationships[child.filterButtonJob].active);
-            }
-            self.renderNeedsUpdate = true;
-            n.isSetAsFilter = null;
-        }
-    }*/
-
-    /*function setNodeAsFilter(id, job){
-        var n = self.findNode(id);
-        if (n != undefined && n.isSetAsFilter != job){
-            var addBackground = true, addSwitchButton = true, addRightButton = true, addLeftButton = true;
-            for (var i = 0; i < n.children.length; i++){
-                var child = n.children[i];
-                if (child.isFilterBackground == true) {
-                    addBackground = false;
-                    if (child.filterBackgroundJob != job){
-                        self.updateSpriteFilterBackground(child.material.map.image.getContext('2d'), job);
-                        child.material.map.needsUpdate = true;
-                        child.filterBackgroundJob = job;
-                    }
-                } else if (child.isFilterButton)
-                    self.updateFilterButtonSprite(child, child.filterButtonJob == job || self.scope.selectedJobs[child.filterButtonJob]);
-                else if (child.isFilterBackgroundButton) {
-                    if (child.isSwitchButton) {
-                        addSwitchButton = false;
-                        self.updateFilterBackgroundButtonSprite(child, self.scope.selectedJobs[job]);
-                    }
-                    else if (child.isLeftButton)
-                        addLeftButton = false;
-                    else if (child.isRightButton)
-                        addRightButton = false;
-                    child.filterBackgroundJob = job;
-                }
-            }
-            // creating new filter background sprite
-            if (addBackground) {
-                var sprite = self.generateSpriteFilterBackground(job);
-                sprite.isFilterBackground = true;
-                sprite.filterBackgroundJob= job;
-                sprite.position.z = 0.001;
-                sprite.scale.set(0.92,0.92,0.92);
-                sprite.filterBackgroundJob = job;
-                n.add(sprite);
-            }
-            if (addSwitchButton){
-                var btn = self.generateFilterBackgroundButtonSprite("✔");
-                var scale = 0.23;
-                btn.scale.set(scale, scale, scale);
-                btn.position.z = 0.002;
-                btn.position.y = -0.25
-                btn.filterBackgroundJob = job;
-                btn.isSwitchButton = true;
-                n.add(btn);
-            }
-            if (addLeftButton){
-                var btn = self.generateFilterBackgroundButtonSprite("◄");
-                var scale = 0.23;
-                btn.scale.set(scale, scale, scale);
-                btn.position.x = -0.23;
-                btn.position.z = 0.002;
-                btn.position.y = -0.25
-                btn.filterBackgroundJob = job;
-                btn.isLeftButton = true;
-                n.add(btn);
-            }
-            if (addRightButton){
-                var btn = self.generateFilterBackgroundButtonSprite("►");
-                var scale = 0.23;
-                btn.scale.set(scale, scale, scale);
-                btn.position.x = 0.23;
-                btn.position.z = 0.002;
-                btn.position.y = -0.25
-                btn.filterBackgroundJob = job;
-                btn.isRightButton = true;
-                n.add(btn);
-            }
-            n.isSetAsFilter = job;
-        }
-        self.renderNeedsUpdate = true;
-    }
-*/
     // overriding Sprite raycasting with custom values
     THREE.Sprite.prototype.raycast = (function () {
         var matrixPosition = new THREE.Vector3();

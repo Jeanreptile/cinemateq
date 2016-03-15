@@ -333,6 +333,7 @@ var CINEGRAPH = (function (self) {
         overlaySprite.material.opacity = 0;
         overlaySprite.material.map.needsUpdate = true;
         overlaySprite.isOverlaySprite = true;
+        overlaySprite.scale.set(1.02,1.02,1.02);
         overlaySprite.position.set(0,0,0.0001);
         sprite.add(overlaySprite);
         return sprite;

@@ -16,7 +16,7 @@ var CINEGRAPH = (function (self) {
             r[rel] = {
                 skip: 0,
                 limit: self.relationships[rel].limit,
-                active: true,
+                active: self.relationships[rel].active,
                 count: count[rel] !== undefined ? count[rel] : 0
             };
         }
@@ -53,11 +53,13 @@ var CINEGRAPH = (function (self) {
         });
     };
 
-    self.addRelatedNodes = function(id){
+    self.addRelatedNodes = function(id, relationships){
         return new Promise((resolve, reject) => {
             var n = self.findNode(id);
             if (n !== undefined) {
-                $http.get('/api/common/related/' + id + '/' + JSON.stringify(n.node._relationships)).success(function(res) {
+                if (relationships === undefined)
+                    relationships = n.node._relationships;
+                $http.get('/api/common/related/' + id + '/' + JSON.stringify(relationships)).success(function(res){
                     var occupiedPositions = self.getOccupiedPositions();
                     // for each relationship
                     for (var i = 0; i < res.length; i++){
@@ -141,12 +143,14 @@ var CINEGRAPH = (function (self) {
             startColor = self.types['Movie'].color, endColor = self.relationships[type].color;
         lineGeom.colors.push(new THREE.Color(startColor));
         lineGeom.colors.push(new THREE.Color(endColor));
-        return new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true }));
+        var line = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ linewidth: 1, vertexColors: true }));
+        line._type = type;
+        return line;
     }
 
     self.findNode = function(id) {
         for (var i = 0; i < self.scene.children.length; i++)
-            if (self.scene.children[i].node.id == id)
+            if (self.scene.children[i].node.id === id)
                 return self.scene.children[i];
         return undefined;
     };
@@ -154,9 +158,9 @@ var CINEGRAPH = (function (self) {
     self.findRelationship = function(start, end) {
         for (var i = 0; i < self.linesScene.children.length; i++) {
             var line = self.linesScene.children[i];
-            if (line.type == "Line")
-                if (start == line.startNodeId && end == line.endNodeId
-                    || end == line.startNodeId && start == line.endNodeId)
+            if (line.type === 'Line')
+                if (start === line.startNodeId && end === line.endNodeId
+                    || end === line.startNodeId && start === line.endNodeId)
                     return line;
         }
         return undefined;
@@ -165,7 +169,7 @@ var CINEGRAPH = (function (self) {
     self.removeRelationship = function(start, end) {
         return new Promise((resolve, reject) => {
             var r = self.findRelationship(start, end);
-            if (r != undefined) {
+            if (r !== undefined) {
                 r.geometry.dispose();
                 r.material.dispose();
                 self.linesScene.remove(r);
@@ -178,7 +182,7 @@ var CINEGRAPH = (function (self) {
     self.removeNode = function(id) {
         return new Promise((resolve, reject) => {
             var n = self.findNode(id);
-            if (n != undefined) {
+            if (n !== undefined) {
                 new TWEEN.Tween(n.scale).to({x: 0, y:0, z:0}, 500)
                     .easing(TWEEN.Easing.Linear.None).onComplete(function (){
                         // removing children nodes
@@ -205,9 +209,22 @@ var CINEGRAPH = (function (self) {
         self.removeNode(id);
         for (var i = self.linesScene.children.length - 1; i >= 0; i--) {
             var line = self.linesScene.children[i];
-            if (line.type == "Line" && (line.startNodeId == id || line.endNodeId == id)){
+            if (line.type === 'Line' && (line.startNodeId === id || line.endNodeId === id)){
                 line.geometry.dispose();
                 line.material.dispose();
+                self.linesScene.remove(line);
+            }
+        }
+    };
+
+    self.removeRelatedNodes = function(id, type){
+        for (var i = self.linesScene.children.length - 1; i >= 0; i--) {
+            var line = self.linesScene.children[i];
+            if (line.type === 'Line' && (line.startNodeId === id || line.endNodeId === id)
+                    && (type === undefined || line._type === type)){
+                self.removeNode(line.startNodeId !== id ? line.startNodeId : line.endNodeId);
+                line.material.dispose();
+                line.geometry.dispose();
                 self.linesScene.remove(line);
             }
         }

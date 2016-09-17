@@ -558,7 +558,7 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             // Bindings with Angular
             document.getElementById('graph').addEventListener('currentNode', function () {
                 scope.currentNode = c.currentNode;
-                $location.search('id', c.currentNode.id);
+                // $location.search('id', c.currentNode.id); // Seems that it reloads the page, makes Threejs view fail
                 //scope.displayFriendsTastes();
             }, false);
             scope.$on('$destroy', function(){

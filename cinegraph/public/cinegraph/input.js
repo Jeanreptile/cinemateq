@@ -124,6 +124,7 @@ var CINEGRAPH = (function (self) {
             currentIntersected = intersected;
         }
         else if (self.options.enablePathfinding && mouseClickStart.onNode){
+            console.log('pathfinding!');
             var intersected = getIntersection();
             if (intersected.length > 0){
                 var id = intersected[0].object._id;
@@ -326,8 +327,10 @@ var CINEGRAPH = (function (self) {
                     (function(child){
                         new TWEEN.Tween(child.scale).to({x: 0, y:0, z:0}, 180)
                             .easing(TWEEN.Easing.Linear.None).onComplete(function (){
-                                child.geometry.dispose();
-                                child.material.dispose();
+                                if (child.geometry)
+                                    child.geometry.dispose();
+                                if (child.material)
+                                    child.material.dispose();
                                 n.remove(child);
                             }).start();
                     })(child);

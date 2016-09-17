@@ -120,8 +120,10 @@ var CINEGRAPH = (function (self) {
             for (var k = 0; k < sprite.children.length; k++){
                 var gradientSprite = sprite.children[k];
                 if (!gradientSprite.gradientRemoveDisable && !gradientSprite.gradientIsActive) {
-                    gradientSprite.geometry.dispose();
-                    gradientSprite.material.dispose();
+                    if (gradientSprite.geometry)
+                        gradientSprite.geometry.dispose();
+                    if (gradientSprite.material)
+                        gradientSprite.material.dispose();
                     sprite.remove(gradientSprite);
                 }
             }

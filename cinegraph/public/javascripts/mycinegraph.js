@@ -42,7 +42,7 @@ cinegraphApp.controller('MyCinegraphCtrl', function($scope, $http, $window, $loc
 			// Erase the token if the user fails to log in
 			console.log('error');
 			// Handle login errors here
-			if (data.message) {
+			if (data && data.message) {
 			  //$scope.message = data.message;
 			}
 			else {

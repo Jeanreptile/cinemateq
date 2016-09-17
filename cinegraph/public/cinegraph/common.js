@@ -188,15 +188,23 @@ var CINEGRAPH = (function (self) {
                         // removing children nodes
                         for (var i = n.children.length - 1; i >= 0; i--){
                             var child = n.children[i];
-                            child.geometry.dispose();
-                            child.material.map.dispose();
-                            child.material.dispose();
+                            if (child.geometry)
+                                child.geometry.dispose();
+                            if (child.material){
+                                if (child.material.map)
+                                    child.material.map.dispose();
+                                child.material.dispose();
+                            }
                             n.remove(child);
                         }
                         // removing node
-                        n.geometry.dispose();
-                        n.material.map.dispose();
-                        n.material.dispose();
+                        if (n.geometry)
+                            n.geometry.dispose();
+                        if (n.material){
+                            if (n.material.map)
+                                n.material.map.dispose();
+                            n.material.dispose();
+                        }
                         self.scene.remove(n);
                         resolve();
                     }).start();

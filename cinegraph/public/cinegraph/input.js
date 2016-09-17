@@ -57,12 +57,16 @@ var CINEGRAPH = (function (self) {
 
     function setMousePosition(event) {
         event = event || window.event;
-        var target = event.target || event.srcElement, rect = target.getBoundingClientRect(),
-            offsetX = event.clientX - rect.left, offsetY = event.clientY - rect.top;
+        console.log('target', event.target.getBoundingClientRect());
+        var target = event.target || event.srcElement;
+        var rect = target.getBoundingClientRect();
+        var offsetX = event.clientX - rect.left;
+        var offsetY = event.clientY - rect.top;
         mouse.x = (offsetX / self.viewWidth) * 2 - 1;
         mouse.y = -(offsetY / self.viewHeight) * 2 + 1;
         mouse.clientX = offsetX;
         mouse.clientY = offsetY;
+        console.log('setMousePosition', mouse);
     }
 
     function linedraw(x1,y1,x2,y2) {
@@ -117,14 +121,14 @@ var CINEGRAPH = (function (self) {
                     intersected = intersected.parent;
                 if (intersected === currentIntersected)
                     return;
-                intersected.onHover();
+                if (intersected.onHover)
+                    intersected.onHover();
             }
             if (currentIntersected !== undefined && currentIntersected.onLeave !== undefined)
                 currentIntersected.onLeave();
             currentIntersected = intersected;
         }
         else if (self.options.enablePathfinding && mouseClickStart.onNode){
-            console.log('pathfinding!');
             var intersected = getIntersection();
             if (intersected.length > 0){
                 var id = intersected[0].object._id;

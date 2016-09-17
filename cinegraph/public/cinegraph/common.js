@@ -322,7 +322,7 @@ var CINEGRAPH = (function (self) {
         var n = self.findNode(id);
         if (n != undefined){
             var material = new THREE.MeshBasicMaterial({
-                color: new THREE.Color(n.mainJob != undefined ? self.colors[n.mainJob] : self.orangeColor),
+                color: new THREE.Color(getMainColor(n.node)),
                 transparent: true,
                 opacity: 0.5,
                 depthWrite: false

@@ -72,7 +72,7 @@ var CINEGRAPH = (function (self) {
                                 node._depth = n._depth + 1;
                                 node._neighbours = [n.node.id];
                                 n.node._neighbours.push(node.id);
-                                //console.log("addRelatedNodes", node);
+                                // console.log("addRelatedNodes", node.id);
                                 // adding node
                                 var sprite = self.getNodeSprite(node);
                                 sprite.scale.set(0, 0, 0);
@@ -150,7 +150,7 @@ var CINEGRAPH = (function (self) {
 
     self.findNode = function(id) {
         for (var i = 0; i < self.scene.children.length; i++)
-            if (self.scene.children[i].node.id === id)
+            if (self.scene.children[i].node.id == id)
                 return self.scene.children[i];
         return undefined;
     };

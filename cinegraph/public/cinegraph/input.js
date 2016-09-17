@@ -195,6 +195,8 @@ var CINEGRAPH = (function (self) {
             self.addRelatedNodes(id).then(function(id){
                 self.removeOutOfDepthNodes();
             });
+            
+            
         } else if (intersection.object.isChildButton) {
             intersection.object.onClick();
         }

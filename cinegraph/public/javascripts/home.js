@@ -577,7 +577,8 @@ cinegraphApp.directive("cinegraph", [ '$http', '$location', function($http, $loc
             else {
                 c.options.enablePathFinding = true;
                 $http.get('/api/mycinegraph/' + scope.cinegraphId).success(function (cinegraph) {
-                    c.displayCinegraphNodes(JSON.parse(cinegraph.nodes), false);
+                    var nodes = cinegraph.nodes && cinegraph.nodes.length > 0 ? JSON.parse(cinegraph.nodes) : [];
+                    c.displayCinegraphNodes(nodes, false);
                 });
             }
         }
